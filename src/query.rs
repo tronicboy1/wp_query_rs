@@ -1,6 +1,13 @@
+mod post_status;
+mod orderby;
+mod meta_query;
+mod taxonomy;
+
 use std::{collections::HashMap, fmt::Display};
 
-use crate::sql::{SqlCompareOperator, SqlConditionOperator, SqlOrder, SqlSearchOperators};
+use crate::sql::{SqlCompareOperator, SqlOrder, SqlSearchOperators};
+
+use self::{post_status::PostStatus, meta_query::MetaQuery, orderby::WpOrderBy, taxonomy::TaxonomyRelation};
 
 #[allow(non_snake_case)]
 #[derive(Debug)]
@@ -32,7 +39,7 @@ where
     pub name: Option<String>,
     pub page_id: Option<usize>,
     // TODO implement slug getter
-    // pub pagename: Option<String>
+    pagename: Option<String>,
     pub post_parent: Option<usize>,
     pub post_parent__in: Option<Vec<usize>>,
     pub post_parent__not_in: Option<Vec<usize>>,
@@ -40,7 +47,7 @@ where
     pub post__not_in: Option<Vec<usize>>,
     pub post_name__in: Option<usize>,
     // TODO Implement
-    // pub post_password: Option<String>,
+    post_password: Option<String>,
     /**
      * Retrieves posts by post types, default value is ‘post‘. If ‘tax_query‘ is set for a query, the default value becomes ‘any‘;
      */
@@ -85,48 +92,74 @@ where
     post_mime_type: Option<String>,
 }
 
-#[derive(Debug)]
-pub struct TaxonomyRelation<T>
+impl<T> Query<T>
 where
     T: Display,
 {
-    pub taxonomy: String,
-    /**
-     * Select taxonomy term by. Possible values are ‘term_id’, ‘name’, ‘slug’ or ‘term_taxonomy_id’. Default value is ‘term_id’.
-     */
-    pub field: Vec<usize>,
-    pub terms: Vec<T>,
-    pub include_children: Option<bool>,
-    pub operator: Option<SqlConditionOperator>,
-    pub comment_count: Option<CommentCount>,
-}
-
-#[derive(Debug)]
-pub enum PostStatus {
-    Publish,
-    Pending,
-    Draft,
-    AutoDraft,
-    Future,
-    Private,
-    Inherit,
-    Trash,
-    Any,
-}
-
-impl PostStatus {
-    pub fn val(&self) -> &'static str {
-        match self {
-            Self::Publish => "publish",
-            Self::Pending => "pending",
-            Self::Draft => "draft",
-            Self::AutoDraft => "auto-draft",
-            Self::Future => "future",
-            Self::Private => "private",
-            Self::Inherit => "inherit",
-            Self::Trash => "trash",
-            Self::Any => "any",
+    fn new() -> Self {
+        Self {
+            author: None,
+            author_name: None,
+            author__in: None,
+            author__not_in: None,
+            cat: None,
+            category_name: None,
+            category__and: None,
+            category__in: None,
+            category__not_in: None,
+            tag: None,
+            tag_id: None,
+            tag__and: None,
+            tag__in: None,
+            tag__not_in: None,
+            tag_slug__and: None,
+            tag_slug__in: None,
+            tax_query: None,
+            p: None,
+            name: None,
+            page_id: None,
+            pagename: None,
+            post_parent: None,
+            post_parent__in: None,
+            post_parent__not_in: None,
+            post__in: None,
+            post__not_in: None,
+            post_name__in: None,
+            post_password: None,
+            post_type: None,
+            post_status: None,
+            comment_count: None,
+            posts_per_page: None,
+            page: None,
+            ignore_sticky_posts: None,
+            order: None,
+            orderby: None,
+            year: None,
+            monthnum: None,
+            w: None,
+            day: None,
+            hour: None,
+            minute: None,
+            second: None,
+            m: None,
+            meta_key: None,
+            meta_value: None,
+            meta_value_num: None,
+            meta_compare: None,
+            meta_query: None,
+            post_mime_type: None,
         }
+    }
+
+    pub fn default() -> Self {
+        let mut query = Self::new();
+
+        query.post_type = Some(vec![String::from("post")]);
+
+        query.posts_per_page = Some(10);
+        query.page = Some(1);
+
+        query
     }
 }
 
@@ -139,46 +172,5 @@ pub struct CommentCount {
     pub compare: SqlCompareOperator,
 }
 
-#[derive(Debug)]
-pub enum WpOrderBy {
-    None,
-    ID,
-    Author,
-    Title,
-    Name,
-    Type,
-    Date,
-    Modified,
-    Parent,
-    CommentCount,
-    MetaValue,
-    MetaValueNum,
-}
-
-impl WpOrderBy {
-    pub fn val(&self) -> &'static str {
-        match self {
-            Self::None => "",
-            Self::ID => "ID",
-            Self::Author => "post_author",
-            Self::Title => "post_title",
-            Self::Name => "post_name",
-            Self::Type => "post_type",
-            Self::Date => "post_date",
-            Self::Modified => "post_modified",
-            Self::Parent => "post_parent",
-            Self::CommentCount => "comment_count",
-            Self::MetaValue => "meta_value",
-            Self::MetaValueNum => "meta_value",
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct MetaQuery {
-    pub key: String,
-    pub value: String,
-    pub compare: SqlSearchOperators,
-    // TODO
-    // type
-}
+#[cfg(test)]
+mod tests {}
