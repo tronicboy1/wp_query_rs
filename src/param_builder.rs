@@ -7,7 +7,8 @@ use crate::{
         params::Params,
         tax_query::{TaxQuery, TaxRelation},
     },
-    sql::{SqlOrder, SqlSearchOperators}, wp_post::post_status::PostStatus,
+    sql::{SqlOrder, SqlSearchOperators},
+    wp_post::post_status::PostStatus,
 };
 
 pub struct ParamBuilder {
@@ -16,6 +17,10 @@ pub struct ParamBuilder {
 
 #[allow(non_snake_case)]
 impl ParamBuilder {
+    pub fn params(self) -> Params {
+        self.query
+    }
+
     pub fn new() -> Self {
         Self {
             query: Params::default(),

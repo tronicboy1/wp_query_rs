@@ -1,20 +1,27 @@
+use mysql::Error;
 use query::params::Params;
+use sql::get_pool;
 use wp_post::WP_Post;
 
 pub mod param_builder;
 mod query;
+mod query_builder;
 mod sql;
 mod wp_post;
-mod query_builder;
 
+pub use param_builder::ParamBuilder;
+
+#[derive(Debug)]
 #[allow(non_camel_case_types)]
 pub struct WP_Query {
     pub posts: Vec<WP_Post>,
 }
 
 impl WP_Query {
-    pub fn new(params: Params) -> Self {
-        Self { posts: vec![] }
+    pub fn new(params: Params) -> Result<Self, Error> {
+        let pool = get_pool(sql::env_vars::EnvVars::from_env())?;
+
+        Ok(Self { posts: vec![] })
     }
 
     pub fn post_count(&self) -> usize {

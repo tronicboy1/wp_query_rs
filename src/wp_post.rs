@@ -2,6 +2,7 @@ use self::post_status::PostStatus;
 
 pub mod post_status;
 
+#[derive(Debug)]
 #[allow(non_camel_case_types, non_snake_case)]
 pub struct WP_Post {
     pub ID: u32,
