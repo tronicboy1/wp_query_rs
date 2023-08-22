@@ -5,8 +5,8 @@ use mysql_common::{time::Date, Row};
 use query::params::Params;
 use query_builder::QueryBuilder;
 use sql::get_pool;
-use wp_post::WP_Post;
 
+pub use wp_post::WP_Post;
 pub use sql::SqlOrder;
 
 pub mod param_builder;

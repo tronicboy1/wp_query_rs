@@ -58,7 +58,7 @@ impl EnvVars {
         let port = EnvVarKeys::Port
             .get_env()
             .map(|str| str.trim().parse().ok())
-            .unwrap_or(None);
+            .flatten();
 
         EnvVars {
             host,
