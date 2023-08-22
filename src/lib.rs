@@ -1,16 +1,12 @@
-pub mod query_builder;
-mod sql;
+pub mod param_builder;
 mod query;
+mod sql;
 
 #[allow(non_camel_case_types)]
-pub struct  WP_Query {
-
-}
+pub struct WP_Query {}
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn it_works() {
         //let result = add(2, 2);

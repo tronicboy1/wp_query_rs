@@ -11,14 +11,14 @@ use crate::{
     sql::{SqlOrder, SqlSearchOperators},
 };
 
-pub struct QueryBuilder {
+pub struct ParamBuilder {
     pub query: Params,
 }
 
 #[allow(non_snake_case)]
-impl QueryBuilder {
+impl ParamBuilder {
     pub fn new() -> Self {
-        QueryBuilder {
+        Self {
             query: Params::default(),
         }
     }
@@ -413,21 +413,21 @@ mod tests {
     #[test]
     fn can_add_author() {
         let id = 1;
-        let q = QueryBuilder::new().author(id);
+        let q = ParamBuilder::new().author(id);
         assert_eq!(id, q.query.author.unwrap());
     }
 
     #[test]
     fn can_add_category() {
         let cat = 1;
-        let q = QueryBuilder::new().cat(cat);
+        let q = ParamBuilder::new().cat(cat);
         assert_eq!(cat, q.query.cat.unwrap());
     }
 
     #[test]
     fn can_add_tag() {
         let tag = String::from("Tag");
-        let q = QueryBuilder::new().tag(tag.clone());
+        let q = ParamBuilder::new().tag(tag.clone());
         assert_eq!(tag, q.query.tag.unwrap());
     }
 
@@ -436,7 +436,7 @@ mod tests {
         let tax_name = String::from("custom_tax");
         let terms = vec![String::from("1")];
         let tax = TaxQuery::new(tax_name.clone(), terms.clone());
-        let q = QueryBuilder::new().tax_query(tax, None);
+        let q = ParamBuilder::new().tax_query(tax, None);
         let stored = q.query.tax_query.unwrap();
         assert!(stored.get(&TaxRelation::Single).is_some());
         let stored = stored.get(&TaxRelation::Single).unwrap().first().unwrap();
@@ -453,7 +453,7 @@ mod tests {
         let tax1 = TaxQuery::new(tax_name.clone(), terms.clone());
         let tax2 = TaxQuery::new(tax_name_two.clone(), terms.clone());
         let tax3 = TaxQuery::new(tax_name_three.clone(), terms.clone());
-        let q = QueryBuilder::new()
+        let q = ParamBuilder::new()
             .tax_query(tax1, Some(TaxRelation::And))
             .tax_query(tax2, Some(TaxRelation::And))
             .tax_query(tax3, Some(TaxRelation::Or));
@@ -466,7 +466,7 @@ mod tests {
 
     #[test]
     fn can_add_post_params() {
-        let q = QueryBuilder::new()
+        let q = ParamBuilder::new()
             .p(1)
             .post_parent(2)
             .post_status(PostStatus::Publish);
@@ -477,13 +477,13 @@ mod tests {
 
     #[test]
     fn can_add_post_type() {
-        let q = QueryBuilder::new().post_type(vec![String::from("page")]);
+        let q = ParamBuilder::new().post_type(vec![String::from("page")]);
         assert_eq!(q.query.post_type.unwrap().first().unwrap(), "page");
     }
 
     #[test]
     fn can_add_multiple_post_types() {
-        let q = QueryBuilder::new()
+        let q = ParamBuilder::new()
             .post_type(vec![String::from("post"), String::from("page")])
             .p(1)
             .post_parent(2)
@@ -493,26 +493,26 @@ mod tests {
 
     #[test]
     fn default_post_type() {
-        let q = QueryBuilder::new();
+        let q = ParamBuilder::new();
         assert_eq!(q.query.post_type.unwrap().first().unwrap(), "post");
     }
 
     #[test]
     fn can_add_comment_params() {
-        let q = QueryBuilder::new().comment_count(2);
+        let q = ParamBuilder::new().comment_count(2);
         assert_eq!(q.query.comment_count.unwrap(), 2);
     }
 
     #[test]
     fn can_add_pagination_params() {
-        let q = QueryBuilder::new().page(3).posts_per_page(20);
+        let q = ParamBuilder::new().page(3).posts_per_page(20);
         assert_eq!(q.query.page.unwrap(), 3);
         assert_eq!(q.query.posts_per_page.unwrap(), 20);
     }
 
     #[test]
     fn can_add_orderby_params() {
-        let q = QueryBuilder::new()
+        let q = ParamBuilder::new()
             .orderby(WpOrderBy::Author)
             .order(SqlOrder::Asc);
         assert_eq!(q.query.orderby.unwrap(), WpOrderBy::Author);
@@ -521,7 +521,7 @@ mod tests {
 
     #[test]
     fn can_add_date_params() {
-        let q = QueryBuilder::new()
+        let q = ParamBuilder::new()
             .year(2023)
             .monthnum(12)
             .monthnum(1)
@@ -541,7 +541,7 @@ mod tests {
 
     #[test]
     fn m_clears_year_and_monthnum() {
-        let q = QueryBuilder::new().year(2000).monthnum(7).m(202308);
+        let q = ParamBuilder::new().year(2000).monthnum(7).m(202308);
         assert!(q.query.year.is_none());
         assert!(q.query.monthnum.is_none());
         assert_eq!(q.query.m.unwrap(), 202308);
@@ -549,7 +549,7 @@ mod tests {
 
     #[test]
     fn can_set_single_meta() {
-        let q = QueryBuilder::new()
+        let q = ParamBuilder::new()
             .meta_key(String::from("key1"))
             .meta_value(String::from("a"))
             .meta_compare(SqlSearchOperators::Like);
@@ -560,7 +560,7 @@ mod tests {
 
     #[test]
     fn can_set_multiple_meta() {
-        let q = QueryBuilder::new()
+        let q = ParamBuilder::new()
             .meta_key(String::from("key1"))
             .meta_query(
                 MetaQuery {
