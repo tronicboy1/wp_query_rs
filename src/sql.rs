@@ -55,8 +55,17 @@ pub enum SqlSearchOperators {
     Rlike,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum SqlOrder {
     Asc,
     Desc,
+}
+
+impl ToString for SqlOrder {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Asc => String::from("ASC"),
+            Self::Desc => String::from("DESC"),
+        }
+    }
 }

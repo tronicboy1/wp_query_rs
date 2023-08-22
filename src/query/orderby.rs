@@ -14,9 +14,9 @@ pub enum WpOrderBy {
     MetaValueNum,
 }
 
-impl WpOrderBy {
-    pub fn val(&self) -> &'static str {
-        match self {
+impl ToString for WpOrderBy {
+    fn to_string(&self) -> String {
+        let str = match self {
             Self::None => "",
             Self::ID => "ID",
             Self::Author => "post_author",
@@ -29,7 +29,9 @@ impl WpOrderBy {
             Self::CommentCount => "comment_count",
             Self::MetaValue => "meta_value",
             Self::MetaValueNum => "meta_value",
-        }
+        };
+
+        str.to_string()
     }
 }
 

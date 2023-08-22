@@ -2,7 +2,7 @@ use std::error::Error;
 
 use sql_paginatorr::LimitOffsetPair;
 
-use crate::query::params::Params;
+use crate::{query::params::Params, sql::SqlOrder};
 
 pub struct QueryBuilder {
     params: Params,
@@ -45,6 +45,12 @@ impl QueryBuilder {
             ON wp_posts.ID = wp_term_relationships.object_id
             INNER JOIN wp_terms ON wp_terms.term_id = wp_term_relationships.term_taxonomy_id",
             );
+        }
+
+        if let Some(orderby) = &params.orderby {
+            let order = params.order.unwrap_or(SqlOrder::Desc).clone().to_string();
+            self.query
+                .push_str(&format!(" ORDER BY {} {}", orderby.to_string(), order))
         }
 
         if let Some(page) = params.page {

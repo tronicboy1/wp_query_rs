@@ -7,8 +7,10 @@ use query_builder::QueryBuilder;
 use sql::get_pool;
 use wp_post::WP_Post;
 
+pub use sql::SqlOrder;
+
 pub mod param_builder;
-mod query;
+pub mod query;
 mod query_builder;
 mod sql;
 mod wp_post;
@@ -41,9 +43,10 @@ impl WP_Query {
                 let post_parent: u32 = row.take(3).unwrap();
                 let menu_order: u32 = row.take(4).unwrap();
                 let post_date: Date = row.take(5).unwrap();
-                let post_date_gmt: Date = row.take(6).unwrap();
-                let post_modified: Date = row.take(7).unwrap();
-                let post_modified_gmt: Date = row.take(8).unwrap();
+                let post_date_gmt: Date = row.take_opt(6).unwrap().unwrap_or(post_date.clone());
+                let post_modified: Date = row.take_opt(7).unwrap().unwrap_or(post_date.clone());
+                let post_modified_gmt: Date =
+                    row.take_opt(8).unwrap().unwrap_or(post_date_gmt.clone());
                 let post_status: String = row.take(9).unwrap();
                 let post_status = PostStatus::from_str(&post_status).unwrap();
                 let post_content: String = row.take(10).unwrap();
