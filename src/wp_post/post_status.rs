@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum PostStatus {
     Publish,
@@ -24,6 +26,26 @@ impl PostStatus {
             Self::Trash => "trash",
             Self::Any => "any",
         }
+    }
+}
+
+impl FromStr for PostStatus {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let v = match s {
+            "publish" => Self::Publish,
+            "pending" => Self::Pending,
+            "draft" => Self::Draft,
+            "auto-draft" => Self::AutoDraft,
+            "future" => Self::Future,
+            "private" => Self::Private,
+            "inherit" => Self::Inherit,
+            "trash" => Self::Trash,
+            other => Self::Any,
+        };
+
+        Ok(v)
     }
 }
 

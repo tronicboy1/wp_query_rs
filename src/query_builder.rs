@@ -3,29 +3,34 @@ use std::error::Error;
 use crate::query::params::Params;
 
 pub struct QueryBuilder {
+    params: Params,
     query: String,
     value_count: u32,
 }
 
 impl QueryBuilder {
-    fn new(params: Params) -> Self {
+    pub fn new(params: Params) -> Self {
         Self {
+            params,
             query: String::new(),
             value_count: 0,
         }
     }
 
-    fn build_query(&mut self, params: Params) -> Result<(), Box<dyn Error>> {
+    pub fn query(mut self) -> Result<String, Box<dyn Error>> {
+        let params = &self.params;
+
         self.query.push_str(
-            "SELECT ID,post_author,post_date,post_date_gmt,
-        post_content,post_title,post_excerpt,post_status,comment_status,ping_status,
-        post_password,post_name,to_ping,pinged,post_modified,post_modified_gmt,
-        post_content_filtered,post_parent,guid,menu_order,post_type,post_mime_type,comment_count
-        FROM wp_posts",
+            "SELECT ID,post_author,comment_count,post_parent,menu_order,
+            post_date,post_date_gmt,post_modified,post_modified_gmt,
+            post_status,post_content,post_title,post_excerpt,comment_status,ping_status,
+            post_password,post_name,to_ping,pinged,post_content_filtered,guid,
+            post_type,post_mime_type
+            FROM wp_posts",
         );
 
-        let join_term = check_if_term_join_necessary(&params);
-        let join_meta = check_if_meta_join_necessary(&params);
+        let join_term = check_if_term_join_necessary(params);
+        let join_meta = check_if_meta_join_necessary(params);
 
         if join_meta {
             self.query
@@ -42,7 +47,7 @@ impl QueryBuilder {
 
         self.query.push_str(" LIMIT 5;");
 
-        Ok(())
+        Ok(self.query)
     }
 }
 
@@ -62,4 +67,30 @@ fn check_if_meta_join_necessary(params: &Params) -> bool {
         || params.meta_value.is_some()
         || params.meta_value_num.is_some()
         || params.meta_query.is_some()
+}
+
+fn implode<T: std::fmt::Display>(v: &[T]) -> String {
+    v.iter()
+        .map(|n| n.to_string())
+        .reduce(|acc, next| format!("{acc},{next}"))
+        .unwrap_or(String::new())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ensure_implode_works() {
+        let v = vec![1, 2, 3];
+        let imploded = implode(&v);
+        assert_eq!(&imploded, "1,2,3");
+    }
+
+    #[test]
+    fn nothing_imploded_for_empty_list() {
+        let v: Vec<i32> = vec![];
+        let imploded = implode(&v);
+        assert_eq!(&imploded, "");
+    }
 }
