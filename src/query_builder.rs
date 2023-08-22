@@ -3,7 +3,7 @@ use std::error::Error;
 use mysql_common::Value;
 use sql_paginatorr::LimitOffsetPair;
 
-use crate::{query::params::Params, sql::SqlOrder};
+use crate::{query::params::Params, sql::SqlOrder, wp_post::post_status::PostStatus};
 
 pub struct QueryBuilder {
     params: Params,
@@ -49,6 +49,19 @@ impl QueryBuilder {
             INNER JOIN wp_terms ON wp_terms.term_id = wp_term_relationships.term_taxonomy_id",
             );
         }
+
+        self.query.push_str(" WHERE");
+
+        if let Some(post_status) = &params.post_status {
+            self.query.push_str(" post_status = ?");
+            self.values
+                .push(Value::Bytes(post_status.to_string().into_bytes()));
+        } else {
+            self.query
+                .push_str(&format!(" post_status = '{}'", PostStatus::Publish));
+        }
+
+        if let Some(cat) = &params.cat {}
 
         if let Some(tag) = &params.tag {}
 

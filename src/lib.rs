@@ -9,6 +9,7 @@ use sql::{get_pool, unwrap_row};
 pub use param_builder::ParamBuilder;
 pub use sql::SqlOrder;
 pub use wp_post::WP_Post;
+pub use wp_post::post_status::PostStatus;
 
 pub mod param_builder;
 pub mod query;
