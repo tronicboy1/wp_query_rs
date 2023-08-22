@@ -5,10 +5,12 @@ use sql_paginatorr::LimitOffsetPair;
 
 use crate::{query::params::Params, sql::SqlOrder, wp_post::post_status::PostStatus};
 
+type StmtValues = Vec<Value>;
+
 pub struct QueryBuilder {
     params: Params,
     query: String,
-    values: Vec<Value>,
+    values: StmtValues,
 }
 
 pub struct QueryAndValues(pub String, pub Vec<Value>);
@@ -50,15 +52,14 @@ impl QueryBuilder {
             );
         }
 
-        self.query.push_str(" WHERE");
+        // Avoid dangling WHERE issue
+        self.query.push_str(" WHERE 1 = 1");
 
         if let Some(post_status) = &params.post_status {
-            self.query.push_str(" post_status = ?");
-            self.values
-                .push(Value::Bytes(post_status.to_string().into_bytes()));
+            push_post_status(&mut self.query, &mut self.values, &post_status);
         } else {
             self.query
-                .push_str(&format!(" post_status = '{}'", PostStatus::Publish));
+                .push_str(&format!(" AND post_status = '{}'", PostStatus::Publish));
         }
 
         if let Some(cat) = &params.cat {}
@@ -102,6 +103,15 @@ fn check_if_meta_join_necessary(params: &Params) -> bool {
         || params.meta_value.is_some()
         || params.meta_value_num.is_some()
         || params.meta_query.is_some()
+}
+
+fn push_post_status(s: &mut String, v: &mut StmtValues, post_status: &PostStatus) {
+    if *post_status == PostStatus::Any {
+        return;
+    }
+
+    s.push_str(" AND post_status = ?");
+    v.push(Value::Bytes(post_status.to_string().into_bytes()));
 }
 
 fn implode<T: std::fmt::Display>(v: &[T]) -> String {
