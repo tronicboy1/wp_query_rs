@@ -22,11 +22,11 @@ pub fn get_pool(env_vars: EnvVars) -> Result<Pool, mysql::Error> {
 }
 
 pub fn unwrap_row(row: &mut Row) -> Result<WP_Post, FromValueError> {
-    let id: u32 = row.take_opt(0).unwrap()?;
-    let post_author: u32 = row.take_opt(1).unwrap()?;
-    let comment_count: u32 = row.take_opt(2).unwrap()?;
-    let post_parent: u32 = row.take_opt(3).unwrap()?;
-    let menu_order: u32 = row.take_opt(4).unwrap()?;
+    let id: u64 = row.take_opt(0).unwrap()?;
+    let post_author: u64 = row.take_opt(1).unwrap()?;
+    let comment_count: u64 = row.take_opt(2).unwrap()?;
+    let post_parent: u64 = row.take_opt(3).unwrap()?;
+    let menu_order: u64 = row.take_opt(4).unwrap()?;
     let post_date: Date = row.take_opt(5).unwrap()?;
     let post_date_gmt: Date = row.take_opt(6).unwrap().unwrap_or(post_date.clone());
     let post_modified: Date = row.take_opt(7).unwrap().unwrap_or(post_date.clone());
