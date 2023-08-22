@@ -1,7 +1,7 @@
 mod post_status;
 mod orderby;
 mod meta_query;
-mod taxonomy;
+pub mod taxonomy;
 
 use std::{collections::HashMap, fmt::Display};
 
@@ -19,33 +19,33 @@ where
     pub author_name: Option<String>,
     pub author__in: Option<Vec<usize>>,
     pub author__not_in: Option<Vec<usize>>,
-    pub cat: Option<usize>,
+    pub cat: Option<u32>,
     pub category_name: Option<String>,
-    pub category__and: Option<Vec<usize>>,
-    pub category__in: Option<Vec<usize>>,
-    pub category__not_in: Option<Vec<usize>>,
+    pub category__and: Option<Vec<u32>>,
+    pub category__in: Option<Vec<u32>>,
+    pub category__not_in: Option<Vec<u32>>,
     pub tag: Option<String>,
-    pub tag_id: Option<usize>,
-    pub tag__and: Option<Vec<usize>>,
-    pub tag__in: Option<Vec<usize>>,
-    pub tag__not_in: Option<Vec<usize>>,
+    pub tag_id: Option<u32>,
+    pub tag__and: Option<Vec<u32>>,
+    pub tag__in: Option<Vec<u32>>,
+    pub tag__not_in: Option<Vec<u32>>,
     pub tag_slug__and: Option<Vec<String>>,
     pub tag_slug__in: Option<Vec<String>>,
     /**
      * Key is The logical relationship between each inner taxonomy array when there is more than one. Possible values are ‘AND’, ‘OR’. Do not use with a single inner taxonomy array
      */
     pub tax_query: Option<HashMap<String, Vec<TaxonomyRelation<T>>>>,
-    pub p: Option<usize>,
+    pub p: Option<u32>,
     pub name: Option<String>,
     pub page_id: Option<usize>,
     // TODO implement slug getter
     pagename: Option<String>,
-    pub post_parent: Option<usize>,
-    pub post_parent__in: Option<Vec<usize>>,
-    pub post_parent__not_in: Option<Vec<usize>>,
-    pub post__in: Option<Vec<usize>>,
-    pub post__not_in: Option<Vec<usize>>,
-    pub post_name__in: Option<usize>,
+    pub post_parent: Option<u32>,
+    pub post_parent__in: Option<Vec<u32>>,
+    pub post_parent__not_in: Option<Vec<u32>>,
+    pub post__in: Option<Vec<u32>>,
+    pub post__not_in: Option<Vec<u32>>,
+    post_name__in: Option<usize>,
     // TODO Implement
     post_password: Option<String>,
     /**

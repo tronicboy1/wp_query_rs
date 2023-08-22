@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use crate::sql::SqlConditionOperator;
 
@@ -18,6 +18,24 @@ where
     pub include_children: Option<bool>,
     pub operator: Option<SqlConditionOperator>,
     pub comment_count: Option<CommentCount>,
+}
+
+impl<T> TaxonomyRelation<T>
+where
+    T: Display,
+{
+    pub fn new_single_tax_map(r: Self) -> HashMap<String, Vec<Self>> {
+        let k = Self::get_single_tax_key();
+        let mut m = HashMap::new();
+
+        m.insert(k, vec![r]);
+
+        m
+    }
+
+    fn get_single_tax_key() -> String {
+        String::from("SINGLE")
+    }
 }
 
 #[cfg(test)]
