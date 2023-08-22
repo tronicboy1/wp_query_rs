@@ -35,7 +35,6 @@ impl WP_Query {
         let posts: Vec<WP_Post> = rows
             .iter_mut()
             .map(|row| {
-                dbg!(row.len());
                 let id: u32 = row.take(0).unwrap();
                 let post_author: u32 = row.take(1).unwrap();
                 let comment_count: u32 = row.take(2).unwrap();

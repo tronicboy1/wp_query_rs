@@ -147,9 +147,6 @@ impl Params {
 
         query.post_type = Some(vec![String::from("post")]);
 
-        query.posts_per_page = Some(10);
-        query.page = Some(1);
-
         query
     }
 }

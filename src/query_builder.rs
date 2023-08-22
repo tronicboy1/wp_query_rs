@@ -1,5 +1,7 @@
 use std::error::Error;
 
+use sql_paginatorr::LimitOffsetPair;
+
 use crate::query::params::Params;
 
 pub struct QueryBuilder {
@@ -45,7 +47,16 @@ impl QueryBuilder {
             );
         }
 
-        self.query.push_str(" LIMIT 5;");
+        if let Some(page) = params.page {
+            let LimitOffsetPair { offset, limit } =
+                sql_paginatorr::for_page(page, params.posts_per_page.unwrap_or(10));
+            dbg!(offset);
+            dbg!(limit);
+            self.query
+                .push_str(&format!(" LIMIT {} OFFSET {};", limit, offset))
+        } else {
+            self.query.push_str(" LIMIT 10;");
+        }
 
         Ok(self.query)
     }

@@ -197,7 +197,7 @@ impl ParamBuilder {
     }
 
     pub fn page(mut self, n: usize) -> Self {
-        self.query.page = Some(n);
+        self.query.page = Some(n - 1);
 
         self
     }
