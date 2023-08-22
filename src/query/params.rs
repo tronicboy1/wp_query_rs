@@ -16,31 +16,31 @@ pub struct Params {
     pub author_name: Option<String>,
     pub author__in: Option<Vec<usize>>,
     pub author__not_in: Option<Vec<usize>>,
-    pub cat: Option<u32>,
+    pub cat: Option<u64>,
     pub category_name: Option<String>,
-    pub category__and: Option<Vec<u32>>,
-    pub category__in: Option<Vec<u32>>,
-    pub category__not_in: Option<Vec<u32>>,
+    pub category__and: Option<Vec<u64>>,
+    pub category__in: Option<Vec<u64>>,
+    pub category__not_in: Option<Vec<u64>>,
     pub tag: Option<String>,
-    pub tag_id: Option<u32>,
-    pub tag__and: Option<Vec<u32>>,
-    pub tag__in: Option<Vec<u32>>,
-    pub tag__not_in: Option<Vec<u32>>,
+    pub tag_id: Option<u64>,
+    pub tag__and: Option<Vec<u64>>,
+    pub tag__in: Option<Vec<u64>>,
+    pub tag__not_in: Option<Vec<u64>>,
     pub tag_slug__and: Option<Vec<String>>,
     pub tag_slug__in: Option<Vec<String>>,
     /**
      * Key is The logical relationship between each inner taxonomy array when there is more than one. Possible values are ‘AND’, ‘OR’. Do not use with a single inner taxonomy array
      */
     pub tax_query: Option<HashMap<TaxRelation, Vec<TaxQuery>>>,
-    pub p: Option<u32>,
+    pub p: Option<u64>,
     pub name: Option<String>,
     pub page_id: Option<usize>,
     pub pagename: Option<String>,
-    pub post_parent: Option<u32>,
-    pub post_parent__in: Option<Vec<u32>>,
-    pub post_parent__not_in: Option<Vec<u32>>,
-    pub post__in: Option<Vec<u32>>,
-    pub post__not_in: Option<Vec<u32>>,
+    pub post_parent: Option<u64>,
+    pub post_parent__in: Option<Vec<u64>>,
+    pub post_parent__not_in: Option<Vec<u64>>,
+    pub post__in: Option<Vec<u64>>,
+    pub post__not_in: Option<Vec<u64>>,
     pub post_name__in: Option<Vec<String>>,
     pub post_password: Option<String>,
     /**
@@ -51,13 +51,13 @@ pub struct Params {
     /**
      * The amount of comments your CPT has to have ( Search operator will do a ‘=’ operation )
      */
-    pub comment_count: Option<u32>,
+    pub comment_count: Option<u64>,
     pub posts_per_page: Option<usize>,
     pub page: Option<usize>,
     pub ignore_sticky_posts: Option<bool>,
     pub order: Option<SqlOrder>,
     pub orderby: Option<WpOrderBy>,
-    pub year: Option<u32>,
+    pub year: Option<u64>,
     pub monthnum: Option<u8>,
     /**
      * Week of the year (from 0 to 53). Uses MySQL WEEK command. The mode is dependent on the “start_of_week” option.
@@ -70,7 +70,7 @@ pub struct Params {
     /**
      * YearMonth (For e.g.: 201307).
      */
-    pub m: Option<u32>,
+    pub m: Option<u64>,
     // TODO
     // pub date_query: ...
     pub meta_key: Option<String>,
