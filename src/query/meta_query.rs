@@ -9,5 +9,11 @@ pub struct MetaQuery {
     // type
 }
 
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub enum MetaRelation {
+    Or,
+    And,
+}
+
 #[cfg(test)]
 mod tests {}

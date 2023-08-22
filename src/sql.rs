@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum SqlConditionOperator {
     In,
     NotIn,
@@ -17,7 +17,7 @@ pub enum SqlCompareOperator {
     LessThanOrEqualTo,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum SqlSearchOperators {
     Equals,
     NotEquals,
@@ -37,7 +37,7 @@ pub enum SqlSearchOperators {
     Rlike,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum SqlOrder {
     Asc,
     Desc,

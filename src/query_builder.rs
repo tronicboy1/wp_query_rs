@@ -1,22 +1,25 @@
-use std::{collections::HashMap, fmt::Display};
+use std::collections::HashMap;
 
-use crate::query::{taxonomy::TaxonomyRelation, Query};
+use crate::{
+    query::{
+        meta_query::{MetaQuery, MetaRelation},
+        orderby::WpOrderBy,
+        params::Params,
+        post_status::PostStatus,
+        tax_query::{TaxQuery, TaxRelation},
+    },
+    sql::{SqlOrder, SqlSearchOperators},
+};
 
-pub struct QueryBuilder<T>
-where
-    T: Display,
-{
-    pub query: Query<T>,
+pub struct QueryBuilder {
+    pub query: Params,
 }
 
 #[allow(non_snake_case)]
-impl<T> QueryBuilder<T>
-where
-    T: Display,
-{
+impl QueryBuilder {
     pub fn new() -> Self {
         QueryBuilder {
-            query: Query::default(),
+            query: Params::default(),
         }
     }
 
@@ -32,10 +35,10 @@ where
         self
     }
 
-    fn author__in(mut self) -> Self {
+    fn author__in(self) -> Self {
         self
     }
-    fn author__not_in(mut self) -> Self {
+    fn author__not_in(self) -> Self {
         self
     }
 
@@ -51,15 +54,15 @@ where
         self
     }
 
-    fn category__and(mut self) -> Self {
+    fn category__and(self) -> Self {
         self
     }
 
-    fn category__in(mut self) -> Self {
+    fn category__in(self) -> Self {
         self
     }
 
-    fn category__not_in(mut self) -> Self {
+    fn category__not_in(self) -> Self {
         self
     }
 
@@ -75,27 +78,27 @@ where
         self
     }
 
-    fn tag__and(mut self) -> Self {
+    fn tag__and(self) -> Self {
         self
     }
 
-    fn tag__in(mut self) -> Self {
+    fn tag__in(self) -> Self {
         self
     }
 
-    fn tag__not_in(mut self) -> Self {
+    fn tag__not_in(self) -> Self {
         self
     }
 
-    fn tag_slug__and(mut self) -> Self {
+    fn tag_slug__and(self) -> Self {
         self
     }
 
-    fn tag_slug__in(mut self) -> Self {
+    fn tag_slug__in(self) -> Self {
         self
     }
 
-    pub fn tax_query(mut self, query: TaxonomyRelation<T>, relation: Option<String>) -> Self {
+    pub fn tax_query(mut self, query: TaxQuery, relation: Option<TaxRelation>) -> Self {
         let mut tax_q = self.query.tax_query.unwrap_or(HashMap::new());
 
         let size = tax_q.len();
@@ -106,210 +109,476 @@ where
 
             self.query.tax_query = Some(tax_q);
         } else {
-            self.query.tax_query = Some(TaxonomyRelation::new_single_tax_map(query));
+            self.query.tax_query = Some(TaxQuery::new_single_tax_map(query));
         }
 
         self
     }
-    pub fn p(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * use post id
+     */
+    pub fn p(mut self, id: u32) -> Self {
+        self.query.p = Some(id);
 
         self
     }
-    pub fn name(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    pub fn name(mut self, slug: String) -> Self {
+        self.query.name = Some(slug);
 
         self
     }
-    pub fn page_id(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    fn page_id(self) -> Self {
+        self
+    }
+
+    fn pagename(self) -> Self {
+        self
+    }
+
+    pub fn post_parent(mut self, id: u32) -> Self {
+        self.query.post_parent = Some(id);
 
         self
     }
-    pub fn pagename(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    fn post_parent__in(self) -> Self {
+        self
+    }
+
+    fn post_parent__not_in(self) -> Self {
+        self
+    }
+
+    fn post__in(self) -> Self {
+        self
+    }
+
+    fn post__not_in(self) -> Self {
+        self
+    }
+
+    fn post_name__in(self) -> Self {
+        self
+    }
+
+    fn post_password(self) -> Self {
+        self
+    }
+
+    pub fn post_type(mut self, post_types: Vec<String>) -> Self {
+        self.query.post_type = Some(post_types);
 
         self
     }
-    pub fn post_parent(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    pub fn post_status(mut self, status: PostStatus) -> Self {
+        self.query.post_status = Some(status);
 
         self
     }
-    pub fn post_parent__in(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    pub fn comment_count(mut self, count: u32) -> Self {
+        self.query.comment_count = Some(count);
 
         self
     }
-    pub fn post_parent__not_in(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    pub fn posts_per_page(mut self, n: usize) -> Self {
+        self.query.posts_per_page = Some(n);
 
         self
     }
-    pub fn post__in(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    pub fn page(mut self, n: usize) -> Self {
+        self.query.page = Some(n);
 
         self
     }
-    pub fn post__not_in(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    fn ignore_sticky_posts(self) -> Self {
+        self
+    }
+
+    pub fn order(mut self, o: SqlOrder) -> Self {
+        self.query.order = Some(o);
 
         self
     }
-    pub fn post_name__in(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * Sort retrieved posts by parameter.
+     */
+    pub fn orderby(mut self, ob: WpOrderBy) -> Self {
+        self.query.orderby = Some(ob);
 
         self
     }
-    pub fn post_password(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * 4 digit year (e.g. 2011).
+     */
+    pub fn year(mut self, y: u32) -> Self {
+        if y > 9999 {
+            panic!("InvalidYear");
+        }
+
+        self.query.year = Some(y);
 
         self
     }
-    pub fn post_type(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * Month number (from 1 to 12).
+     */
+    pub fn monthnum(mut self, m: u8) -> Self {
+        if m > 12 || m < 1 {
+            panic!("InvalidMonth");
+        }
+
+        self.query.monthnum = Some(m);
 
         self
     }
-    pub fn post_status(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     *  Week of the year (from 0 to 53). Uses MySQL WEEK command. The mode is dependent on the “start_of_week” option.
+     */
+    pub fn w(mut self, w: u8) -> Self {
+        if w > 53 {
+            panic!("InalidWeekNo");
+        }
+
+        self.query.w = Some(w);
 
         self
     }
-    pub fn comment_count(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * Day of the month (from 1 to 31).
+     */
+    pub fn day(mut self, d: u8) -> Self {
+        if d > 31 || d < 1 {
+            panic!("InvalidDay");
+        }
+
+        self.query.day = Some(d);
 
         self
     }
-    pub fn posts_per_page(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * Hour (from 0 to 23).
+     */
+    pub fn hour(mut self, h: u8) -> Self {
+        if h > 23 {
+            panic!("InvalidHour");
+        }
+
+        self.query.hour = Some(h);
 
         self
     }
-    pub fn page(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * Minute (from 0 to 60).
+     */
+    pub fn minute(mut self, min: u8) -> Self {
+        if min > 60 {
+            panic!("InvalidMinutes");
+        }
+
+        self.query.minute = Some(min);
 
         self
     }
-    pub fn ignore_sticky_posts(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * Second (0 to 60).
+     */
+    pub fn second(mut self, s: u8) -> Self {
+        if s > 60 {
+            panic!("InvalidSeconds");
+        }
+
+        self.query.second = Some(s);
 
         self
     }
-    pub fn order(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * YearMonth (For e.g.: 201307).
+     */
+    pub fn m(mut self, m: u32) -> Self {
+        if m > 999999 {
+            panic!("InvalidYearMonth");
+        }
+
+        self.query.monthnum = None;
+        self.query.year = None;
+        self.query.m = Some(m);
 
         self
     }
-    pub fn orderby(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     *  Custom field key.
+     */
+    pub fn meta_key(mut self, key: String) -> Self {
+        if self.query.meta_query.is_some() {
+            panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
+        }
+
+        self.query.meta_key = Some(key);
 
         self
     }
-    pub fn year(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * Custom field value.
+     */
+    pub fn meta_value(mut self, val: String) -> Self {
+        if self.query.meta_query.is_some() {
+            panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
+        }
+
+        if self.query.meta_value_num.is_some() {
+            self.query.meta_value_num = None;
+        }
+
+        self.query.meta_value = Some(val);
 
         self
     }
-    pub fn monthnum(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * Custom field value (number).
+     */
+    pub fn meta_value_num(mut self, n: i32) -> Self {
+        if self.query.meta_query.is_some() {
+            panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
+        }
+
+        if self.query.meta_value.is_some() {
+            self.query.meta_value = None;
+        }
+
+        self.query.meta_value_num = Some(n);
 
         self
     }
-    pub fn w(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    /**
+     * Operator to test the ‘meta_value‘
+     */
+    pub fn meta_compare(mut self, compare: SqlSearchOperators) -> Self {
+        if self.query.meta_query.is_some() {
+            panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
+        }
+
+        self.query.meta_compare = Some(compare);
 
         self
     }
-    pub fn day(mut self) -> Self {
-        self.query.author = Some(author_id);
+
+    pub fn meta_query(mut self, query: MetaQuery, relation: MetaRelation) -> Self {
+        // Clear single meta
+        self.query.meta_compare = None;
+        self.query.meta_key = None;
+        self.query.meta_value = None;
+        self.query.meta_value_num = None;
+
+        let mut meta_qs = self.query.meta_query.unwrap_or(HashMap::new());
+
+        let queries_for_relation = meta_qs.entry(relation).or_insert(vec![]);
+
+        queries_for_relation.push(query);
+
+        self.query.meta_query = Some(meta_qs);
 
         self
     }
-    pub fn hour(mut self) -> Self {
-        self.query.author = Some(author_id);
 
-        self
-    }
-    pub fn minute(mut self) -> Self {
-        self.query.author = Some(author_id);
-
-        self
-    }
-    pub fn second(mut self) -> Self {
-        self.query.author = Some(author_id);
-
-        self
-    }
-    pub fn m(mut self) -> Self {
-        self.query.author = Some(author_id);
-
-        self
-    }
-    pub fn meta_key(mut self) -> Self {
-        self.query.author = Some(author_id);
-
-        self
-    }
-    pub fn meta_value(mut self) -> Self {
-        self.query.author = Some(author_id);
-
-        self
-    }
-    pub fn meta_value_num(mut self) -> Self {
-        self.query.author = Some(author_id);
-
-        self
-    }
-    pub fn meta_compare(mut self) -> Self {
-        self.query.author = Some(author_id);
-
-        self
-    }
-    pub fn meta_query(mut self) -> Self {
-        self.query.author = Some(author_id);
-
-        self
-    }
-    pub fn post_mime_type(mut self) -> Self {
-        self.query.author = Some(author_id);
-
+    fn post_mime_type(self) -> Self {
         self
     }
 }
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn can_add_author() {}
+    use super::*;
 
     #[test]
-    fn can_add_category() {}
+    fn can_add_author() {
+        let id = 1;
+        let q = QueryBuilder::new().author(id);
+        assert_eq!(id, q.query.author.unwrap());
+    }
 
     #[test]
-    fn can_add_tags() {}
+    fn can_add_category() {
+        let cat = 1;
+        let q = QueryBuilder::new().cat(cat);
+        assert_eq!(cat, q.query.cat.unwrap());
+    }
 
     #[test]
-    fn can_add_single_tax() {}
+    fn can_add_tag() {
+        let tag = String::from("Tag");
+        let q = QueryBuilder::new().tag(tag.clone());
+        assert_eq!(tag, q.query.tag.unwrap());
+    }
 
     #[test]
-    fn can_add_multiple_tax() {}
+    fn can_add_single_tax() {
+        let tax_name = String::from("custom_tax");
+        let terms = vec![String::from("1")];
+        let tax = TaxQuery::new(tax_name.clone(), terms.clone());
+        let q = QueryBuilder::new().tax_query(tax, None);
+        let stored = q.query.tax_query.unwrap();
+        assert!(stored.get(&TaxRelation::Single).is_some());
+        let stored = stored.get(&TaxRelation::Single).unwrap().first().unwrap();
+        assert_eq!(stored.taxonomy, tax_name);
+        assert_eq!(stored.terms, terms);
+    }
 
     #[test]
-    fn can_add_post_params() {}
+    fn can_add_multiple_tax() {
+        let tax_name = String::from("custom_tax");
+        let tax_name_two = String::from("category");
+        let tax_name_three = String::from("cust_2");
+        let terms = vec![String::from("1")];
+        let tax1 = TaxQuery::new(tax_name.clone(), terms.clone());
+        let tax2 = TaxQuery::new(tax_name_two.clone(), terms.clone());
+        let tax3 = TaxQuery::new(tax_name_three.clone(), terms.clone());
+        let q = QueryBuilder::new()
+            .tax_query(tax1, Some(TaxRelation::And))
+            .tax_query(tax2, Some(TaxRelation::And))
+            .tax_query(tax3, Some(TaxRelation::Or));
+
+        let created = q.query.tax_query.unwrap();
+        assert_eq!(created.len(), 2);
+        assert_eq!(created.get(&TaxRelation::And).unwrap().len(), 2);
+        assert_eq!(created.get(&TaxRelation::Or).unwrap().len(), 1);
+    }
 
     #[test]
-    fn can_add_post_type() {}
+    fn can_add_post_params() {
+        let q = QueryBuilder::new()
+            .p(1)
+            .post_parent(2)
+            .post_status(PostStatus::Publish);
+        assert_eq!(q.query.p.unwrap(), 1);
+        assert_eq!(q.query.post_parent.unwrap(), 2);
+        assert_eq!(q.query.post_status.unwrap(), PostStatus::Publish);
+    }
 
     #[test]
-    fn can_add_comment_params() {}
+    fn can_add_post_type() {
+        let q = QueryBuilder::new().post_type(vec![String::from("page")]);
+        assert_eq!(q.query.post_type.unwrap().first().unwrap(), "page");
+    }
 
     #[test]
-    fn can_add_pagination_params() {}
+    fn can_add_multiple_post_types() {
+        let q = QueryBuilder::new()
+            .post_type(vec![String::from("post"), String::from("page")])
+            .p(1)
+            .post_parent(2)
+            .post_status(PostStatus::Publish);
+        assert_eq!(q.query.post_type.unwrap().len(), 2);
+    }
 
     #[test]
-    fn can_add_orderby_params() {}
+    fn default_post_type() {
+        let q = QueryBuilder::new();
+        assert_eq!(q.query.post_type.unwrap().first().unwrap(), "post");
+    }
 
     #[test]
-    fn can_add_date_params() {}
+    fn can_add_comment_params() {
+        let q = QueryBuilder::new().comment_count(2);
+        assert_eq!(q.query.comment_count.unwrap(), 2);
+    }
+
+    #[test]
+    fn can_add_pagination_params() {
+        let q = QueryBuilder::new().page(3).posts_per_page(20);
+        assert_eq!(q.query.page.unwrap(), 3);
+        assert_eq!(q.query.posts_per_page.unwrap(), 20);
+    }
+
+    #[test]
+    fn can_add_orderby_params() {
+        let q = QueryBuilder::new()
+            .orderby(WpOrderBy::Author)
+            .order(SqlOrder::Asc);
+        assert_eq!(q.query.orderby.unwrap(), WpOrderBy::Author);
+        assert_eq!(q.query.order.unwrap(), SqlOrder::Asc);
+    }
+
+    #[test]
+    fn can_add_date_params() {
+        let q = QueryBuilder::new()
+            .year(2023)
+            .monthnum(12)
+            .monthnum(1)
+            .w(53)
+            .day(31)
+            .hour(23)
+            .minute(60)
+            .second(60);
+        assert_eq!(q.query.year.unwrap(), 2023);
+        assert_eq!(q.query.monthnum.unwrap(), 1);
+        assert_eq!(q.query.w.unwrap(), 53);
+        assert_eq!(q.query.day.unwrap(), 31);
+        assert_eq!(q.query.hour.unwrap(), 23);
+        assert_eq!(q.query.minute.unwrap(), 60);
+        assert_eq!(q.query.second.unwrap(), 60);
+    }
+
+    #[test]
+    fn m_clears_year_and_monthnum() {
+        let q = QueryBuilder::new().year(2000).monthnum(7).m(202308);
+        assert!(q.query.year.is_none());
+        assert!(q.query.monthnum.is_none());
+        assert_eq!(q.query.m.unwrap(), 202308);
+    }
+
+    #[test]
+    fn can_set_single_meta() {
+        let q = QueryBuilder::new()
+            .meta_key(String::from("key1"))
+            .meta_value(String::from("a"))
+            .meta_compare(SqlSearchOperators::Like);
+        assert_eq!(q.query.meta_key.unwrap(), "key1");
+        assert_eq!(q.query.meta_value.unwrap(), "a");
+        assert_eq!(q.query.meta_compare.unwrap(), SqlSearchOperators::Like);
+    }
+
+    #[test]
+    fn can_set_multiple_meta() {
+        let q = QueryBuilder::new()
+            .meta_key(String::from("key1"))
+            .meta_query(
+                MetaQuery {
+                    key: String::from("key1"),
+                    value: String::from("1"),
+                    compare: SqlSearchOperators::Equals,
+                },
+                MetaRelation::And,
+            )
+            .meta_query(
+                MetaQuery {
+                    key: String::from("key2"),
+                    value: String::from("2"),
+                    compare: SqlSearchOperators::GreaterThan,
+                },
+                MetaRelation::And,
+            );
+        let queries = q.query.meta_query.unwrap();
+        assert_eq!(queries.get(&MetaRelation::And).unwrap().len(), 2);
+    }
 }
