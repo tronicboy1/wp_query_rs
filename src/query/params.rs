@@ -5,9 +5,9 @@ use crate::sql::{SqlCompareOperator, SqlOrder, SqlSearchOperators};
 use crate::query::{
     meta_query::{MetaQuery, MetaRelation},
     orderby::WpOrderBy,
-    post_status::PostStatus,
     tax_query::{TaxQuery, TaxRelation},
 };
+use crate::wp_post::post_status::PostStatus;
 
 #[allow(non_snake_case)]
 #[derive(Debug)]

@@ -5,10 +5,9 @@ use crate::{
         meta_query::{MetaQuery, MetaRelation},
         orderby::WpOrderBy,
         params::Params,
-        post_status::PostStatus,
         tax_query::{TaxQuery, TaxRelation},
     },
-    sql::{SqlOrder, SqlSearchOperators},
+    sql::{SqlOrder, SqlSearchOperators}, wp_post::post_status::PostStatus,
 };
 
 pub struct ParamBuilder {

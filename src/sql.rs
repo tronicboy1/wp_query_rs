@@ -1,3 +1,5 @@
+mod env_vars;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum SqlConditionOperator {
     In,
