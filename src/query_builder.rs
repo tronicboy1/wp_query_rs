@@ -50,8 +50,7 @@ impl QueryBuilder {
         if let Some(page) = params.page {
             let LimitOffsetPair { offset, limit } =
                 sql_paginatorr::for_page(page, params.posts_per_page.unwrap_or(10));
-            dbg!(offset);
-            dbg!(limit);
+
             self.query
                 .push_str(&format!(" LIMIT {} OFFSET {};", limit, offset))
         } else {
