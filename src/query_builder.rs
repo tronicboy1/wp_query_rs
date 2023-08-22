@@ -23,7 +23,7 @@ impl QueryBuilder {
         let params = &self.params;
 
         self.query.push_str(
-            "SELECT ID,post_author,comment_count,post_parent,menu_order,
+            "SELECT DISTINCT(ID),post_author,comment_count,post_parent,menu_order,
             post_date,post_date_gmt,post_modified,post_modified_gmt,
             post_status,post_content,post_title,post_excerpt,comment_status,ping_status,
             post_password,post_name,to_ping,pinged,post_content_filtered,guid,
@@ -45,6 +45,10 @@ impl QueryBuilder {
             ON wp_posts.ID = wp_term_relationships.object_id
             INNER JOIN wp_terms ON wp_terms.term_id = wp_term_relationships.term_taxonomy_id",
             );
+        }
+
+        if let Some(tag) = &params.tag {
+
         }
 
         if let Some(orderby) = &params.orderby {

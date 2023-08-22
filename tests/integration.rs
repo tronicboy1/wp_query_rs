@@ -18,9 +18,10 @@ fn tag() {
 
 #[test]
 fn meta_data() {
-    let params = ParamBuilder::new().meta_value(String::from("1"));
+    let params = ParamBuilder::new().meta_value(String::from("casino_name_ja"));
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    dbg!(&posts);
     assert_eq!(posts.post_count(), 10);
 }
 
