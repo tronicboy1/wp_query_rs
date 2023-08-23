@@ -251,7 +251,13 @@ impl ParamBuilder {
         self
     }
 
-    fn post_name__in(self) -> Self {
+    pub fn post_name__in(mut self, s: String) -> Self {
+        let mut names = self.query.post_name__in.unwrap_or(Vec::new());
+
+        names.push(s);
+
+        self.query.post_name__in = Some(names);
+
         self
     }
 
@@ -630,6 +636,17 @@ mod tests {
         let id = 1;
         let q = ParamBuilder::new().post__not_in(id);
         assert_eq!(id, *q.query.post__not_in.unwrap().first().unwrap());
+    }
+
+    #[test]
+    fn can_add_post_name_in() {
+        let id = 1;
+        let q = ParamBuilder::new()
+            .post_name__in(String::from("malcolm-x"))
+            .post_name__in(String::from("mlk"));
+        let r = q.query.post_name__in.unwrap();
+        assert_eq!(r.first().unwrap(), "malcolm-x");
+        assert_eq!(r.len(), 2);
     }
 
     #[test]

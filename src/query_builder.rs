@@ -185,6 +185,17 @@ impl QueryBuilder {
             self.values.append(&mut ids);
         }
 
+        if let Some(p_names) = &params.post_name__in {
+            let q_marks = implode_to_question_mark(p_names);
+            self.query
+                .push_str(&format!(" AND wp_posts.post_name IN ({})", q_marks));
+            let mut ids: Vec<Value> = p_names
+                .iter()
+                .map(|name| Value::Bytes(name.as_bytes().to_vec()))
+                .collect();
+            self.values.append(&mut ids);
+        }
+
         /* Add order conditions */
         if let Some(orderby) = &params.orderby {
             let order = params.order.unwrap_or(SqlOrder::Desc).clone().to_string();
