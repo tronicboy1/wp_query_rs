@@ -148,6 +148,16 @@ impl QueryBuilder {
             self.values.push(Value::Bytes(name.as_bytes().to_vec()));
         }
 
+        if let Some(post_types) = &params.post_type {
+            for post_type in post_types {
+                self.query.push_str(" AND wp_posts.post_type = ?");
+                self.values
+                    .push(Value::Bytes(post_type.as_bytes().to_vec()));
+            }
+        } else {
+            self.query.push_str(" AND wp_posts.post_type = 'post'");
+        }
+
         if let Some(par_id) = &params.post_parent {
             self.query.push_str(" AND wp_posts.post_parent = ?");
             self.values.push(Value::UInt(*par_id));

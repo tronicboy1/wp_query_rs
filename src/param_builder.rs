@@ -24,7 +24,7 @@ impl ParamBuilder {
 
     pub fn new() -> Self {
         Self {
-            query: Params::default(),
+            query: Params::new(),
         }
     }
 
@@ -266,8 +266,25 @@ impl ParamBuilder {
         self
     }
 
-    pub fn post_type(mut self, post_types: Vec<String>) -> Self {
-        self.query.post_type = Some(post_types);
+    /**
+     * use post types. Retrieves posts by post types, default value is ‘post‘.
+     */
+    pub fn post_type(mut self, post_type: String) -> Self {
+        let mut types = self.query.post_type.unwrap_or(Vec::new());
+        dbg!(&types);
+
+        types.push(post_type);
+
+        self.query.post_type = Some(types);
+
+        self
+    }
+
+    /**
+     * Queries all post types. Will be overwritten if there is another call to post_type after this.
+     */
+    pub fn post_type_all(mut self) -> Self {
+        self.query.post_type = Some(Vec::new());
 
         self
     }
@@ -660,24 +677,19 @@ mod tests {
 
     #[test]
     fn can_add_post_type() {
-        let q = ParamBuilder::new().post_type(vec![String::from("page")]);
+        let q = ParamBuilder::new().post_type(String::from("page"));
         assert_eq!(q.query.post_type.unwrap().first().unwrap(), "page");
     }
 
     #[test]
     fn can_add_multiple_post_types() {
         let q = ParamBuilder::new()
-            .post_type(vec![String::from("post"), String::from("page")])
+            .post_type(String::from("post"))
+            .post_type(String::from("page"))
             .p(1)
             .post_parent(2)
             .post_status(PostStatus::Publish);
         assert_eq!(q.query.post_type.unwrap().len(), 2);
-    }
-
-    #[test]
-    fn default_post_type() {
-        let q = ParamBuilder::new();
-        assert_eq!(q.query.post_type.unwrap().first().unwrap(), "post");
     }
 
     #[test]

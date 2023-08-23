@@ -89,7 +89,7 @@ pub struct Params {
 }
 
 impl Params {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             author: None,
             author_name: None,
@@ -144,14 +144,6 @@ impl Params {
             meta_query: None,
             post_mime_type: None,
         }
-    }
-
-    pub fn default() -> Self {
-        let mut query = Self::new();
-
-        query.post_type = Some(vec![String::from("post")]);
-
-        query
     }
 }
 
