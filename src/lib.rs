@@ -10,7 +10,10 @@ pub use param_builder::ParamBuilder;
 pub use query::date_query::DateColumn;
 pub use query::date_query::DateQuery;
 pub use query::date_query::DateQueryAfterBefore;
+pub use query::meta_query::MetaQuery;
+pub use query::meta_query::MetaRelation;
 pub use sql::SqlOrder;
+pub use sql::SqlSearchOperators;
 pub use wp_post::post_status::PostStatus;
 pub use wp_post::WP_Post;
 

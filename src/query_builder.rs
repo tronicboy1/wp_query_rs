@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use mysql_common::{frunk::labelled::chars::S, prelude::ToValue, Value};
+use mysql_common::{prelude::ToValue, Value};
 use sql_paginatorr::LimitOffsetPair;
 
 use crate::{query::params::Params, sql::SqlOrder, wp_post::post_status::PostStatus};
@@ -233,6 +233,56 @@ impl QueryBuilder {
                     self.query
                         .push_str(&format!(" {} wp_posts.{} {} ?", &op, col, d_op));
                     self.values.push(before.to_value());
+                }
+            }
+        }
+
+        /* Add meta conditions */
+        let meta_op = params
+            .meta_compare
+            .as_ref()
+            .unwrap_or(&crate::sql::SqlSearchOperators::Equals)
+            .to_string();
+        if let Some(meta_k) = &params.meta_key {
+            self.query
+                .push_str(&format!(" AND wp_postmeta.meta_key {} ?", meta_op));
+            self.values.push(Value::Bytes(meta_k.as_bytes().to_vec()));
+        }
+
+        if let Some(meta_v) = &params.meta_value {
+            self.query
+                .push_str(&format!(" AND wp_postmeta.meta_value {} ?", meta_op));
+            self.values.push(Value::Bytes(meta_v.as_bytes().to_vec()));
+        }
+
+        if let Some(meta_v) = &params.meta_value_num {
+            self.query
+                .push_str(&format!(" AND wp_postmeta.meta_value {} ?", meta_op));
+            self.values.push(Value::Int(*meta_v));
+        }
+
+        if let Some(query_rel_map) = &params.meta_query {
+            for (relation, queries) in query_rel_map {
+                self.query.push_str(" AND");
+                for (i, query) in queries.iter().enumerate() {
+                    // Print relation (OR/AND) if more than one query in the group, after first
+                    if i > 0 {
+                        self.query.push_str(" ");
+                        self.query.push_str(relation.to_string().as_str());
+                    }
+
+                    let op = query.compare.to_string();
+                    self.query.push_str(
+                        format!(
+                            " (wp_postmeta.meta_value {} ? AND wp_postmeta.meta_key {} ?)",
+                            op, op
+                        )
+                        .as_str(),
+                    );
+                    self.values
+                        .push(Value::Bytes(query.value.as_bytes().to_vec()));
+                    self.values
+                        .push(Value::Bytes(query.key.as_bytes().to_vec()));
                 }
             }
         }

@@ -77,7 +77,7 @@ pub struct Params {
     pub date_query: Option<Vec<DateQuery>>,
     pub meta_key: Option<String>,
     pub meta_value: Option<String>,
-    pub meta_value_num: Option<i32>,
+    pub meta_value_num: Option<i64>,
     pub meta_compare: Option<SqlSearchOperators>,
     /**
      * HashMap key is relation, value is the meta query

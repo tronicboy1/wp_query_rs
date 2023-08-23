@@ -467,7 +467,7 @@ impl ParamBuilder {
     /**
      * Custom field value (number).
      */
-    pub fn meta_value_num(mut self, n: i32) -> Self {
+    pub fn meta_value_num(mut self, n: i64) -> Self {
         if self.query.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
@@ -485,10 +485,6 @@ impl ParamBuilder {
      * Operator to test the ‘meta_value‘
      */
     pub fn meta_compare(mut self, compare: SqlSearchOperators) -> Self {
-        if self.query.meta_query.is_some() {
-            panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
-        }
-
         self.query.meta_compare = Some(compare);
 
         self

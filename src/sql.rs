@@ -121,14 +121,21 @@ pub enum SqlSearchOperators {
     LessThanOrEqualTo,
     Like,
     NotLike,
-    In,
-    NotIn,
-    Between,
-    NotBetween,
-    NotExists,
-    Regexp,
-    NotRegexp,
-    Rlike,
+}
+
+impl Display for SqlSearchOperators {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            Self::Equals => "=",
+            Self::NotEquals => "!=",
+            Self::GreaterThan => ">",
+            Self::LessThan => "<",
+            Self::GreaterThanOrEqualTo => ">=",
+            Self::LessThanOrEqualTo => "<=",
+            Self::Like => "LIKE",
+            Self::NotLike => "NOT LIKE",
+        })
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
