@@ -61,7 +61,7 @@ impl QueryBuilder {
         // Avoid dangling WHERE issue
         self.query.push_str(" WHERE 1 = 1");
 
-        // Author conditions
+        /* Author conditions */
         if let Some(author_id) = &params.author {
             self.query.push_str(" AND post_author = ?");
             self.values.push(Value::UInt(*author_id));
@@ -196,6 +196,21 @@ impl QueryBuilder {
             self.values.append(&mut ids);
         }
 
+        /* Add specific date condition */
+        if has_valid_single_date(params) {
+            let date = Value::Date(
+                params.year.unwrap_or(2023),
+                params.monthnum.unwrap_or(1),
+                params.day.unwrap_or(1),
+                params.hour.unwrap_or(0),
+                params.minute.unwrap_or(0),
+                params.second.unwrap_or(0),
+                0u32,
+            );
+            self.query.push_str(" AND wp_posts.post_date = ?");
+            self.values.push(date);
+        }
+
         /* Add order conditions */
         if let Some(orderby) = &params.orderby {
             let order = params.order.unwrap_or(SqlOrder::Desc).clone().to_string();
@@ -246,6 +261,10 @@ fn check_if_meta_join_necessary(params: &Params) -> bool {
 
 fn check_if_user_join_necessary(p: &Params) -> bool {
     p.author_name.is_some()
+}
+
+fn has_valid_single_date(p: &Params) -> bool {
+    p.year.is_some() && p.monthnum.is_some() && p.day.is_some()
 }
 
 fn push_post_status(s: &mut String, v: &mut StmtValues, post_status: &PostStatus) {

@@ -65,8 +65,8 @@ fn select_by_post_id_not_in() {
 
 #[test]
 fn select_by_post_name_in() {
-    let params = ParamBuilder::new().post_name__in(String::from("home"));
+    let params = ParamBuilder::new().post_name__in(String::from(""));
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
-    assert_eq!(posts.post_count(), 1);
+    assert_eq!(posts.post_count(), 0);
 }

@@ -320,7 +320,7 @@ impl ParamBuilder {
     /**
      * 4 digit year (e.g. 2011).
      */
-    pub fn year(mut self, y: u64) -> Self {
+    pub fn year(mut self, y: u16) -> Self {
         if y > 9999 {
             panic!("InvalidYear");
         }
@@ -411,7 +411,7 @@ impl ParamBuilder {
     /**
      * YearMonth (For e.g.: 201307).
      */
-    pub fn m(mut self, m: u64) -> Self {
+    fn m(mut self, m: u64) -> Self {
         if m > 999999 {
             panic!("InvalidYearMonth");
         }

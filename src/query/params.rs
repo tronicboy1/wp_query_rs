@@ -58,7 +58,7 @@ pub struct Params {
     pub ignore_sticky_posts: Option<bool>,
     pub order: Option<SqlOrder>,
     pub orderby: Option<WpOrderBy>,
-    pub year: Option<u64>,
+    pub year: Option<u16>,
     pub monthnum: Option<u8>,
     /**
      * Week of the year (from 0 to 53). Uses MySQL WEEK command. The mode is dependent on the “start_of_week” option.
