@@ -32,6 +32,7 @@ pub struct Params {
      * Key is The logical relationship between each inner taxonomy array when there is more than one. Possible values are ‘AND’, ‘OR’. Do not use with a single inner taxonomy array
      */
     pub tax_query: Option<HashMap<TaxRelation, Vec<TaxQuery>>>,
+    pub s: Option<String>,
     pub p: Option<u64>,
     pub name: Option<String>,
     pub page_id: Option<u64>,
@@ -106,6 +107,7 @@ impl Params {
             tag_slug__and: None,
             tag_slug__in: None,
             tax_query: None,
+            s: None,
             p: None,
             name: None,
             page_id: None,

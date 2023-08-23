@@ -156,6 +156,15 @@ impl ParamBuilder {
     }
 
     /**
+     * Search keyword
+     */
+    pub fn s(mut self, s: String) -> Self {
+        self.query.s = Some(s);
+
+        self
+    }
+
+    /**
      * use post id
      */
     pub fn p(mut self, id: u64) -> Self {

@@ -70,7 +70,7 @@ impl QueryBuilder {
         if let Some(author_name) = &params.author_name {
             self.query.push_str(" AND wp_users.user_nicename = ?");
             self.values
-                .push(Value::Bytes(author_name.clone().into_bytes()));
+                .push(Value::Bytes(author_name.as_bytes().to_vec()));
         }
 
         if let Some(author_ids) = &params.author__in {
@@ -103,7 +103,7 @@ impl QueryBuilder {
 
         if let Some(cat) = &params.category_name {
             self.query.push_str(" AND wp_terms.slug = ?");
-            self.values.push(Value::Bytes(cat.clone().into_bytes()));
+            self.values.push(Value::Bytes(cat.as_bytes().to_vec()));
         }
 
         if let Some(cat_ids) = &params.category__in {
@@ -123,15 +123,29 @@ impl QueryBuilder {
         /* Add tag conditions */
         if let Some(tag) = &params.tag {
             self.query.push_str(" AND wp_terms.slug = ?");
-            self.values.push(Value::Bytes(tag.clone().into_bytes()));
+            self.values.push(Value::Bytes(tag.as_bytes().to_vec()));
         }
 
+        /* Add search conditions */
+        if let Some(keyword) = &params.s {
+            self.query.push_str(" AND wp_posts.post_content LIKE CONCAT('%',?,'%')");
+            self.values.push(Value::Bytes(keyword.as_bytes().to_vec()));
+        }
+
+        /* Add page/post conditions */
+        if let Some(p_id) = &params.p {
+            self.query.push_str(" AND wp_posts.ID = ?");
+            self.values.push(Value::UInt(*p_id));
+        }
+
+        /* Add order conditions */
         if let Some(orderby) = &params.orderby {
             let order = params.order.unwrap_or(SqlOrder::Desc).clone().to_string();
             self.query
                 .push_str(&format!(" ORDER BY {} {}", orderby.to_string(), order))
         }
 
+        /* Add pagination */
         if let Some(page) = params.page {
             let LimitOffsetPair { offset, limit } =
                 sql_paginatorr::for_page(page as usize, params.posts_per_page.unwrap_or(10) as usize);
