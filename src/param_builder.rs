@@ -173,6 +173,9 @@ impl ParamBuilder {
         self
     }
 
+    /**
+     * use post slug
+     */
     pub fn name(mut self, slug: String) -> Self {
         self.query.name = Some(slug);
 
@@ -187,25 +190,64 @@ impl ParamBuilder {
         self
     }
 
+    /**
+     * use page id to return only child pages. Set to 0 to return only top-level entries.
+     */
     pub fn post_parent(mut self, id: u64) -> Self {
         self.query.post_parent = Some(id);
 
         self
     }
 
-    fn post_parent__in(self) -> Self {
+    /**
+     * use post ids. Specify posts whose parent is in an array
+     */
+    pub fn post_parent__in(mut self, id: u64) -> Self {
+        let mut ids = self.query.post_parent__in.unwrap_or(Vec::new());
+
+        ids.push(id);
+
+        self.query.post_parent__in = Some(ids);
+
         self
     }
 
-    fn post_parent__not_in(self) -> Self {
+    /**
+     * use post ids. Specify posts whose parent is not in an array
+     */
+    pub fn post_parent__not_in(mut self, id: u64) -> Self {
+        let mut ids = self.query.post_parent__not_in.unwrap_or(Vec::new());
+
+        ids.push(id);
+
+        self.query.post_parent__not_in = Some(ids);
+
         self
     }
 
-    fn post__in(self) -> Self {
+    /**
+     * use post ids. Specify posts to retrieve.
+     */
+    pub fn post__in(mut self, id: u64) -> Self {
+        let mut ids = self.query.post__in.unwrap_or(Vec::new());
+
+        ids.push(id);
+
+        self.query.post__in = Some(ids);
+
         self
     }
 
-    fn post__not_in(self) -> Self {
+    /**
+     * use post ids. Specify post NOT to retrieve.
+     */
+    pub fn post__not_in(mut self, id: u64) -> Self {
+        let mut ids = self.query.post__not_in.unwrap_or(Vec::new());
+
+        ids.push(id);
+
+        self.query.post__not_in = Some(ids);
+
         self
     }
 
@@ -560,6 +602,34 @@ mod tests {
         assert_eq!(q.query.p.unwrap(), 1);
         assert_eq!(q.query.post_parent.unwrap(), 2);
         assert_eq!(q.query.post_status.unwrap(), PostStatus::Publish);
+    }
+
+    #[test]
+    fn can_add_post_parent_in() {
+        let id = 1;
+        let q = ParamBuilder::new().post_parent__in(id);
+        assert_eq!(id, *q.query.post_parent__in.unwrap().first().unwrap());
+    }
+
+    #[test]
+    fn can_add_post_parent_not_in() {
+        let id = 1;
+        let q = ParamBuilder::new().post_parent__not_in(id);
+        assert_eq!(id, *q.query.post_parent__not_in.unwrap().first().unwrap());
+    }
+
+    #[test]
+    fn can_add_post_in() {
+        let id = 1;
+        let q = ParamBuilder::new().post__in(id);
+        assert_eq!(id, *q.query.post__in.unwrap().first().unwrap());
+    }
+
+    #[test]
+    fn can_add_post_not_in() {
+        let id = 1;
+        let q = ParamBuilder::new().post__not_in(id);
+        assert_eq!(id, *q.query.post__not_in.unwrap().first().unwrap());
     }
 
     #[test]

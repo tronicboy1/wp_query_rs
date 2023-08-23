@@ -75,14 +75,16 @@ impl QueryBuilder {
 
         if let Some(author_ids) = &params.author__in {
             let q_marks = implode_to_question_mark(author_ids);
-            self.query.push_str(&format!(" AND post_author IN ({})", q_marks));
+            self.query
+                .push_str(&format!(" AND post_author IN ({})", q_marks));
             let mut ids: Vec<Value> = author_ids.iter().map(|id| Value::UInt(*id)).collect();
             self.values.append(&mut ids);
         }
 
         if let Some(author_ids) = &params.author__not_in {
             let q_marks = implode_to_question_mark(author_ids);
-            self.query.push_str(&format!(" AND post_author NOT IN ({})", q_marks));
+            self.query
+                .push_str(&format!(" AND post_author NOT IN ({})", q_marks));
             let mut ids: Vec<Value> = author_ids.iter().map(|id| Value::UInt(*id)).collect();
             self.values.append(&mut ids);
         }
@@ -108,14 +110,16 @@ impl QueryBuilder {
 
         if let Some(cat_ids) = &params.category__in {
             let q_marks = implode_to_question_mark(cat_ids);
-            self.query.push_str(&format!(" AND wp_terms.term_id IN ({})", q_marks));
+            self.query
+                .push_str(&format!(" AND wp_terms.term_id IN ({})", q_marks));
             let mut ids: Vec<Value> = cat_ids.iter().map(|id| Value::UInt(*id)).collect();
             self.values.append(&mut ids);
         }
 
         if let Some(cat_ids) = &params.category__not_in {
             let q_marks = implode_to_question_mark(cat_ids);
-            self.query.push_str(&format!(" AND wp_terms.term_id NOT IN ({})", q_marks));
+            self.query
+                .push_str(&format!(" AND wp_terms.term_id NOT IN ({})", q_marks));
             let mut ids: Vec<Value> = cat_ids.iter().map(|id| Value::UInt(*id)).collect();
             self.values.append(&mut ids);
         }
@@ -128,7 +132,8 @@ impl QueryBuilder {
 
         /* Add search conditions */
         if let Some(keyword) = &params.s {
-            self.query.push_str(" AND wp_posts.post_content LIKE CONCAT('%',?,'%')");
+            self.query
+                .push_str(" AND wp_posts.post_content LIKE CONCAT('%',?,'%')");
             self.values.push(Value::Bytes(keyword.as_bytes().to_vec()));
         }
 
@@ -136,6 +141,48 @@ impl QueryBuilder {
         if let Some(p_id) = &params.p {
             self.query.push_str(" AND wp_posts.ID = ?");
             self.values.push(Value::UInt(*p_id));
+        }
+
+        if let Some(name) = &params.name {
+            self.query.push_str(" AND wp_posts.post_name = ?");
+            self.values.push(Value::Bytes(name.as_bytes().to_vec()));
+        }
+
+        if let Some(par_id) = &params.post_parent {
+            self.query.push_str(" AND wp_posts.post_parent = ?");
+            self.values.push(Value::UInt(*par_id));
+        }
+
+        if let Some(p_ids) = &params.post_parent__in {
+            let q_marks = implode_to_question_mark(p_ids);
+            self.query
+                .push_str(&format!(" AND wp_posts.post_parent IN ({})", q_marks));
+            let mut ids: Vec<Value> = p_ids.iter().map(|id| Value::UInt(*id)).collect();
+            self.values.append(&mut ids);
+        }
+
+        if let Some(p_ids) = &params.post_parent__not_in {
+            let q_marks = implode_to_question_mark(p_ids);
+            self.query
+                .push_str(&format!(" AND wp_posts.post_parent NOT IN ({})", q_marks));
+            let mut ids: Vec<Value> = p_ids.iter().map(|id| Value::UInt(*id)).collect();
+            self.values.append(&mut ids);
+        }
+
+        if let Some(p_ids) = &params.post__in {
+            let q_marks = implode_to_question_mark(p_ids);
+            self.query
+                .push_str(&format!(" AND wp_posts.ID IN ({})", q_marks));
+            let mut ids: Vec<Value> = p_ids.iter().map(|id| Value::UInt(*id)).collect();
+            self.values.append(&mut ids);
+        }
+
+        if let Some(p_ids) = &params.post__not_in {
+            let q_marks = implode_to_question_mark(p_ids);
+            self.query
+                .push_str(&format!(" AND wp_posts.ID NOT IN ({})", q_marks));
+            let mut ids: Vec<Value> = p_ids.iter().map(|id| Value::UInt(*id)).collect();
+            self.values.append(&mut ids);
         }
 
         /* Add order conditions */
@@ -147,8 +194,10 @@ impl QueryBuilder {
 
         /* Add pagination */
         if let Some(page) = params.page {
-            let LimitOffsetPair { offset, limit } =
-                sql_paginatorr::for_page(page as usize, params.posts_per_page.unwrap_or(10) as usize);
+            let LimitOffsetPair { offset, limit } = sql_paginatorr::for_page(
+                page as usize,
+                params.posts_per_page.unwrap_or(10) as usize,
+            );
 
             self.query.push_str(" LIMIT ? OFFSET ?;");
             self.values.push(Value::UInt(limit as u64));
