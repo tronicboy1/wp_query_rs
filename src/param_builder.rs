@@ -277,7 +277,7 @@ impl ParamBuilder {
         self
     }
 
-    pub fn comment_count(mut self, count: u64) -> Self {
+    fn comment_count(mut self, count: u64) -> Self {
         self.query.comment_count = Some(count);
 
         self
