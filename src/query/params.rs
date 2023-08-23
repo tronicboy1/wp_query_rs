@@ -12,10 +12,10 @@ use crate::wp_post::post_status::PostStatus;
 #[allow(non_snake_case)]
 #[derive(Debug)]
 pub struct Params {
-    pub author: Option<usize>,
+    pub author: Option<u64>,
     pub author_name: Option<String>,
-    pub author__in: Option<Vec<usize>>,
-    pub author__not_in: Option<Vec<usize>>,
+    pub author__in: Option<Vec<u64>>,
+    pub author__not_in: Option<Vec<u64>>,
     pub cat: Option<u64>,
     pub category_name: Option<String>,
     pub category__and: Option<Vec<u64>>,
@@ -34,7 +34,7 @@ pub struct Params {
     pub tax_query: Option<HashMap<TaxRelation, Vec<TaxQuery>>>,
     pub p: Option<u64>,
     pub name: Option<String>,
-    pub page_id: Option<usize>,
+    pub page_id: Option<u64>,
     pub pagename: Option<String>,
     pub post_parent: Option<u64>,
     pub post_parent__in: Option<Vec<u64>>,
@@ -52,8 +52,8 @@ pub struct Params {
      * The amount of comments your CPT has to have ( Search operator will do a ‘=’ operation )
      */
     pub comment_count: Option<u64>,
-    pub posts_per_page: Option<usize>,
-    pub page: Option<usize>,
+    pub posts_per_page: Option<u64>,
+    pub page: Option<u64>,
     pub ignore_sticky_posts: Option<bool>,
     pub order: Option<SqlOrder>,
     pub orderby: Option<WpOrderBy>,
@@ -156,7 +156,7 @@ pub struct CommentCount {
     /**
      * The amount of comments your post has to have when comparing
      */
-    pub value: usize,
+    pub value: u64,
     pub compare: SqlCompareOperator,
 }
 

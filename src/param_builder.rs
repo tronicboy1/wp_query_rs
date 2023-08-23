@@ -27,22 +27,45 @@ impl ParamBuilder {
         }
     }
 
-    pub fn author(mut self, author_id: usize) -> Self {
+    /**
+     * use author id
+     */
+    pub fn author(mut self, author_id: u64) -> Self {
         self.query.author = Some(author_id);
 
         self
     }
 
+    /**
+     * use ‘user_nicename‘ – NOT name.
+     */
     pub fn author_name(mut self, s: String) -> Self {
         self.query.author_name = Some(s);
 
         self
     }
 
-    fn author__in(self) -> Self {
+    /**
+     * use author id
+     */
+    pub fn author__in(mut self, author_id: u64) -> Self {
+        let mut authors = self.query.author__in.unwrap_or(Vec::new());
+        authors.push(author_id);
+
+        self.query.author__in = Some(authors);
+
         self
     }
-    fn author__not_in(self) -> Self {
+
+    /**
+     * use author id
+     */
+    pub fn author__not_in(mut self, author_id: u64) -> Self {
+        let mut authors = self.query.author__not_in.unwrap_or(Vec::new());
+        authors.push(author_id);
+
+        self.query.author__not_in = Some(authors);
+
         self
     }
 
@@ -104,8 +127,6 @@ impl ParamBuilder {
 
     pub fn tax_query(mut self, query: TaxQuery, relation: Option<TaxRelation>) -> Self {
         let mut tax_q = self.query.tax_query.unwrap_or(HashMap::new());
-
-        let size = tax_q.len();
 
         if let Some(rel) = relation {
             let qs_for_relation = tax_q.entry(rel).or_insert(vec![]);
@@ -190,13 +211,16 @@ impl ParamBuilder {
         self
     }
 
-    pub fn posts_per_page(mut self, n: usize) -> Self {
+    pub fn posts_per_page(mut self, n: u64) -> Self {
         self.query.posts_per_page = Some(n);
 
         self
     }
 
-    pub fn page(mut self, n: usize) -> Self {
+    /**
+     * Starts from page 1
+     */
+    pub fn page(mut self, n: u64) -> Self {
         self.query.page = Some(n - 1);
 
         self
@@ -422,6 +446,20 @@ mod tests {
     }
 
     #[test]
+    fn can_add_author_in() {
+        let id = 1;
+        let q = ParamBuilder::new().author__in(id);
+        assert_eq!(id, *q.query.author__in.unwrap().first().unwrap());
+    }
+
+    #[test]
+    fn can_add_author_not_in() {
+        let id = 1;
+        let q = ParamBuilder::new().author__not_in(id);
+        assert_eq!(id, *q.query.author__not_in.unwrap().first().unwrap());
+    }
+
+    #[test]
     fn can_add_category() {
         let cat = 1;
         let q = ParamBuilder::new().cat(cat);
@@ -510,7 +548,7 @@ mod tests {
     #[test]
     fn can_add_pagination_params() {
         let q = ParamBuilder::new().page(3).posts_per_page(20);
-        assert_eq!(q.query.page.unwrap(), 3);
+        assert_eq!(q.query.page.unwrap(), 2);
         assert_eq!(q.query.posts_per_page.unwrap(), 20);
     }
 

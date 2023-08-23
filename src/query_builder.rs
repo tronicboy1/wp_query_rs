@@ -28,7 +28,7 @@ impl QueryBuilder {
         let params = &self.params;
 
         self.query.push_str(
-            "SELECT DISTINCT(ID),post_author,comment_count,post_parent,menu_order,
+            "SELECT DISTINCT(wp_posts.ID),post_author,comment_count,post_parent,menu_order,
             post_date,post_date_gmt,post_modified,post_modified_gmt,
             post_status,post_content,post_title,post_excerpt,comment_status,ping_status,
             post_password,post_name,to_ping,pinged,post_content_filtered,guid,
@@ -38,6 +38,7 @@ impl QueryBuilder {
 
         let join_term = check_if_term_join_necessary(params);
         let join_meta = check_if_meta_join_necessary(params);
+        let join_user = check_if_user_join_necessary(params);
 
         if join_meta {
             self.query
@@ -52,8 +53,39 @@ impl QueryBuilder {
             );
         }
 
+        if join_user {
+            self.query
+                .push_str(" INNER JOIN wp_users ON wp_users.ID = wp_posts.post_author");
+        }
+
         // Avoid dangling WHERE issue
         self.query.push_str(" WHERE 1 = 1");
+
+        // Author conditions
+        if let Some(author_id) = &params.author {
+            self.query.push_str(" AND post_author = ?");
+            self.values.push(Value::UInt(*author_id));
+        }
+
+        if let Some(author_name) = &params.author_name {
+            self.query.push_str(" AND wp_users.user_nicename = ?");
+            self.values
+                .push(Value::Bytes(author_name.clone().into_bytes()));
+        }
+
+        if let Some(author_ids) = &params.author__in {
+            let q_marks = implode_to_question_mark(author_ids);
+            self.query.push_str(&format!(" AND post_author IN ({})", q_marks));
+            let mut ids: Vec<Value> = author_ids.iter().map(|id| Value::UInt(*id)).collect();
+            self.values.append(&mut ids);
+        }
+
+        if let Some(author_ids) = &params.author__not_in {
+            let q_marks = implode_to_question_mark(author_ids);
+            self.query.push_str(&format!(" AND post_author NOT IN ({})", q_marks));
+            let mut ids: Vec<Value> = author_ids.iter().map(|id| Value::UInt(*id)).collect();
+            self.values.append(&mut ids);
+        }
 
         if let Some(post_status) = &params.post_status {
             push_post_status(&mut self.query, &mut self.values, &post_status);
@@ -85,7 +117,7 @@ impl QueryBuilder {
 
         if let Some(page) = params.page {
             let LimitOffsetPair { offset, limit } =
-                sql_paginatorr::for_page(page, params.posts_per_page.unwrap_or(10));
+                sql_paginatorr::for_page(page as usize, params.posts_per_page.unwrap_or(10) as usize);
 
             self.query.push_str(" LIMIT ? OFFSET ?;");
             self.values.push(Value::UInt(limit as u64));
@@ -119,6 +151,10 @@ fn check_if_meta_join_necessary(params: &Params) -> bool {
         || params.meta_value.is_some()
         || params.meta_value_num.is_some()
         || params.meta_query.is_some()
+}
+
+fn check_if_user_join_necessary(p: &Params) -> bool {
+    p.author_name.is_some()
 }
 
 fn push_post_status(s: &mut String, v: &mut StmtValues, post_status: &PostStatus) {
@@ -163,7 +199,7 @@ mod tests {
     #[test]
     fn implodes_to_question_marks() {
         let v = vec![1, 2, 3];
-        let imploded = implode(&v);
+        let imploded = implode_to_question_mark(&v);
         assert_eq!(&imploded, "?,?,?");
     }
 }
