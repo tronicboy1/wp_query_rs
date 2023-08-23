@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use mysql_common::Value;
+use mysql_common::{frunk::labelled::chars::S, prelude::ToValue, Value};
 use sql_paginatorr::LimitOffsetPair;
 
 use crate::{query::params::Params, sql::SqlOrder, wp_post::post_status::PostStatus};
@@ -209,6 +209,32 @@ impl QueryBuilder {
             );
             self.query.push_str(" AND wp_posts.post_date = ?");
             self.values.push(date);
+        }
+
+        /* Add date queries */
+        if let Some(date_queries) = &params.date_query {
+            for dq in date_queries {
+                let col = &dq.column;
+                if dq.year.is_some() && dq.month.is_some() && dq.day.is_some() {
+                    self.query.push_str(&format!(" AND wp_posts.{} = ?", col));
+                    self.values.push(dq.to_value());
+                }
+
+                let op = dq.relation.to_string();
+                if let Some(after) = &dq.after {
+                    let d_op = if dq.inclusive { ">=" } else { ">" };
+                    self.query
+                        .push_str(&format!(" {} wp_posts.{} {} ?", &op, col, d_op));
+                    self.values.push(after.to_value());
+                }
+
+                if let Some(before) = &dq.before {
+                    let d_op = if dq.inclusive { "<=" } else { "<" };
+                    self.query
+                        .push_str(&format!(" {} wp_posts.{} {} ?", &op, col, d_op));
+                    self.values.push(before.to_value());
+                }
+            }
         }
 
         /* Add order conditions */

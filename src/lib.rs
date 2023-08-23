@@ -7,9 +7,12 @@ use query_builder::QueryBuilder;
 use sql::{get_pool, unwrap_row};
 
 pub use param_builder::ParamBuilder;
+pub use query::date_query::DateColumn;
+pub use query::date_query::DateQuery;
+pub use query::date_query::DateQueryAfterBefore;
 pub use sql::SqlOrder;
-pub use wp_post::WP_Post;
 pub use wp_post::post_status::PostStatus;
+pub use wp_post::WP_Post;
 
 pub mod param_builder;
 pub mod query;

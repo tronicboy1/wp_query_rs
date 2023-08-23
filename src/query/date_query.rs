@@ -1,15 +1,17 @@
+use std::fmt::Display;
+
 use mysql_common::prelude::ToValue;
 
 use crate::sql::SqlConditionOperator;
 
 #[derive(Debug)]
 pub struct DateQuery {
-    year: Option<u16>,
-    month: Option<u8>,
-    day: Option<u8>,    //Day of the month (from 1 to 31).
-    hour: Option<u8>,   // Hour (from 0 to 23).
-    minute: Option<u8>, // Minute (from 0 to 59).
-    second: Option<u8>,
+    pub year: Option<u16>,
+    pub month: Option<u8>,
+    pub day: Option<u8>,    //Day of the month (from 1 to 31).
+    pub hour: Option<u8>,   // Hour (from 0 to 23).
+    pub minute: Option<u8>, // Minute (from 0 to 59).
+    pub second: Option<u8>,
     pub after: Option<DateQueryAfterBefore>,
     pub before: Option<DateQueryAfterBefore>,
     pub inclusive: bool,
@@ -113,6 +115,21 @@ pub enum DateColumn {
     PostDateGmt,
     ModifiedDate,
     ModifiedDateGmt,
+}
+
+impl Display for DateColumn {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::PostDate => "post_date",
+                Self::PostDateGmt => "post_date_gmt",
+                Self::ModifiedDate => "post_modified",
+                Self::ModifiedDateGmt => "post_modified_gmt",
+            }
+        )
+    }
 }
 
 #[derive(Debug)]
