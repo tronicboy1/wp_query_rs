@@ -81,6 +81,7 @@ pub enum SqlConditionOperator {
     And,
     Exists,
     NotExists,
+    Or,
 }
 
 impl Display for SqlConditionOperator {
@@ -94,6 +95,7 @@ impl Display for SqlConditionOperator {
                 Self::In => "IN",
                 Self::NotExists => "NOT EXISTS",
                 Self::NotIn => "NOT IN",
+                Self::Or => "OR",
             }
         )
     }

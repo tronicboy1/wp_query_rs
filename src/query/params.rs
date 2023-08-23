@@ -9,6 +9,8 @@ use crate::query::{
 };
 use crate::wp_post::post_status::PostStatus;
 
+use super::date_query::DateQuery;
+
 #[allow(non_snake_case)]
 #[derive(Debug)]
 pub struct Params {
@@ -72,8 +74,7 @@ pub struct Params {
      * YearMonth (For e.g.: 201307).
      */
     pub m: Option<u64>,
-    // TODO
-    // pub date_query: ...
+    pub date_query: Option<Vec<DateQuery>>,
     pub meta_key: Option<String>,
     pub meta_value: Option<String>,
     pub meta_value_num: Option<i32>,
@@ -135,6 +136,7 @@ impl Params {
             minute: None,
             second: None,
             m: None,
+            date_query: None,
             meta_key: None,
             meta_value: None,
             meta_value_num: None,

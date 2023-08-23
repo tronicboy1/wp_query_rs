@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     query::{
+        date_query::DateQuery,
         meta_query::{MetaQuery, MetaRelation},
         orderby::WpOrderBy,
         params::Params,
@@ -423,6 +424,16 @@ impl ParamBuilder {
         self
     }
 
+    pub fn date_query(mut self, query: DateQuery) -> Self {
+        let mut queries = self.query.date_query.unwrap_or(Vec::new());
+
+        queries.push(query);
+
+        self.query.date_query = Some(queries);
+
+        self
+    }
+
     /**
      *  Custom field key.
      */
@@ -508,6 +519,8 @@ impl ParamBuilder {
 
 #[cfg(test)]
 mod tests {
+    use crate::query::date_query::DateQueryAfterBefore;
+
     use super::*;
 
     #[test]
@@ -711,6 +724,16 @@ mod tests {
         assert_eq!(q.query.hour.unwrap(), 23);
         assert_eq!(q.query.minute.unwrap(), 60);
         assert_eq!(q.query.second.unwrap(), 60);
+    }
+
+    #[test]
+    fn can_add_date_queries() {
+        let dq1 = DateQuery::new().after(DateQueryAfterBefore::new(2022, 2, 2));
+        let dq2 = DateQuery::new();
+        let q = ParamBuilder::new().date_query(dq1).date_query(dq2);
+        let dq = q.query.date_query.unwrap();
+        assert_eq!(dq.len(), 2);
+        assert_eq!(dq.first().unwrap().after.as_ref().unwrap().day, 2);
     }
 
     #[test]
