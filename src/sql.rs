@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 use mysql::{OptsBuilder, Pool};
 use mysql_common::{time::Date, FromValueError, Row};
@@ -81,6 +81,22 @@ pub enum SqlConditionOperator {
     And,
     Exists,
     NotExists,
+}
+
+impl Display for SqlConditionOperator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::And => "AND",
+                Self::Exists => "EXISTS",
+                Self::In => "IN",
+                Self::NotExists => "NOT EXISTS",
+                Self::NotIn => "NOT IN",
+            }
+        )
+    }
 }
 
 #[derive(Debug)]
