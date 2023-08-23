@@ -315,7 +315,9 @@ impl QueryBuilder {
             self.values.push(Value::UInt(limit as u64));
             self.values.push(Value::UInt(offset as u64));
         } else {
-            self.query.push_str(" LIMIT 10;");
+            let limit = params.posts_per_page.unwrap_or(10);
+            self.query.push_str(" LIMIT ?;");
+            self.values.push(Value::UInt(limit));
         }
 
         Ok(QueryAndValues(self.query, self.values))

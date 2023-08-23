@@ -62,8 +62,8 @@ fn paginate() {
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
     assert!(posts.post_count() > 0);
 
-    let params = ParamBuilder::new().posts_per_page(2).page(3);
+    let params = ParamBuilder::new().posts_per_page(2);
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
-    assert!(posts.post_count() > 0);
+    assert!(posts.post_count() == 2);
 }
