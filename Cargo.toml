@@ -9,7 +9,7 @@ readme = "README.md"
 homepage = "https://github.com/tronicboy1/wp_query_rs"
 repository = "https://github.com/tronicboy1/wp_query_rs"
 license = "MIT OR Apache-2.0"
-keywords = ["wordpress", "wp", "wp_query", "query", "post", "wp_post"]
+keywords = ["wordpress", "wp", "wp_query", "query", "post", "wp_post", "mysql"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
