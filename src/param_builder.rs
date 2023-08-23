@@ -81,15 +81,30 @@ impl ParamBuilder {
         self
     }
 
-    fn category__and(self) -> Self {
+    fn category__and(mut self, cat_id: u64) -> Self {
+        let mut ids = self.query.category__and.unwrap_or(Vec::new());
+        ids.push(cat_id);
+
+        self.query.category__and = Some(ids);
+
         self
     }
 
-    fn category__in(self) -> Self {
+    pub fn category__in(mut self, cat_id: u64) -> Self {
+        let mut ids = self.query.category__in.unwrap_or(Vec::new());
+        ids.push(cat_id);
+
+        self.query.category__in = Some(ids);
+
         self
     }
 
-    fn category__not_in(self) -> Self {
+    pub fn category__not_in(mut self, cat_id: u64) -> Self {
+        let mut ids = self.query.category__not_in.unwrap_or(Vec::new());
+        ids.push(cat_id);
+
+        self.query.category__not_in = Some(ids);
+
         self
     }
 
@@ -464,6 +479,27 @@ mod tests {
         let cat = 1;
         let q = ParamBuilder::new().cat(cat);
         assert_eq!(cat, q.query.cat.unwrap());
+    }
+
+    #[test]
+    fn can_add_category_and() {
+        let id = 1;
+        let q = ParamBuilder::new().category__and(id);
+        assert_eq!(id, *q.query.category__and.unwrap().first().unwrap());
+    }
+
+    #[test]
+    fn can_add_category_in() {
+        let id = 1;
+        let q = ParamBuilder::new().category__in(id);
+        assert_eq!(id, *q.query.category__in.unwrap().first().unwrap());
+    }
+
+    #[test]
+    fn can_add_category_not_in() {
+        let id = 1;
+        let q = ParamBuilder::new().category__not_in(id);
+        assert_eq!(id, *q.query.category__not_in.unwrap().first().unwrap());
     }
 
     #[test]

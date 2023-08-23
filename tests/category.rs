@@ -39,3 +39,19 @@ fn category_name_and_tag() {
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
 }
+
+#[test]
+fn select_category_in() {
+    let params = ParamBuilder::new().category__in(1);
+
+    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    assert!(posts.post_count() > 0);
+}
+
+#[test]
+fn select_category_not_in() {
+    let params = ParamBuilder::new().category__not_in(1);
+
+    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    assert!(posts.post_count() > 0);
+}

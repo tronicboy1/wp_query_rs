@@ -87,6 +87,7 @@ impl QueryBuilder {
             self.values.append(&mut ids);
         }
 
+        /* Add Post Status conditions */
         if let Some(post_status) = &params.post_status {
             push_post_status(&mut self.query, &mut self.values, &post_status);
         } else {
@@ -94,6 +95,7 @@ impl QueryBuilder {
                 .push_str(&format!(" AND post_status = '{}'", PostStatus::Publish));
         }
 
+        /* Add category conditions */
         if let Some(cat) = &params.cat {
             self.query.push_str(" AND wp_terms.term_id = ?");
             self.values.push(Value::UInt(*cat));
@@ -104,6 +106,21 @@ impl QueryBuilder {
             self.values.push(Value::Bytes(cat.clone().into_bytes()));
         }
 
+        if let Some(cat_ids) = &params.category__in {
+            let q_marks = implode_to_question_mark(cat_ids);
+            self.query.push_str(&format!(" AND wp_terms.term_id IN ({})", q_marks));
+            let mut ids: Vec<Value> = cat_ids.iter().map(|id| Value::UInt(*id)).collect();
+            self.values.append(&mut ids);
+        }
+
+        if let Some(cat_ids) = &params.category__not_in {
+            let q_marks = implode_to_question_mark(cat_ids);
+            self.query.push_str(&format!(" AND wp_terms.term_id NOT IN ({})", q_marks));
+            let mut ids: Vec<Value> = cat_ids.iter().map(|id| Value::UInt(*id)).collect();
+            self.values.append(&mut ids);
+        }
+
+        /* Add tag conditions */
         if let Some(tag) = &params.tag {
             self.query.push_str(" AND wp_terms.slug = ?");
             self.values.push(Value::Bytes(tag.clone().into_bytes()));
