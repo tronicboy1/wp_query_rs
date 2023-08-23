@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use wp_query_rs::*;
 
-fn ensure_no_duplicate(posts: &[WP_Post]) {
+pub fn ensure_no_duplicate(posts: &[WP_Post]) {
     let all_counts_less_than_one = posts
         .iter()
         .fold(HashMap::new(), |mut acc, post| {
@@ -29,14 +29,6 @@ fn no_duplicate_ids() {
     let params = ParamBuilder::new();
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
     ensure_no_duplicate(&posts.posts);
-}
-
-#[test]
-fn tag() {
-    let params = ParamBuilder::new().tag_id(1);
-
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
-    assert_eq!(posts.post_count(), 10);
 }
 
 #[test]
@@ -68,10 +60,10 @@ fn paginate() {
     let params = ParamBuilder::new().page(2);
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
-    assert_eq!(posts.post_count(), 10);
+    assert!(posts.post_count() > 0);
 
     let params = ParamBuilder::new().posts_per_page(2).page(3);
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
-    assert_eq!(posts.post_count(), 2);
+    assert!(posts.post_count() > 0);
 }

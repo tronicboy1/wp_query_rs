@@ -62,9 +62,20 @@ impl QueryBuilder {
                 .push_str(&format!(" AND post_status = '{}'", PostStatus::Publish));
         }
 
-        if let Some(cat) = &params.cat {}
+        if let Some(cat) = &params.cat {
+            self.query.push_str(" AND wp_terms.term_id = ?");
+            self.values.push(Value::UInt(*cat));
+        }
 
-        if let Some(tag) = &params.tag {}
+        if let Some(cat) = &params.category_name {
+            self.query.push_str(" AND wp_terms.slug = ?");
+            self.values.push(Value::Bytes(cat.clone().into_bytes()));
+        }
+
+        if let Some(tag) = &params.tag {
+            self.query.push_str(" AND wp_terms.slug = ?");
+            self.values.push(Value::Bytes(tag.clone().into_bytes()));
+        }
 
         if let Some(orderby) = &params.orderby {
             let order = params.order.unwrap_or(SqlOrder::Desc).clone().to_string();
@@ -96,6 +107,11 @@ fn check_if_term_join_necessary(params: &Params) -> bool {
         || params.tag_slug__and.is_some()
         || params.tag_slug__in.is_some()
         || params.tax_query.is_some()
+        || params.cat.is_some()
+        || params.category__and.is_some()
+        || params.category__in.is_some()
+        || params.category__not_in.is_some()
+        || params.category_name.is_some()
 }
 
 fn check_if_meta_join_necessary(params: &Params) -> bool {

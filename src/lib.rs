@@ -31,7 +31,7 @@ impl WP_Query {
 
         let mut conn = pool.get_conn()?;
 
-        let stmt = conn.prep(q)?;
+        let stmt = conn.prep(dbg!(q))?;
         let mut rows: Vec<Row> = conn.exec(stmt, values)?;
         let posts: Vec<WP_Post> = rows
             .iter_mut()

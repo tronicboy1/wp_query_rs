@@ -46,7 +46,7 @@ impl ParamBuilder {
         self
     }
 
-    pub fn cat(mut self, cat_id: u32) -> Self {
+    pub fn cat(mut self, cat_id: u64) -> Self {
         self.query.cat = Some(cat_id);
 
         self
@@ -76,7 +76,7 @@ impl ParamBuilder {
         self
     }
 
-    pub fn tag_id(mut self, tag_id: u32) -> Self {
+    pub fn tag_id(mut self, tag_id: u64) -> Self {
         self.query.tag_id = Some(tag_id);
 
         self
@@ -122,7 +122,7 @@ impl ParamBuilder {
     /**
      * use post id
      */
-    pub fn p(mut self, id: u32) -> Self {
+    pub fn p(mut self, id: u64) -> Self {
         self.query.p = Some(id);
 
         self
@@ -142,7 +142,7 @@ impl ParamBuilder {
         self
     }
 
-    pub fn post_parent(mut self, id: u32) -> Self {
+    pub fn post_parent(mut self, id: u64) -> Self {
         self.query.post_parent = Some(id);
 
         self
@@ -184,7 +184,7 @@ impl ParamBuilder {
         self
     }
 
-    pub fn comment_count(mut self, count: u32) -> Self {
+    pub fn comment_count(mut self, count: u64) -> Self {
         self.query.comment_count = Some(count);
 
         self
@@ -224,7 +224,7 @@ impl ParamBuilder {
     /**
      * 4 digit year (e.g. 2011).
      */
-    pub fn year(mut self, y: u32) -> Self {
+    pub fn year(mut self, y: u64) -> Self {
         if y > 9999 {
             panic!("InvalidYear");
         }
@@ -315,7 +315,7 @@ impl ParamBuilder {
     /**
      * YearMonth (For e.g.: 201307).
      */
-    pub fn m(mut self, m: u32) -> Self {
+    pub fn m(mut self, m: u64) -> Self {
         if m > 999999 {
             panic!("InvalidYearMonth");
         }
