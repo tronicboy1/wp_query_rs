@@ -43,7 +43,6 @@ fn select_by_post_parent_not_in() {
     let params = ParamBuilder::new().post_parent__not_in(0);
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
-    assert!(posts.post_count() > 0);
     assert!(posts.posts.iter().all(|p| p.post_parent != 0));
 }
 

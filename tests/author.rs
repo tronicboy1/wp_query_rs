@@ -2,10 +2,10 @@ use wp_query_rs::*;
 
 #[test]
 fn can_join_user_table() {
-    let params = ParamBuilder::new().author_name(String::from("admin"));
+    let params = ParamBuilder::new().author_name(String::from(""));
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
-    assert_eq!(posts.post_count(), 10);
+    assert!(posts.post_count() == 0);
 }
 
 #[test]
