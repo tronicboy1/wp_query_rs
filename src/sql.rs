@@ -1,6 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
-use mysql::{OptsBuilder, Pool};
+use mysql::{Conn, OptsBuilder, Pool};
 use mysql_common::{time::Date, FromValueError, Row};
 
 use crate::{wp_post::post_status::PostStatus, WP_Post};
@@ -9,16 +9,26 @@ use self::env_vars::EnvVars;
 
 pub mod env_vars;
 
-pub fn get_pool(env_vars: EnvVars) -> Result<Pool, mysql::Error> {
-    let opts = OptsBuilder::new()
+fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
+    OptsBuilder::new()
         .user(env_vars.user)
         .ip_or_hostname(env_vars.host)
         .pass(env_vars.password)
         .db_name(env_vars.db_name)
         .tcp_port(env_vars.port.unwrap_or(3306))
-        .prefer_socket(true);
+        .prefer_socket(true)
+}
+
+pub fn get_pool(env_vars: EnvVars) -> Result<Pool, mysql::Error> {
+    let opts = build_opts_from_env(env_vars);
 
     Pool::new(opts)
+}
+
+pub fn get_conn(env_vars: EnvVars) -> Result<Conn, mysql::Error> {
+    let opts = build_opts_from_env(env_vars);
+
+    Conn::new(opts)
 }
 
 pub fn unwrap_row(row: &mut Row) -> Result<WP_Post, FromValueError> {
@@ -125,16 +135,20 @@ pub enum SqlSearchOperators {
 
 impl Display for SqlSearchOperators {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            Self::Equals => "=",
-            Self::NotEquals => "!=",
-            Self::GreaterThan => ">",
-            Self::LessThan => "<",
-            Self::GreaterThanOrEqualTo => ">=",
-            Self::LessThanOrEqualTo => "<=",
-            Self::Like => "LIKE",
-            Self::NotLike => "NOT LIKE",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Equals => "=",
+                Self::NotEquals => "!=",
+                Self::GreaterThan => ">",
+                Self::LessThan => "<",
+                Self::GreaterThanOrEqualTo => ">=",
+                Self::LessThanOrEqualTo => "<=",
+                Self::Like => "LIKE",
+                Self::NotLike => "NOT LIKE",
+            }
+        )
     }
 }
 

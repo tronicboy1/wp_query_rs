@@ -1,10 +1,11 @@
-use std::error::Error;
-
 use mysql::prelude::Queryable;
+use mysql::Conn;
 use mysql_common::Row;
 use query::params::Params;
 use query_builder::QueryBuilder;
-use sql::{get_pool, unwrap_row};
+use sql::get_conn;
+use sql::unwrap_row;
+use std::error::Error;
 
 pub use param_builder::ParamBuilder;
 pub use query::date_query::DateColumn;
@@ -12,6 +13,7 @@ pub use query::date_query::DateQuery;
 pub use query::date_query::DateQueryAfterBefore;
 pub use query::meta_query::MetaQuery;
 pub use query::meta_query::MetaRelation;
+pub use sql::env_vars::EnvVars;
 pub use sql::SqlOrder;
 pub use sql::SqlSearchOperators;
 pub use wp_post::post_status::PostStatus;
@@ -30,29 +32,57 @@ pub struct WP_Query {
 }
 
 impl WP_Query {
+    /**
+     * Queries the WordPress Database for posts.
+     *
+     * Uses environment variables to get a connection to the database.
+     *
+     * For using your own pool/connection, use `WP_Query::with_connection`.
+     */
     pub fn new(params: Params) -> Result<Self, Box<dyn Error>> {
-        let pool = get_pool(sql::env_vars::EnvVars::from_env())?;
+        let mut conn = Self::get_conn_from_env_vars()?;
 
+        let posts: Vec<WP_Post> = Self::query(&mut conn, params)?;
+
+        Ok(Self { posts })
+    }
+
+    /**
+     * Queries the WordPress database with a connection provided
+     */
+    pub fn with_connection(conn: &mut Conn, params: Params) -> Result<Self, Box<dyn Error>> {
+        let posts: Vec<WP_Post> = Self::query(conn, params)?;
+
+        Ok(Self { posts })
+    }
+
+    fn get_conn_from_env_vars() -> Result<Conn, mysql::Error> {
+        get_conn(sql::env_vars::EnvVars::from_env())
+    }
+
+    fn get_conn_with_config(config: EnvVars) -> Result<Conn, mysql::Error> {
+        get_conn(config)
+    }
+
+    fn query(conn: &mut Conn, params: Params) -> Result<Vec<WP_Post>, Box<dyn Error>> {
         let query_builder::QueryAndValues(q, values) = QueryBuilder::new(params).query()?;
 
-        let mut conn = pool.get_conn()?;
+        let stmt = conn.prep(q)?;
 
-        let stmt = conn.prep(dbg!(q))?;
         let mut rows: Vec<Row> = conn.exec(stmt, values)?;
-        let posts: Vec<WP_Post> = rows
+
+        Ok(rows
             .iter_mut()
             .map(|row| unwrap_row(row))
             .filter_map(|row| row.ok())
-            .collect();
-
-        Ok(Self { posts })
+            .collect())
     }
 
     pub fn post_count(&self) -> usize {
         self.posts.len()
     }
 
-    pub fn max_num_pages(&self) -> usize {
+    fn max_num_pages(&self) -> usize {
         0
     }
 }

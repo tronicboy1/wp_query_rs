@@ -41,23 +41,20 @@ fn year_month_day_hour_minute_second() {
 
 #[test]
 fn date_query() {
-    let params = ParamBuilder::new()
-        .date_query(
-            DateQuery::new()
-                .after(DateQueryAfterBefore {
-                    year: 2022,
-                    month: 2,
-                    day: 1,
-                })
-                .before(DateQueryAfterBefore {
-                    year: 2023,
-                    month: 8,
-                    day: 23,
-                })
-                .inclusive(true),
-        )
-        .orderby(query::WpOrderBy::Date)
-        .order(SqlOrder::Desc);
+    let params = ParamBuilder::new().date_query(
+        DateQuery::new()
+            .after(DateQueryAfterBefore {
+                year: 2022,
+                month: 2,
+                day: 1,
+            })
+            .before(DateQueryAfterBefore {
+                year: 2023,
+                month: 8,
+                day: 23,
+            })
+            .inclusive(true),
+    ).orderby(query::WpOrderBy::Date);
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
     dbg!(posts);
