@@ -2,6 +2,8 @@
 name = "wp_query_rs"
 version = "0.1.0"
 edition = "2021"
+authors = ["Austin John Mayer"]
+description = "A rust implementation of the classic WP_Query utility to access WordPress posts outside of a WordPress environment."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
