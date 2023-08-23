@@ -1,3 +1,8 @@
+use ext_php_rs::{
+    convert::IntoZval,
+    flags::DataType,
+    types::{ZendObject, Zval},
+};
 use mysql_common::time::Date;
 
 use self::post_status::PostStatus;
@@ -30,4 +35,28 @@ pub struct WP_Post {
     pub post_type: String,
     pub post_mime_type: String,
     pub comment_count: u64,
+}
+
+impl IntoZval for WP_Post {
+    const TYPE: ext_php_rs::flags::DataType = DataType::Object(Some("WP_Post_Rs"));
+
+    fn into_zval(self, persistent: bool) -> ext_php_rs::error::Result<ext_php_rs::types::Zval> {
+        let mut zobj = ZendObject::new_stdclass();
+
+        zobj.set_property("ID", self.ID)?;
+        zobj.set_property("post_status", self.post_status)?;
+
+        zobj.into_zval(persistent)
+    }
+
+    fn set_zval(self, zv: &mut Zval, persistent: bool) -> ext_php_rs::error::Result<()> {
+        let mut zobj = ZendObject::new_stdclass();
+
+        zobj.set_property("ID", self.ID)?;
+        zobj.set_property("post_status", self.post_status)?;
+
+        zv.set_object(&mut zobj);
+
+        Ok(())
+    }
 }

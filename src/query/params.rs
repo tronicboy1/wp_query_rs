@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use ext_php_rs::convert::FromZval;
+
 use crate::sql::{SqlCompareOperator, SqlOrder, SqlSearchOperators};
 
 use crate::query::{
@@ -154,6 +156,18 @@ pub struct CommentCount {
      */
     pub value: u64,
     pub compare: SqlCompareOperator,
+}
+
+impl<'a> FromZval<'a> for Params {
+    const TYPE: ext_php_rs::flags::DataType = ext_php_rs::flags::DataType::Array;
+
+    fn from_zval(zval: &'a ext_php_rs::types::Zval) -> Option<Self> {
+        if !zval.is_array() {
+            return None;
+        }
+
+        Some(Self::new())
+    }
 }
 
 #[cfg(test)]
