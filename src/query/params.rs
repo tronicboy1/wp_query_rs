@@ -169,11 +169,30 @@ impl<'a> FromZval<'a> for Params {
         let mut params = Self::new();
 
         if let Some(array) = zval.array() {
+            /* Author params */
+            if let Some(auth_id) = array.get("author") {
+                params.author = auth_id.long().map(|l| l as u64);
+            }
+
+            if let Some(auth_name) = array.get("author_name") {
+                params.author_name = auth_name.string();
+            }
+
+            if let Some(auth_ids) = array.get("author__in").map(|v| v.array()).flatten() {
+                params.author__in = auth_ids.try_into().ok();
+            }
+
+            if let Some(auth_ids) = array.get("author__not_in").map(|v| v.array()).flatten() {
+                params.author__not_in = auth_ids.try_into().ok();
+            }
+
             /* Post Type */
             // PHP Version allows for array or string, accounts for both possibilies
             if let Some(post_types) = array.get("post_type").map(|r| r.array()).flatten() {
-                let p_types: Vec<String> =
-                    post_types.iter().filter_map(|p_type| p_type.2.string()).collect();
+                let p_types: Vec<String> = post_types
+                    .iter()
+                    .filter_map(|p_type| p_type.2.string())
+                    .collect();
                 params.post_type = Some(p_types)
             } else if let Some(post_type) = array.get("post_type").map(|v| v.string()).flatten() {
                 params.post_type = Some(vec![post_type]);
