@@ -2,7 +2,7 @@ use wp_query_rs::*;
 
 #[test]
 fn can_join_user_table() {
-    let params = ParamBuilder::new().author_name(String::from(""));
+    let params = ParamBuilder::new().author_name("");
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
     assert!(posts.post_count() == 0);

@@ -10,7 +10,7 @@ fn tag_id() {
 
 #[test]
 fn tag() {
-    let params = ParamBuilder::new().tag(String::from("tag-a"));
+    let params = ParamBuilder::new().tag("tag-a");
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
 }

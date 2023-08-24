@@ -10,8 +10,24 @@ fn select_by_post_id() {
 }
 
 #[test]
+fn select_by_post_type() {
+    let params = ParamBuilder::new().post_type("page");
+
+    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    assert!(posts.post_count() > 0);
+}
+
+#[test]
+fn select_by_multiple_post_types() {
+    let params = ParamBuilder::new().post_type("page").post_type("post");
+
+    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    assert!(posts.post_count() > 0);
+}
+
+#[test]
 fn select_by_post_name() {
-    let params = ParamBuilder::new().name(String::from(""));
+    let params = ParamBuilder::new().name("");
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
     assert_eq!(posts.post_count(), 0);
@@ -65,7 +81,7 @@ fn select_by_post_id_not_in() {
 
 #[test]
 fn select_by_post_name_in() {
-    let params = ParamBuilder::new().post_name__in(String::from(""));
+    let params = ParamBuilder::new().post_name__in("");
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
     assert_eq!(posts.post_count(), 0);

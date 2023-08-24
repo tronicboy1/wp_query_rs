@@ -10,7 +10,7 @@ fn select_category_id() {
 
 #[test]
 fn select_category_name() {
-    let params = ParamBuilder::new().category_name(String::from("uncategorized"));
+    let params = ParamBuilder::new().category_name("uncategorized");
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
     assert!(posts.post_count() > 0);
@@ -26,7 +26,7 @@ fn tag_id() {
 
 #[test]
 fn category_and_tag() {
-    let params = ParamBuilder::new().tag(String::from("tag-a")).cat(1);
+    let params = ParamBuilder::new().tag("tag-a").cat(1);
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
 }
@@ -34,8 +34,8 @@ fn category_and_tag() {
 #[test]
 fn category_name_and_tag() {
     let params = ParamBuilder::new()
-        .tag(String::from("tag-a"))
-        .category_name(String::from("uncategorized"));
+        .tag("tag-a")
+        .category_name("uncategorized");
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
 }

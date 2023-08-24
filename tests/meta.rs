@@ -2,7 +2,7 @@ use wp_query_rs::{query::meta_query::MetaQuery, *};
 
 #[test]
 fn meta_key() {
-    let params = ParamBuilder::new().meta_key(String::from("_edit_last"));
+    let params = ParamBuilder::new().meta_key("_edit_last");
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
     assert!(posts.post_count() > 0);
@@ -10,7 +10,7 @@ fn meta_key() {
 
 #[test]
 fn meta_value() {
-    let params = ParamBuilder::new().meta_value(String::from("1"));
+    let params = ParamBuilder::new().meta_value("1");
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
     assert!(posts.post_count() > 0);

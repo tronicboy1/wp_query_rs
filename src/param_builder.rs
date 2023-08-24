@@ -40,8 +40,8 @@ impl ParamBuilder {
     /**
      * use ‘user_nicename‘ – NOT name.
      */
-    pub fn author_name(mut self, s: String) -> Self {
-        self.query.author_name = Some(s);
+    pub fn author_name(mut self, s: &str) -> Self {
+        self.query.author_name = Some(s.to_string());
 
         self
     }
@@ -76,8 +76,8 @@ impl ParamBuilder {
         self
     }
 
-    pub fn category_name(mut self, s: String) -> Self {
-        self.query.category_name = Some(s);
+    pub fn category_name(mut self, s: &str) -> Self {
+        self.query.category_name = Some(s.to_string());
 
         self
     }
@@ -109,8 +109,8 @@ impl ParamBuilder {
         self
     }
 
-    pub fn tag(mut self, slug: String) -> Self {
-        self.query.tag = Some(slug);
+    pub fn tag(mut self, slug: &str) -> Self {
+        self.query.tag = Some(slug.to_string());
 
         self
     }
@@ -159,8 +159,8 @@ impl ParamBuilder {
     /**
      * Search keyword
      */
-    pub fn s(mut self, s: String) -> Self {
-        self.query.s = Some(s);
+    pub fn s(mut self, s: &str) -> Self {
+        self.query.s = Some(s.to_string());
 
         self
     }
@@ -177,8 +177,8 @@ impl ParamBuilder {
     /**
      * use post slug
      */
-    pub fn name(mut self, slug: String) -> Self {
-        self.query.name = Some(slug);
+    pub fn name(mut self, slug: &str) -> Self {
+        self.query.name = Some(slug.to_string());
 
         self
     }
@@ -252,10 +252,10 @@ impl ParamBuilder {
         self
     }
 
-    pub fn post_name__in(mut self, s: String) -> Self {
+    pub fn post_name__in(mut self, s: &str) -> Self {
         let mut names = self.query.post_name__in.unwrap_or(Vec::new());
 
-        names.push(s);
+        names.push(s.to_string());
 
         self.query.post_name__in = Some(names);
 
@@ -269,11 +269,11 @@ impl ParamBuilder {
     /**
      * use post types. Retrieves posts by post types, default value is ‘post‘.
      */
-    pub fn post_type(mut self, post_type: String) -> Self {
+    pub fn post_type(mut self, post_type: &str) -> Self {
         let mut types = self.query.post_type.unwrap_or(Vec::new());
         dbg!(&types);
 
-        types.push(post_type);
+        types.push(post_type.to_string());
 
         self.query.post_type = Some(types);
 
@@ -454,12 +454,12 @@ impl ParamBuilder {
     /**
      *  Custom field key.
      */
-    pub fn meta_key(mut self, key: String) -> Self {
+    pub fn meta_key(mut self, key: &str) -> Self {
         if self.query.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
 
-        self.query.meta_key = Some(key);
+        self.query.meta_key = Some(key.to_string());
 
         self
     }
@@ -467,7 +467,7 @@ impl ParamBuilder {
     /**
      * Custom field value.
      */
-    pub fn meta_value(mut self, val: String) -> Self {
+    pub fn meta_value(mut self, val: &str) -> Self {
         if self.query.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
@@ -476,7 +476,7 @@ impl ParamBuilder {
             self.query.meta_value_num = None;
         }
 
-        self.query.meta_value = Some(val);
+        self.query.meta_value = Some(val.to_string());
 
         self
     }
@@ -587,8 +587,8 @@ mod tests {
 
     #[test]
     fn can_add_tag() {
-        let tag = String::from("Tag");
-        let q = ParamBuilder::new().tag(tag.clone());
+        let tag = "Tag";
+        let q = ParamBuilder::new().tag(tag);
         assert_eq!(tag, q.query.tag.unwrap());
     }
 
@@ -668,8 +668,8 @@ mod tests {
     fn can_add_post_name_in() {
         let id = 1;
         let q = ParamBuilder::new()
-            .post_name__in(String::from("malcolm-x"))
-            .post_name__in(String::from("mlk"));
+            .post_name__in("malcolm-x")
+            .post_name__in("mlk");
         let r = q.query.post_name__in.unwrap();
         assert_eq!(r.first().unwrap(), "malcolm-x");
         assert_eq!(r.len(), 2);
@@ -677,15 +677,15 @@ mod tests {
 
     #[test]
     fn can_add_post_type() {
-        let q = ParamBuilder::new().post_type(String::from("page"));
+        let q = ParamBuilder::new().post_type("page");
         assert_eq!(q.query.post_type.unwrap().first().unwrap(), "page");
     }
 
     #[test]
     fn can_add_multiple_post_types() {
         let q = ParamBuilder::new()
-            .post_type(String::from("post"))
-            .post_type(String::from("page"))
+            .post_type("post")
+            .post_type("page")
             .p(1)
             .post_parent(2)
             .post_status(PostStatus::Publish);
@@ -755,8 +755,8 @@ mod tests {
     #[test]
     fn can_set_single_meta() {
         let q = ParamBuilder::new()
-            .meta_key(String::from("key1"))
-            .meta_value(String::from("a"))
+            .meta_key("key1")
+            .meta_value("a")
             .meta_compare(SqlSearchOperators::Like);
         assert_eq!(q.query.meta_key.unwrap(), "key1");
         assert_eq!(q.query.meta_value.unwrap(), "a");
@@ -766,7 +766,7 @@ mod tests {
     #[test]
     fn can_set_multiple_meta() {
         let q = ParamBuilder::new()
-            .meta_key(String::from("key1"))
+            .meta_key("key1")
             .meta_query(
                 MetaQuery {
                     key: String::from("key1"),
