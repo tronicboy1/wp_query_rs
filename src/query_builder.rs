@@ -149,8 +149,9 @@ impl QueryBuilder {
         }
 
         if let Some(post_types) = &params.post_type {
+            let q_marks = implode_to_question_mark(&post_types);
+            self.query.push_str(&format!(" AND wp_posts.post_type IN ({})", q_marks));
             for post_type in post_types {
-                self.query.push_str(" AND wp_posts.post_type = ?");
                 self.values
                     .push(Value::Bytes(post_type.as_bytes().to_vec()));
             }
