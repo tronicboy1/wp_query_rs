@@ -148,16 +148,8 @@ impl QueryBuilder {
             self.values.push(Value::Bytes(name.as_bytes().to_vec()));
         }
 
-        if let Some(post_types) = &params.post_type {
-            let q_marks = implode_to_question_mark(&post_types);
-            self.query.push_str(&format!(" AND wp_posts.post_type IN ({})", q_marks));
-            for post_type in post_types {
-                self.values
-                    .push(Value::Bytes(post_type.as_bytes().to_vec()));
-            }
-        } else {
-            self.query.push_str(" AND wp_posts.post_type = 'post'");
-        }
+        /* Post types */
+        push_post_type(&mut self.query, &mut self.values, &params.post_type);
 
         if let Some(par_id) = &params.post_parent {
             self.query.push_str(" AND wp_posts.post_parent = ?");
@@ -363,6 +355,22 @@ fn push_post_status(s: &mut String, v: &mut StmtValues, post_status: &PostStatus
 
     s.push_str(" AND post_status = ?");
     v.push(Value::Bytes(post_status.to_string().into_bytes()));
+}
+
+fn push_post_type(s: &mut String, v: &mut StmtValues, post_type: &Option<Vec<String>>) {
+    if let Some(post_types) = post_type {
+        if post_types.len() == 0 {
+            return;
+        }
+
+        let q_marks = implode_to_question_mark(&post_types);
+        s.push_str(&format!(" AND wp_posts.post_type IN ({})", q_marks));
+        for post_type in post_types {
+            v.push(Value::Bytes(post_type.as_bytes().to_vec()));
+        }
+    } else {
+        s.push_str(" AND wp_posts.post_type = 'post'");
+    }
 }
 
 fn implode<T: std::fmt::Display>(v: &[T]) -> String {
