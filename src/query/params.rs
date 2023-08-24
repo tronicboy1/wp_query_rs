@@ -166,7 +166,31 @@ impl<'a> FromZval<'a> for Params {
             return None;
         }
 
-        Some(Self::new())
+        let mut params = Self::new();
+
+        if let Some(array) = zval.array() {
+            /* Post Type */
+            // PHP Version allows for array or string, accounts for both possibilies
+            if let Some(post_types) = array.get("post_type").map(|r| r.array()).flatten() {
+                let p_types: Vec<String> =
+                    post_types.iter().filter_map(|p_type| p_type.2.string()).collect();
+                params.post_type = Some(p_types)
+            } else if let Some(post_type) = array.get("post_type").map(|v| v.string()).flatten() {
+                params.post_type = Some(vec![post_type]);
+            }
+
+            /* Posts Per Page */
+            if let Some(per_page) = array
+                .get("posts_per_page")
+                .map(|v| v.long())
+                .flatten()
+                .map(|n| n as u64)
+            {
+                params.posts_per_page = Some(per_page);
+            }
+        }
+
+        Some(params)
     }
 }
 
