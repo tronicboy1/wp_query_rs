@@ -1,5 +1,5 @@
 use mysql::prelude::Queryable;
-use mysql::Conn;
+use mysql::PooledConn;
 use mysql_common::Row;
 use query::params::Params;
 use query_builder::QueryBuilder;
@@ -40,7 +40,7 @@ impl WP_Query {
      * For using your own pool/connection, use `WP_Query::with_connection`.
      */
     pub fn new(params: Params) -> Result<Self, Box<dyn Error>> {
-        let mut conn = Self::get_conn_from_env_vars()?;
+        let mut conn = get_conn()?;
 
         let posts: Vec<WP_Post> = Self::query(&mut conn, params)?;
 
@@ -50,21 +50,13 @@ impl WP_Query {
     /**
      * Queries the WordPress database with a connection provided
      */
-    pub fn with_connection(conn: &mut Conn, params: Params) -> Result<Self, Box<dyn Error>> {
+    pub fn with_connection(conn: &mut PooledConn, params: Params) -> Result<Self, Box<dyn Error>> {
         let posts: Vec<WP_Post> = Self::query(conn, params)?;
 
         Ok(Self { posts })
     }
 
-    fn get_conn_from_env_vars() -> Result<Conn, mysql::Error> {
-        get_conn(sql::env_vars::EnvVars::from_env())
-    }
-
-    fn get_conn_with_config(config: EnvVars) -> Result<Conn, mysql::Error> {
-        get_conn(config)
-    }
-
-    fn query(conn: &mut Conn, params: Params) -> Result<Vec<WP_Post>, Box<dyn Error>> {
+    fn query(conn: &mut PooledConn, params: Params) -> Result<Vec<WP_Post>, Box<dyn Error>> {
         let query_builder::QueryAndValues(q, values) = QueryBuilder::new(params).query()?;
 
         let stmt = conn.prep(q)?;

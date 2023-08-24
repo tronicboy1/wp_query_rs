@@ -57,5 +57,4 @@ fn date_query() {
     ).orderby(query::WpOrderBy::Date);
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
-    dbg!(posts);
 }

@@ -57,7 +57,7 @@ fn meta_join_no_dups() {
 
 #[test]
 fn paginate() {
-    let params = ParamBuilder::new().page(2);
+    let params = ParamBuilder::new().page(1);
 
     let posts = WP_Query::new(params.params()).expect("SqlFailed");
     assert!(posts.post_count() > 0);

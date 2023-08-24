@@ -1,13 +1,16 @@
 use std::{fmt::Display, str::FromStr};
 
-use mysql::{Conn, OptsBuilder, Pool};
+use mysql::{OptsBuilder, Pool, PooledConn};
 use mysql_common::{time::Date, FromValueError, Row};
+use once_cell::sync::OnceCell;
 
 use crate::{wp_post::post_status::PostStatus, WP_Post};
 
 use self::env_vars::EnvVars;
 
 pub mod env_vars;
+
+static POOL_INSTANCE: OnceCell<Pool> = OnceCell::new();
 
 fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
     OptsBuilder::new()
@@ -19,16 +22,17 @@ fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
         .prefer_socket(true)
 }
 
-pub fn get_pool(env_vars: EnvVars) -> Result<Pool, mysql::Error> {
-    let opts = build_opts_from_env(env_vars);
+pub fn get_pool() -> &'static Pool {
+    POOL_INSTANCE.get_or_init(|| {
+        let env_vars = EnvVars::from_env();
+        let opts = build_opts_from_env(env_vars);
 
-    Pool::new(opts)
+        Pool::new(opts).expect("SqlConnectionError")
+    })
 }
 
-pub fn get_conn(env_vars: EnvVars) -> Result<Conn, mysql::Error> {
-    let opts = build_opts_from_env(env_vars);
-
-    Conn::new(opts)
+pub fn get_conn() -> Result<PooledConn, mysql::Error> {
+    get_pool().get_conn()
 }
 
 pub fn unwrap_row(row: &mut Row) -> Result<WP_Post, FromValueError> {
