@@ -2,7 +2,7 @@ use std::{fmt::Display, str::FromStr};
 
 use ext_php_rs::convert::IntoZval;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum PostStatus {
     Publish,
     Pending,
