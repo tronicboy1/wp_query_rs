@@ -4,7 +4,6 @@
 use mysql::prelude::Queryable;
 use mysql::PooledConn;
 use mysql_common::Row;
-use params::Params;
 use query_builder::QueryBuilder;
 use sql::get_conn;
 use sql::unwrap_row;
@@ -16,6 +15,7 @@ pub use params::meta_query::MetaQuery;
 pub use params::meta_query::MetaRelation;
 pub use params::orderby::WpOrderBy;
 pub use params::param_builder::ParamBuilder;
+pub use params::Params;
 pub use sql::env_vars::EnvVars;
 pub use sql::SqlOrder;
 pub use sql::SqlSearchOperators;
