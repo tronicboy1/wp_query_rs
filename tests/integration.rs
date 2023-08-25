@@ -20,14 +20,14 @@ pub fn ensure_no_duplicate(posts: &[WP_Post]) {
 fn default_selects_posts() {
     let params = ParamBuilder::new();
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert_eq!(posts.post_count(), 10);
 }
 
 #[test]
 fn no_duplicate_ids() {
     let params = ParamBuilder::new();
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     ensure_no_duplicate(&posts.posts);
 }
 
@@ -35,7 +35,7 @@ fn no_duplicate_ids() {
 fn no_dups_on_term_join() {
     let params = ParamBuilder::new().tag_id(1);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     ensure_no_duplicate(&posts.posts);
 }
 
@@ -43,7 +43,7 @@ fn no_dups_on_term_join() {
 fn meta_data() {
     let params = ParamBuilder::new().meta_value("1");
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);
 }
 
@@ -51,7 +51,7 @@ fn meta_data() {
 fn meta_join_no_dups() {
     let params = ParamBuilder::new().meta_value("1");
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     ensure_no_duplicate(&posts.posts);
 }
 
@@ -59,11 +59,11 @@ fn meta_join_no_dups() {
 fn paginate() {
     let params = ParamBuilder::new().page(1);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);
 
     let params = ParamBuilder::new().posts_per_page(2);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() == 2);
 }

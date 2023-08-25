@@ -12,27 +12,15 @@ use crate::{
     wp_post::post_status::PostStatus,
 };
 
-pub struct ParamBuilder {
-    pub query: Params,
-}
+pub type ParamBuilder = Params;
 
 #[allow(non_snake_case)]
 impl ParamBuilder {
-    pub fn params(self) -> Params {
-        self.query
-    }
-
-    pub fn new() -> Self {
-        Self {
-            query: Params::new(),
-        }
-    }
-
     /**
      * use author id
      */
     pub fn author(mut self, author_id: u64) -> Self {
-        self.query.author = Some(author_id);
+        self.author = Some(author_id);
 
         self
     }
@@ -41,7 +29,7 @@ impl ParamBuilder {
      * use ‘user_nicename‘ – NOT name.
      */
     pub fn author_name(mut self, s: &str) -> Self {
-        self.query.author_name = Some(s.to_string());
+        self.author_name = Some(s.to_string());
 
         self
     }
@@ -50,10 +38,10 @@ impl ParamBuilder {
      * use author id
      */
     pub fn author__in(mut self, author_id: u64) -> Self {
-        let mut authors = self.query.author__in.unwrap_or(Vec::new());
+        let mut authors = self.author__in.unwrap_or(Vec::new());
         authors.push(author_id);
 
-        self.query.author__in = Some(authors);
+        self.author__in = Some(authors);
 
         self
     }
@@ -62,61 +50,61 @@ impl ParamBuilder {
      * use author id
      */
     pub fn author__not_in(mut self, author_id: u64) -> Self {
-        let mut authors = self.query.author__not_in.unwrap_or(Vec::new());
+        let mut authors = self.author__not_in.unwrap_or(Vec::new());
         authors.push(author_id);
 
-        self.query.author__not_in = Some(authors);
+        self.author__not_in = Some(authors);
 
         self
     }
 
     pub fn cat(mut self, cat_id: u64) -> Self {
-        self.query.cat = Some(cat_id);
+        self.cat = Some(cat_id);
 
         self
     }
 
     pub fn category_name(mut self, s: &str) -> Self {
-        self.query.category_name = Some(s.to_string());
+        self.category_name = Some(s.to_string());
 
         self
     }
 
     fn category__and(mut self, cat_id: u64) -> Self {
-        let mut ids = self.query.category__and.unwrap_or(Vec::new());
+        let mut ids = self.category__and.unwrap_or(Vec::new());
         ids.push(cat_id);
 
-        self.query.category__and = Some(ids);
+        self.category__and = Some(ids);
 
         self
     }
 
     pub fn category__in(mut self, cat_id: u64) -> Self {
-        let mut ids = self.query.category__in.unwrap_or(Vec::new());
+        let mut ids = self.category__in.unwrap_or(Vec::new());
         ids.push(cat_id);
 
-        self.query.category__in = Some(ids);
+        self.category__in = Some(ids);
 
         self
     }
 
     pub fn category__not_in(mut self, cat_id: u64) -> Self {
-        let mut ids = self.query.category__not_in.unwrap_or(Vec::new());
+        let mut ids = self.category__not_in.unwrap_or(Vec::new());
         ids.push(cat_id);
 
-        self.query.category__not_in = Some(ids);
+        self.category__not_in = Some(ids);
 
         self
     }
 
     pub fn tag(mut self, slug: &str) -> Self {
-        self.query.tag = Some(slug.to_string());
+        self.tag = Some(slug.to_string());
 
         self
     }
 
     pub fn tag_id(mut self, tag_id: u64) -> Self {
-        self.query.tag_id = Some(tag_id);
+        self.tag_id = Some(tag_id);
 
         self
     }
@@ -142,15 +130,15 @@ impl ParamBuilder {
     }
 
     pub fn tax_query(mut self, query: TaxQuery, relation: Option<TaxRelation>) -> Self {
-        let mut tax_q = self.query.tax_query.unwrap_or(HashMap::new());
+        let mut tax_q = self.tax_query.unwrap_or(HashMap::new());
 
         if let Some(rel) = relation {
             let qs_for_relation = tax_q.entry(rel).or_insert(vec![]);
             qs_for_relation.push(query);
 
-            self.query.tax_query = Some(tax_q);
+            self.tax_query = Some(tax_q);
         } else {
-            self.query.tax_query = Some(TaxQuery::new_single_tax_map(query));
+            self.tax_query = Some(TaxQuery::new_single_tax_map(query));
         }
 
         self
@@ -160,7 +148,7 @@ impl ParamBuilder {
      * Search keyword
      */
     pub fn s(mut self, s: &str) -> Self {
-        self.query.s = Some(s.to_string());
+        self.s = Some(s.to_string());
 
         self
     }
@@ -169,7 +157,7 @@ impl ParamBuilder {
      * use post id
      */
     pub fn p(mut self, id: u64) -> Self {
-        self.query.p = Some(id);
+        self.p = Some(id);
 
         self
     }
@@ -178,7 +166,7 @@ impl ParamBuilder {
      * use post slug
      */
     pub fn name(mut self, slug: &str) -> Self {
-        self.query.name = Some(slug.to_string());
+        self.name = Some(slug.to_string());
 
         self
     }
@@ -195,7 +183,7 @@ impl ParamBuilder {
      * use page id to return only child pages. Set to 0 to return only top-level entries.
      */
     pub fn post_parent(mut self, id: u64) -> Self {
-        self.query.post_parent = Some(id);
+        self.post_parent = Some(id);
 
         self
     }
@@ -204,11 +192,11 @@ impl ParamBuilder {
      * use post ids. Specify posts whose parent is in an array
      */
     pub fn post_parent__in(mut self, id: u64) -> Self {
-        let mut ids = self.query.post_parent__in.unwrap_or(Vec::new());
+        let mut ids = self.post_parent__in.unwrap_or(Vec::new());
 
         ids.push(id);
 
-        self.query.post_parent__in = Some(ids);
+        self.post_parent__in = Some(ids);
 
         self
     }
@@ -217,11 +205,11 @@ impl ParamBuilder {
      * use post ids. Specify posts whose parent is not in an array
      */
     pub fn post_parent__not_in(mut self, id: u64) -> Self {
-        let mut ids = self.query.post_parent__not_in.unwrap_or(Vec::new());
+        let mut ids = self.post_parent__not_in.unwrap_or(Vec::new());
 
         ids.push(id);
 
-        self.query.post_parent__not_in = Some(ids);
+        self.post_parent__not_in = Some(ids);
 
         self
     }
@@ -230,11 +218,11 @@ impl ParamBuilder {
      * use post ids. Specify posts to retrieve.
      */
     pub fn post__in(mut self, id: u64) -> Self {
-        let mut ids = self.query.post__in.unwrap_or(Vec::new());
+        let mut ids = self.post__in.unwrap_or(Vec::new());
 
         ids.push(id);
 
-        self.query.post__in = Some(ids);
+        self.post__in = Some(ids);
 
         self
     }
@@ -243,21 +231,21 @@ impl ParamBuilder {
      * use post ids. Specify post NOT to retrieve.
      */
     pub fn post__not_in(mut self, id: u64) -> Self {
-        let mut ids = self.query.post__not_in.unwrap_or(Vec::new());
+        let mut ids = self.post__not_in.unwrap_or(Vec::new());
 
         ids.push(id);
 
-        self.query.post__not_in = Some(ids);
+        self.post__not_in = Some(ids);
 
         self
     }
 
     pub fn post_name__in(mut self, s: &str) -> Self {
-        let mut names = self.query.post_name__in.unwrap_or(Vec::new());
+        let mut names = self.post_name__in.unwrap_or(Vec::new());
 
         names.push(s.to_string());
 
-        self.query.post_name__in = Some(names);
+        self.post_name__in = Some(names);
 
         self
     }
@@ -270,12 +258,12 @@ impl ParamBuilder {
      * use post types. Retrieves posts by post types, default value is ‘post‘.
      */
     pub fn post_type(mut self, post_type: &str) -> Self {
-        let mut types = self.query.post_type.unwrap_or(Vec::new());
+        let mut types = self.post_type.unwrap_or(Vec::new());
         dbg!(&types);
 
         types.push(post_type.to_string());
 
-        self.query.post_type = Some(types);
+        self.post_type = Some(types);
 
         self
     }
@@ -284,25 +272,25 @@ impl ParamBuilder {
      * Queries all post types. Will be overwritten if there is another call to post_type after this.
      */
     pub fn post_type_all(mut self) -> Self {
-        self.query.post_type = Some(Vec::new());
+        self.post_type = Some(Vec::new());
 
         self
     }
 
     pub fn post_status(mut self, status: PostStatus) -> Self {
-        self.query.post_status = Some(status);
+        self.post_status = Some(status);
 
         self
     }
 
     fn comment_count(mut self, count: u64) -> Self {
-        self.query.comment_count = Some(count);
+        self.comment_count = Some(count);
 
         self
     }
 
     pub fn posts_per_page(mut self, n: u64) -> Self {
-        self.query.posts_per_page = Some(n);
+        self.posts_per_page = Some(n);
 
         self
     }
@@ -311,7 +299,7 @@ impl ParamBuilder {
      * Starts from page 1
      */
     pub fn page(mut self, n: u64) -> Self {
-        self.query.page = Some(n - 1);
+        self.page = Some(n - 1);
 
         self
     }
@@ -321,7 +309,7 @@ impl ParamBuilder {
     }
 
     pub fn order(mut self, o: SqlOrder) -> Self {
-        self.query.order = Some(o);
+        self.order = Some(o);
 
         self
     }
@@ -330,7 +318,7 @@ impl ParamBuilder {
      * Sort retrieved posts by parameter.
      */
     pub fn orderby(mut self, ob: WpOrderBy) -> Self {
-        self.query.orderby = Some(ob);
+        self.orderby = Some(ob);
 
         self
     }
@@ -343,7 +331,7 @@ impl ParamBuilder {
             panic!("InvalidYear");
         }
 
-        self.query.year = Some(y);
+        self.year = Some(y);
 
         self
     }
@@ -356,7 +344,7 @@ impl ParamBuilder {
             panic!("InvalidMonth");
         }
 
-        self.query.monthnum = Some(m);
+        self.monthnum = Some(m);
 
         self
     }
@@ -369,7 +357,7 @@ impl ParamBuilder {
             panic!("InalidWeekNo");
         }
 
-        self.query.w = Some(w);
+        self.w = Some(w);
 
         self
     }
@@ -382,7 +370,7 @@ impl ParamBuilder {
             panic!("InvalidDay");
         }
 
-        self.query.day = Some(d);
+        self.day = Some(d);
 
         self
     }
@@ -395,7 +383,7 @@ impl ParamBuilder {
             panic!("InvalidHour");
         }
 
-        self.query.hour = Some(h);
+        self.hour = Some(h);
 
         self
     }
@@ -408,7 +396,7 @@ impl ParamBuilder {
             panic!("InvalidMinutes");
         }
 
-        self.query.minute = Some(min);
+        self.minute = Some(min);
 
         self
     }
@@ -421,7 +409,7 @@ impl ParamBuilder {
             panic!("InvalidSeconds");
         }
 
-        self.query.second = Some(s);
+        self.second = Some(s);
 
         self
     }
@@ -434,19 +422,19 @@ impl ParamBuilder {
             panic!("InvalidYearMonth");
         }
 
-        self.query.monthnum = None;
-        self.query.year = None;
-        self.query.m = Some(m);
+        self.monthnum = None;
+        self.year = None;
+        self.m = Some(m);
 
         self
     }
 
     pub fn date_query(mut self, query: DateQuery) -> Self {
-        let mut queries = self.query.date_query.unwrap_or(Vec::new());
+        let mut queries = self.date_query.unwrap_or(Vec::new());
 
         queries.push(query);
 
-        self.query.date_query = Some(queries);
+        self.date_query = Some(queries);
 
         self
     }
@@ -455,11 +443,11 @@ impl ParamBuilder {
      *  Custom field key.
      */
     pub fn meta_key(mut self, key: &str) -> Self {
-        if self.query.meta_query.is_some() {
+        if self.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
 
-        self.query.meta_key = Some(key.to_string());
+        self.meta_key = Some(key.to_string());
 
         self
     }
@@ -468,15 +456,15 @@ impl ParamBuilder {
      * Custom field value.
      */
     pub fn meta_value(mut self, val: &str) -> Self {
-        if self.query.meta_query.is_some() {
+        if self.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
 
-        if self.query.meta_value_num.is_some() {
-            self.query.meta_value_num = None;
+        if self.meta_value_num.is_some() {
+            self.meta_value_num = None;
         }
 
-        self.query.meta_value = Some(val.to_string());
+        self.meta_value = Some(val.to_string());
 
         self
     }
@@ -485,15 +473,15 @@ impl ParamBuilder {
      * Custom field value (number).
      */
     pub fn meta_value_num(mut self, n: i64) -> Self {
-        if self.query.meta_query.is_some() {
+        if self.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
 
-        if self.query.meta_value.is_some() {
-            self.query.meta_value = None;
+        if self.meta_value.is_some() {
+            self.meta_value = None;
         }
 
-        self.query.meta_value_num = Some(n);
+        self.meta_value_num = Some(n);
 
         self
     }
@@ -502,25 +490,25 @@ impl ParamBuilder {
      * Operator to test the ‘meta_value‘
      */
     pub fn meta_compare(mut self, compare: SqlSearchOperators) -> Self {
-        self.query.meta_compare = Some(compare);
+        self.meta_compare = Some(compare);
 
         self
     }
 
     pub fn meta_query(mut self, query: MetaQuery, relation: MetaRelation) -> Self {
         // Clear single meta
-        self.query.meta_compare = None;
-        self.query.meta_key = None;
-        self.query.meta_value = None;
-        self.query.meta_value_num = None;
+        self.meta_compare = None;
+        self.meta_key = None;
+        self.meta_value = None;
+        self.meta_value_num = None;
 
-        let mut meta_qs = self.query.meta_query.unwrap_or(HashMap::new());
+        let mut meta_qs = self.meta_query.unwrap_or(HashMap::new());
 
         let queries_for_relation = meta_qs.entry(relation).or_insert(vec![]);
 
         queries_for_relation.push(query);
 
-        self.query.meta_query = Some(meta_qs);
+        self.meta_query = Some(meta_qs);
 
         self
     }
@@ -540,56 +528,56 @@ mod tests {
     fn can_add_author() {
         let id = 1;
         let q = ParamBuilder::new().author(id);
-        assert_eq!(id, q.query.author.unwrap());
+        assert_eq!(id, q.author.unwrap());
     }
 
     #[test]
     fn can_add_author_in() {
         let id = 1;
         let q = ParamBuilder::new().author__in(id);
-        assert_eq!(id, *q.query.author__in.unwrap().first().unwrap());
+        assert_eq!(id, *q.author__in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_author_not_in() {
         let id = 1;
         let q = ParamBuilder::new().author__not_in(id);
-        assert_eq!(id, *q.query.author__not_in.unwrap().first().unwrap());
+        assert_eq!(id, *q.author__not_in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_category() {
         let cat = 1;
         let q = ParamBuilder::new().cat(cat);
-        assert_eq!(cat, q.query.cat.unwrap());
+        assert_eq!(cat, q.cat.unwrap());
     }
 
     #[test]
     fn can_add_category_and() {
         let id = 1;
         let q = ParamBuilder::new().category__and(id);
-        assert_eq!(id, *q.query.category__and.unwrap().first().unwrap());
+        assert_eq!(id, *q.category__and.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_category_in() {
         let id = 1;
         let q = ParamBuilder::new().category__in(id);
-        assert_eq!(id, *q.query.category__in.unwrap().first().unwrap());
+        assert_eq!(id, *q.category__in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_category_not_in() {
         let id = 1;
         let q = ParamBuilder::new().category__not_in(id);
-        assert_eq!(id, *q.query.category__not_in.unwrap().first().unwrap());
+        assert_eq!(id, *q.category__not_in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_tag() {
         let tag = "Tag";
         let q = ParamBuilder::new().tag(tag);
-        assert_eq!(tag, q.query.tag.unwrap());
+        assert_eq!(tag, q.tag.unwrap());
     }
 
     #[test]
@@ -598,7 +586,7 @@ mod tests {
         let terms = vec![String::from("1")];
         let tax = TaxQuery::new(tax_name.clone(), terms.clone());
         let q = ParamBuilder::new().tax_query(tax, None);
-        let stored = q.query.tax_query.unwrap();
+        let stored = q.tax_query.unwrap();
         assert!(stored.get(&TaxRelation::Single).is_some());
         let stored = stored.get(&TaxRelation::Single).unwrap().first().unwrap();
         assert_eq!(stored.taxonomy, tax_name);
@@ -619,7 +607,7 @@ mod tests {
             .tax_query(tax2, Some(TaxRelation::And))
             .tax_query(tax3, Some(TaxRelation::Or));
 
-        let created = q.query.tax_query.unwrap();
+        let created = q.tax_query.unwrap();
         assert_eq!(created.len(), 2);
         assert_eq!(created.get(&TaxRelation::And).unwrap().len(), 2);
         assert_eq!(created.get(&TaxRelation::Or).unwrap().len(), 1);
@@ -631,37 +619,37 @@ mod tests {
             .p(1)
             .post_parent(2)
             .post_status(PostStatus::Publish);
-        assert_eq!(q.query.p.unwrap(), 1);
-        assert_eq!(q.query.post_parent.unwrap(), 2);
-        assert_eq!(q.query.post_status.unwrap(), PostStatus::Publish);
+        assert_eq!(q.p.unwrap(), 1);
+        assert_eq!(q.post_parent.unwrap(), 2);
+        assert_eq!(q.post_status.unwrap(), PostStatus::Publish);
     }
 
     #[test]
     fn can_add_post_parent_in() {
         let id = 1;
         let q = ParamBuilder::new().post_parent__in(id);
-        assert_eq!(id, *q.query.post_parent__in.unwrap().first().unwrap());
+        assert_eq!(id, *q.post_parent__in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_post_parent_not_in() {
         let id = 1;
         let q = ParamBuilder::new().post_parent__not_in(id);
-        assert_eq!(id, *q.query.post_parent__not_in.unwrap().first().unwrap());
+        assert_eq!(id, *q.post_parent__not_in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_post_in() {
         let id = 1;
         let q = ParamBuilder::new().post__in(id);
-        assert_eq!(id, *q.query.post__in.unwrap().first().unwrap());
+        assert_eq!(id, *q.post__in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_post_not_in() {
         let id = 1;
         let q = ParamBuilder::new().post__not_in(id);
-        assert_eq!(id, *q.query.post__not_in.unwrap().first().unwrap());
+        assert_eq!(id, *q.post__not_in.unwrap().first().unwrap());
     }
 
     #[test]
@@ -670,7 +658,7 @@ mod tests {
         let q = ParamBuilder::new()
             .post_name__in("malcolm-x")
             .post_name__in("mlk");
-        let r = q.query.post_name__in.unwrap();
+        let r = q.post_name__in.unwrap();
         assert_eq!(r.first().unwrap(), "malcolm-x");
         assert_eq!(r.len(), 2);
     }
@@ -678,7 +666,7 @@ mod tests {
     #[test]
     fn can_add_post_type() {
         let q = ParamBuilder::new().post_type("page");
-        assert_eq!(q.query.post_type.unwrap().first().unwrap(), "page");
+        assert_eq!(q.post_type.unwrap().first().unwrap(), "page");
     }
 
     #[test]
@@ -689,20 +677,20 @@ mod tests {
             .p(1)
             .post_parent(2)
             .post_status(PostStatus::Publish);
-        assert_eq!(q.query.post_type.unwrap().len(), 2);
+        assert_eq!(q.post_type.unwrap().len(), 2);
     }
 
     #[test]
     fn can_add_comment_params() {
         let q = ParamBuilder::new().comment_count(2);
-        assert_eq!(q.query.comment_count.unwrap(), 2);
+        assert_eq!(q.comment_count.unwrap(), 2);
     }
 
     #[test]
     fn can_add_pagination_params() {
         let q = ParamBuilder::new().page(3).posts_per_page(20);
-        assert_eq!(q.query.page.unwrap(), 2);
-        assert_eq!(q.query.posts_per_page.unwrap(), 20);
+        assert_eq!(q.page.unwrap(), 2);
+        assert_eq!(q.posts_per_page.unwrap(), 20);
     }
 
     #[test]
@@ -710,8 +698,8 @@ mod tests {
         let q = ParamBuilder::new()
             .orderby(WpOrderBy::Author)
             .order(SqlOrder::Asc);
-        assert_eq!(q.query.orderby.unwrap(), WpOrderBy::Author);
-        assert_eq!(q.query.order.unwrap(), SqlOrder::Asc);
+        assert_eq!(q.orderby.unwrap(), WpOrderBy::Author);
+        assert_eq!(q.order.unwrap(), SqlOrder::Asc);
     }
 
     #[test]
@@ -725,13 +713,13 @@ mod tests {
             .hour(23)
             .minute(60)
             .second(60);
-        assert_eq!(q.query.year.unwrap(), 2023);
-        assert_eq!(q.query.monthnum.unwrap(), 1);
-        assert_eq!(q.query.w.unwrap(), 53);
-        assert_eq!(q.query.day.unwrap(), 31);
-        assert_eq!(q.query.hour.unwrap(), 23);
-        assert_eq!(q.query.minute.unwrap(), 60);
-        assert_eq!(q.query.second.unwrap(), 60);
+        assert_eq!(q.year.unwrap(), 2023);
+        assert_eq!(q.monthnum.unwrap(), 1);
+        assert_eq!(q.w.unwrap(), 53);
+        assert_eq!(q.day.unwrap(), 31);
+        assert_eq!(q.hour.unwrap(), 23);
+        assert_eq!(q.minute.unwrap(), 60);
+        assert_eq!(q.second.unwrap(), 60);
     }
 
     #[test]
@@ -739,7 +727,7 @@ mod tests {
         let dq1 = DateQuery::new().after(DateQueryAfterBefore::new(2022, 2, 2));
         let dq2 = DateQuery::new();
         let q = ParamBuilder::new().date_query(dq1).date_query(dq2);
-        let dq = q.query.date_query.unwrap();
+        let dq = q.date_query.unwrap();
         assert_eq!(dq.len(), 2);
         assert_eq!(dq.first().unwrap().after.as_ref().unwrap().day, 2);
     }
@@ -747,9 +735,9 @@ mod tests {
     #[test]
     fn m_clears_year_and_monthnum() {
         let q = ParamBuilder::new().year(2000).monthnum(7).m(202308);
-        assert!(q.query.year.is_none());
-        assert!(q.query.monthnum.is_none());
-        assert_eq!(q.query.m.unwrap(), 202308);
+        assert!(q.year.is_none());
+        assert!(q.monthnum.is_none());
+        assert_eq!(q.m.unwrap(), 202308);
     }
 
     #[test]
@@ -758,9 +746,9 @@ mod tests {
             .meta_key("key1")
             .meta_value("a")
             .meta_compare(SqlSearchOperators::Like);
-        assert_eq!(q.query.meta_key.unwrap(), "key1");
-        assert_eq!(q.query.meta_value.unwrap(), "a");
-        assert_eq!(q.query.meta_compare.unwrap(), SqlSearchOperators::Like);
+        assert_eq!(q.meta_key.unwrap(), "key1");
+        assert_eq!(q.meta_value.unwrap(), "a");
+        assert_eq!(q.meta_compare.unwrap(), SqlSearchOperators::Like);
     }
 
     #[test]
@@ -783,7 +771,7 @@ mod tests {
                 },
                 MetaRelation::And,
             );
-        let queries = q.query.meta_query.unwrap();
+        let queries = q.meta_query.unwrap();
         assert_eq!(queries.get(&MetaRelation::And).unwrap().len(), 2);
     }
 }

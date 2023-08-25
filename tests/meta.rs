@@ -4,7 +4,7 @@ use wp_query_rs::{query::meta_query::MetaQuery, *};
 fn meta_key() {
     let params = ParamBuilder::new().meta_key("_edit_last");
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);
 }
 
@@ -12,7 +12,7 @@ fn meta_key() {
 fn meta_value() {
     let params = ParamBuilder::new().meta_value("1");
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);
 }
 
@@ -20,7 +20,7 @@ fn meta_value() {
 fn meta_value_num() {
     let params = ParamBuilder::new().meta_value_num(1);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);
 }
 
@@ -84,6 +84,6 @@ fn meta_queries() {
             MetaRelation::And,
         );
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);
 }

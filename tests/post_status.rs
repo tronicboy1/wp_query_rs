@@ -4,7 +4,7 @@ use wp_query_rs::*;
 fn all_posts_are_publish() {
     let params = ParamBuilder::new().page(1).post_status(PostStatus::Publish);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts
         .posts
         .iter()
@@ -15,7 +15,7 @@ fn all_posts_are_publish() {
 fn all_posts_are_draft() {
     let params = ParamBuilder::new().page(1).post_status(PostStatus::Draft);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts
         .posts
         .iter()
@@ -26,7 +26,7 @@ fn all_posts_are_draft() {
 fn all_posts_are_auto_draft() {
     let params = ParamBuilder::new().page(1).post_status(PostStatus::AutoDraft);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts
         .posts
         .iter()
@@ -37,7 +37,7 @@ fn all_posts_are_auto_draft() {
 fn all_posts_are_private() {
     let params = ParamBuilder::new().page(1).post_status(PostStatus::Private);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts
         .posts
         .iter()
@@ -48,7 +48,7 @@ fn all_posts_are_private() {
 fn all_posts_are_trash() {
     let params = ParamBuilder::new().page(1).post_status(PostStatus::Trash);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts
         .posts
         .iter()
@@ -59,7 +59,7 @@ fn all_posts_are_trash() {
 fn all_posts_are_future() {
     let params = ParamBuilder::new().page(1).post_status(PostStatus::Future);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts
         .posts
         .iter()
@@ -70,7 +70,7 @@ fn all_posts_are_future() {
 fn post_type_any() {
     let params = ParamBuilder::new().page(1).post_status(PostStatus::Any);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(!posts
         .posts
         .iter()

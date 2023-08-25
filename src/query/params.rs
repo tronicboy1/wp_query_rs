@@ -13,6 +13,7 @@ use crate::wp_post::post_status::PostStatus;
 
 use super::date_query::DateQuery;
 
+/// Configuration for running a WordPress database query.
 #[allow(non_snake_case)]
 #[derive(Debug)]
 pub struct Params {

@@ -6,7 +6,7 @@ fn orderby_post_date() {
         .orderby(WpOrderBy::Date)
         .order(SqlOrder::Desc);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert_eq!(posts.post_count(), 10);
 }
 
@@ -16,7 +16,7 @@ fn orderby_author() {
         .orderby(WpOrderBy::Author)
         .order(SqlOrder::Desc);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert_eq!(posts.post_count(), 10);
 }
 
@@ -26,7 +26,7 @@ fn orderby_comments() {
         .orderby(WpOrderBy::CommentCount)
         .order(SqlOrder::Asc);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert_eq!(posts.post_count(), 10);
 }
 
@@ -36,7 +36,7 @@ fn orderby_modified() {
         .orderby(WpOrderBy::Modified)
         .order(SqlOrder::Asc);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert_eq!(posts.post_count(), 10);
 }
 
@@ -46,6 +46,6 @@ fn orderby_title() {
         .orderby(WpOrderBy::Title)
         .order(SqlOrder::Asc);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert_eq!(posts.post_count(), 10);
 }

@@ -4,7 +4,7 @@ use wp_query_rs::*;
 fn tag_id() {
     let params = ParamBuilder::new().tag_id(1);
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
     assert_eq!(posts.post_count(), 10);
 }
 
@@ -12,5 +12,5 @@ fn tag_id() {
 fn tag() {
     let params = ParamBuilder::new().tag("tag-a");
 
-    let posts = WP_Query::new(params.params()).expect("SqlFailed");
+    let posts = WP_Query::new(params).expect("SqlFailed");
 }
