@@ -54,7 +54,7 @@ fn date_query() {
                 day: 23,
             })
             .inclusive(true),
-    ).orderby(query::WpOrderBy::Date);
+    ).orderby(WpOrderBy::Date);
 
     let posts = WP_Query::new(params).expect("SqlFailed");
 }

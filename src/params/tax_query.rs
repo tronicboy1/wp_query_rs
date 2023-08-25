@@ -56,9 +56,7 @@ pub enum TaxField {
 
 #[cfg(test)]
 mod tests {
-    use crate::{query::tax_query::TaxField, sql::SqlConditionOperator};
-
-    use super::TaxQuery;
+    use super::*;
 
     #[test]
     fn can_create() {

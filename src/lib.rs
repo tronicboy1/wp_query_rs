@@ -1,26 +1,26 @@
 use mysql::prelude::Queryable;
 use mysql::PooledConn;
 use mysql_common::Row;
-use query::params::Params;
+use params::Params;
 use query_builder::QueryBuilder;
 use sql::get_conn;
 use sql::unwrap_row;
 use std::error::Error;
 
-pub use param_builder::ParamBuilder;
-pub use query::date_query::DateColumn;
-pub use query::date_query::DateQuery;
-pub use query::date_query::DateQueryAfterBefore;
-pub use query::meta_query::MetaQuery;
-pub use query::meta_query::MetaRelation;
+pub use params::date_query::DateColumn;
+pub use params::date_query::DateQuery;
+pub use params::date_query::DateQueryAfterBefore;
+pub use params::meta_query::MetaQuery;
+pub use params::meta_query::MetaRelation;
+pub use params::orderby::WpOrderBy;
+pub use params::param_builder::ParamBuilder;
 pub use sql::env_vars::EnvVars;
 pub use sql::SqlOrder;
 pub use sql::SqlSearchOperators;
 pub use wp_post::post_status::PostStatus;
 pub use wp_post::WP_Post;
 
-pub mod param_builder;
-pub mod query;
+mod params;
 mod query_builder;
 mod sql;
 mod wp_post;

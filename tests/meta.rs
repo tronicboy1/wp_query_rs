@@ -1,4 +1,4 @@
-use wp_query_rs::{query::meta_query::MetaQuery, *};
+use wp_query_rs::*;
 
 #[test]
 fn meta_key() {

@@ -1,16 +1,12 @@
 use std::collections::HashMap;
 
 use crate::{
-    query::{
-        date_query::DateQuery,
-        meta_query::{MetaQuery, MetaRelation},
-        orderby::WpOrderBy,
-        params::Params,
-        tax_query::{TaxQuery, TaxRelation},
-    },
     sql::{SqlOrder, SqlSearchOperators},
     wp_post::post_status::PostStatus,
+    Params, DateQuery, MetaQuery, MetaRelation,
 };
+
+use super::{tax_query::{TaxQuery, TaxRelation}, orderby::WpOrderBy};
 
 pub type ParamBuilder = Params;
 
@@ -520,8 +516,6 @@ impl ParamBuilder {
 
 #[cfg(test)]
 mod tests {
-    use crate::query::date_query::DateQueryAfterBefore;
-
     use super::*;
 
     #[test]
@@ -724,7 +718,7 @@ mod tests {
 
     #[test]
     fn can_add_date_queries() {
-        let dq1 = DateQuery::new().after(DateQueryAfterBefore::new(2022, 2, 2));
+        let dq1 = DateQuery::new().after(crate::DateQueryAfterBefore::new(2022, 2, 2));
         let dq2 = DateQuery::new();
         let q = ParamBuilder::new().date_query(dq1).date_query(dq2);
         let dq = q.date_query.unwrap();

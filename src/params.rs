@@ -1,17 +1,20 @@
+pub mod date_query;
+pub mod meta_query;
+pub mod orderby;
+pub mod param_builder;
+pub mod tax_query;
+
 use std::collections::HashMap;
 
 use ext_php_rs::convert::FromZval;
 
 use crate::sql::{SqlCompareOperator, SqlOrder, SqlSearchOperators};
-
-use crate::query::{
-    meta_query::{MetaQuery, MetaRelation},
-    orderby::WpOrderBy,
-    tax_query::{TaxQuery, TaxRelation},
-};
 use crate::wp_post::post_status::PostStatus;
 
-use super::date_query::DateQuery;
+use self::date_query::DateQuery;
+use self::meta_query::{MetaQuery, MetaRelation};
+use self::orderby::WpOrderBy;
+use self::tax_query::{TaxQuery, TaxRelation};
 
 /// Configuration for running a WordPress database query.
 #[allow(non_snake_case)]

@@ -1,4 +1,4 @@
-use wp_query_rs::{query::WpOrderBy, *};
+use wp_query_rs::*;
 
 #[test]
 fn orderby_post_date() {

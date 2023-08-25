@@ -3,7 +3,7 @@ use std::error::Error;
 use mysql_common::{prelude::ToValue, Value};
 use sql_paginatorr::LimitOffsetPair;
 
-use crate::{query::params::Params, sql::SqlOrder, wp_post::post_status::PostStatus};
+use crate::{params::Params, sql::SqlOrder, wp_post::post_status::PostStatus};
 
 type StmtValues = Vec<Value>;
 
