@@ -1,6 +1,6 @@
 [package]
 name = "wp_query_rs"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 authors = ["Austin John Mayer"]
 description = "A rust implementation of the classic WP_Query utility to access WordPress posts outside of a WordPress environment."
