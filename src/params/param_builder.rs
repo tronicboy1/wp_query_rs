@@ -3,10 +3,13 @@ use std::collections::HashMap;
 use crate::{
     sql::{SqlOrder, SqlSearchOperators},
     wp_post::post_status::PostStatus,
-    Params, DateQuery, MetaQuery, MetaRelation,
+    DateQuery, MetaQuery, MetaRelation, Params,
 };
 
-use super::{tax_query::{TaxQuery, TaxRelation}, orderby::WpOrderBy};
+use super::{
+    orderby::WpOrderBy,
+    tax_query::{TaxQuery, TaxRelation},
+};
 
 /// Builds query params by chaining option callbacks
 ///
@@ -34,27 +37,21 @@ pub type ParamBuilder = Params;
 
 #[allow(non_snake_case)]
 impl ParamBuilder {
-    /**
-     * use author id
-     */
+    /// use author id
     pub fn author(mut self, author_id: u64) -> Self {
         self.author = Some(author_id);
 
         self
     }
 
-    /**
-     * use ‘user_nicename‘ – NOT name.
-     */
+    /// use ‘user_nicename‘ – NOT name.
     pub fn author_name(mut self, s: &str) -> Self {
         self.author_name = Some(s.to_string());
 
         self
     }
 
-    /**
-     * use author id
-     */
+    /// use author id
     pub fn author__in(mut self, author_id: u64) -> Self {
         let mut authors = self.author__in.unwrap_or(Vec::new());
         authors.push(author_id);
@@ -64,9 +61,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * use author id
-     */
+    /// use author id
     pub fn author__not_in(mut self, author_id: u64) -> Self {
         let mut authors = self.author__not_in.unwrap_or(Vec::new());
         authors.push(author_id);
@@ -162,27 +157,21 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Search keyword
-     */
+    /// Search keyword
     pub fn s(mut self, s: &str) -> Self {
         self.s = Some(s.to_string());
 
         self
     }
 
-    /**
-     * use post id
-     */
+    /// use post id
     pub fn p(mut self, id: u64) -> Self {
         self.p = Some(id);
 
         self
     }
 
-    /**
-     * use post slug
-     */
+    /// use post slug
     pub fn name(mut self, slug: &str) -> Self {
         self.name = Some(slug.to_string());
 
@@ -197,18 +186,14 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * use page id to return only child pages. Set to 0 to return only top-level entries.
-     */
+    /// use page id to return only child pages. Set to 0 to return only top-level entries.
     pub fn post_parent(mut self, id: u64) -> Self {
         self.post_parent = Some(id);
 
         self
     }
 
-    /**
-     * use post ids. Specify posts whose parent is in an array
-     */
+    /// use post ids. Specify posts whose parent is in an array
     pub fn post_parent__in(mut self, id: u64) -> Self {
         let mut ids = self.post_parent__in.unwrap_or(Vec::new());
 
@@ -219,9 +204,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * use post ids. Specify posts whose parent is not in an array
-     */
+    /// use post ids. Specify posts whose parent is not in an array
     pub fn post_parent__not_in(mut self, id: u64) -> Self {
         let mut ids = self.post_parent__not_in.unwrap_or(Vec::new());
 
@@ -232,9 +215,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * use post ids. Specify posts to retrieve.
-     */
+    /// use post ids. Specify posts to retrieve.
     pub fn post__in(mut self, id: u64) -> Self {
         let mut ids = self.post__in.unwrap_or(Vec::new());
 
@@ -245,9 +226,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * use post ids. Specify post NOT to retrieve.
-     */
+    /// use post ids. Specify post NOT to retrieve.
     pub fn post__not_in(mut self, id: u64) -> Self {
         let mut ids = self.post__not_in.unwrap_or(Vec::new());
 
@@ -272,9 +251,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * use post types. Retrieves posts by post types, default value is ‘post‘.
-     */
+    /// use post types. Retrieves posts by post types, default value is ‘post‘.
     pub fn post_type(mut self, post_type: &str) -> Self {
         let mut types = self.post_type.unwrap_or(Vec::new());
         dbg!(&types);
@@ -286,9 +263,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Queries all post types. Will be overwritten if there is another call to post_type after this.
-     */
+    /// Queries all post types. Will be overwritten if there is another call to post_type after this.
     pub fn post_type_all(mut self) -> Self {
         self.post_type = Some(Vec::new());
 
@@ -313,9 +288,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Starts from page 1
-     */
+    /// Starts from page 1
     pub fn page(mut self, n: u64) -> Self {
         self.page = Some(n - 1);
 
@@ -332,18 +305,14 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Sort retrieved posts by parameter.
-     */
+    /// Sort retrieved posts by parameter.
     pub fn orderby(mut self, ob: WpOrderBy) -> Self {
         self.orderby = Some(ob);
 
         self
     }
 
-    /**
-     * 4 digit year (e.g. 2011).
-     */
+    /// 4 digit year (e.g. 2011).
     pub fn year(mut self, y: u16) -> Self {
         if y > 9999 {
             panic!("InvalidYear");
@@ -354,9 +323,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Month number (from 1 to 12).
-     */
+    /// Month number (from 1 to 12).
     pub fn monthnum(mut self, m: u8) -> Self {
         if m > 12 || m < 1 {
             panic!("InvalidMonth");
@@ -367,9 +334,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     *  Week of the year (from 0 to 53). Uses MySQL WEEK command. The mode is dependent on the “start_of_week” option.
-     */
+    ///  Week of the year (from 0 to 53). Uses MySQL WEEK command. The mode is dependent on the “start_of_week” option.
     pub fn w(mut self, w: u8) -> Self {
         if w > 53 {
             panic!("InalidWeekNo");
@@ -380,9 +345,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Day of the month (from 1 to 31).
-     */
+    /// Day of the month (from 1 to 31).
     pub fn day(mut self, d: u8) -> Self {
         if d > 31 || d < 1 {
             panic!("InvalidDay");
@@ -393,9 +356,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Hour (from 0 to 23).
-     */
+    /// Hour (from 0 to 23).
     pub fn hour(mut self, h: u8) -> Self {
         if h > 23 {
             panic!("InvalidHour");
@@ -406,9 +367,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Minute (from 0 to 60).
-     */
+    /// Minute (from 0 to 60).
     pub fn minute(mut self, min: u8) -> Self {
         if min > 60 {
             panic!("InvalidMinutes");
@@ -419,9 +378,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Second (0 to 60).
-     */
+    /// Second (0 to 60).
     pub fn second(mut self, s: u8) -> Self {
         if s > 60 {
             panic!("InvalidSeconds");
@@ -432,9 +389,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * YearMonth (For e.g.: 201307).
-     */
+    /// YearMonth (For e.g.: 201307).
     fn m(mut self, m: u64) -> Self {
         if m > 999999 {
             panic!("InvalidYearMonth");
@@ -457,9 +412,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     *  Custom field key.
-     */
+    /// Custom field key.
     pub fn meta_key(mut self, key: &str) -> Self {
         if self.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
@@ -470,9 +423,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Custom field value.
-     */
+    /// Custom field value.
     pub fn meta_value(mut self, val: &str) -> Self {
         if self.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
@@ -487,9 +438,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Custom field value (number).
-     */
+    /// Custom field value (number).
     pub fn meta_value_num(mut self, n: i64) -> Self {
         if self.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
@@ -504,9 +453,7 @@ impl ParamBuilder {
         self
     }
 
-    /**
-     * Operator to test the ‘meta_value‘
-     */
+    /// Operator to test the ‘meta_value‘
     pub fn meta_compare(mut self, compare: SqlSearchOperators) -> Self {
         self.meta_compare = Some(compare);
 
