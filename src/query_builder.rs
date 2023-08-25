@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use mysql_common::{prelude::ToValue, Value};
 use sql_paginatorr::LimitOffsetPair;
 
@@ -24,7 +22,7 @@ impl QueryBuilder {
         }
     }
 
-    pub fn query(mut self) -> Result<QueryAndValues, Box<dyn Error>> {
+    pub fn query(mut self) -> QueryAndValues {
         let params = &self.params;
 
         self.query.push_str(
@@ -313,7 +311,7 @@ impl QueryBuilder {
             self.values.push(Value::UInt(limit));
         }
 
-        Ok(QueryAndValues(self.query, self.values))
+        QueryAndValues(self.query, self.values)
     }
 }
 

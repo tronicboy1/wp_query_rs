@@ -11,6 +11,7 @@ use self::post_status::PostStatus;
 
 pub mod post_status;
 
+/// A representation of a wp_posts entity queried from the database
 #[derive(Debug, Clone)]
 #[allow(non_camel_case_types, non_snake_case)]
 pub struct WP_Post {

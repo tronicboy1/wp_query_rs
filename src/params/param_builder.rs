@@ -8,6 +8,28 @@ use crate::{
 
 use super::{tax_query::{TaxQuery, TaxRelation}, orderby::WpOrderBy};
 
+/// Builds query params by chaining option callbacks
+///
+/// # Examples
+///
+/// ```
+/// use wp_query_rs::{ParamBuilder, PostStatus};
+///
+/// let params = ParamBuilder::new().page(2)
+///     .post_status(PostStatus::AutoDraft)
+///     .posts_per_page(20);
+/// ```
+///
+/// # Panics
+///
+/// Will panic if you provide faulty datetime values
+///
+/// ```rust,ignore
+/// use wp_query_rs::ParamBuilder;
+///
+/// let params = ParamBuilder::new()
+///     .hour(24); // InvalidHour
+/// ```
 pub type ParamBuilder = Params;
 
 #[allow(non_snake_case)]

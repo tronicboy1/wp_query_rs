@@ -1,3 +1,6 @@
+//! # WP Query Rust
+//! A rust implementation of the classic WP_Query utility to access WordPress posts outside of a WordPress environment.
+
 use mysql::prelude::Queryable;
 use mysql::PooledConn;
 use mysql_common::Row;
@@ -5,7 +8,6 @@ use params::Params;
 use query_builder::QueryBuilder;
 use sql::get_conn;
 use sql::unwrap_row;
-use std::error::Error;
 
 pub use params::date_query::DateColumn;
 pub use params::date_query::DateQuery;
@@ -32,14 +34,24 @@ pub struct WP_Query {
 }
 
 impl WP_Query {
-    /**
-     * Queries the WordPress Database for posts.
-     *
-     * Uses environment variables to get a connection to the database.
-     *
-     * For using your own pool/connection, use `WP_Query::with_connection`.
-     */
-    pub fn new(params: Params) -> Result<Self, Box<dyn Error>> {
+    /// Queries the WordPress Database for posts.
+    ///
+    /// Uses environment variables to create a connection pool that is shared through the life of the application ('static).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use wp_query_rs::{ParamBuilder, WP_Query};
+    ///
+    /// let params = ParamBuilder::new().page(1).post_type("post");
+    ///
+    /// let wp_q = WP_Query::new(params);
+    /// ```
+    ///
+    /// # Errors
+    /// Will return an error if there is an error in the mysql query. This may be from innapropriate SQL built in the query builder,
+    /// or more likely a connection issue from incorrect environment variables.
+    pub fn new(params: Params) -> Result<Self, mysql::Error> {
         let mut conn = get_conn()?;
 
         let posts: Vec<WP_Post> = Self::query(&mut conn, params)?;
@@ -47,17 +59,32 @@ impl WP_Query {
         Ok(Self { posts })
     }
 
-    /**
-     * Queries the WordPress database with a connection provided
-     */
-    pub fn with_connection(conn: &mut PooledConn, params: Params) -> Result<Self, Box<dyn Error>> {
+    /// Queries the WordPress database with a connection provided from a mysql connection pool.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use wp_query_rs::{ParamBuilder, WP_Query};
+    ///
+    /// let my_pool: mysql::Pool;
+    ///
+    /// let mut conn = my_pool.get_conn().unwrap();
+    ///
+    /// let params = ParamBuilder::new().page(1).post_type("post");
+    ///
+    /// let wp_q = WP_Query::with_connection(&mut conn, params);
+    /// ```
+    ///
+    /// # Errors
+    /// When an error occurs in the SQL query.
+    pub fn with_connection(conn: &mut PooledConn, params: Params) -> Result<Self, mysql::Error> {
         let posts: Vec<WP_Post> = Self::query(conn, params)?;
 
         Ok(Self { posts })
     }
 
-    fn query(conn: &mut PooledConn, params: Params) -> Result<Vec<WP_Post>, Box<dyn Error>> {
-        let query_builder::QueryAndValues(q, values) = QueryBuilder::new(params).query()?;
+    fn query(conn: &mut PooledConn, params: Params) -> Result<Vec<WP_Post>, mysql::Error> {
+        let query_builder::QueryAndValues(q, values) = QueryBuilder::new(params).query();
 
         let stmt = conn.prep(q)?;
 
