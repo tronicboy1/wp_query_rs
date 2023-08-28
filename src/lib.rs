@@ -19,13 +19,15 @@ pub use params::Params;
 pub use sql::env_vars::EnvVars;
 pub use sql::SqlOrder;
 pub use sql::SqlSearchOperators;
+pub use wp_post::add_post_meta;
+pub use wp_post::get_post_meta;
 pub use wp_post::post_status::PostStatus;
 pub use wp_post::WP_Post;
 
 mod params;
 mod query_builder;
 mod sql;
-mod wp_post;
+pub mod wp_post;
 
 #[derive(Debug)]
 #[allow(non_camel_case_types)]

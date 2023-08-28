@@ -8,9 +8,11 @@ use ext_php_rs::{
 };
 use mysql_common::time::Date;
 
-use self::post_status::PostStatus;
+pub use self::meta::WpMetaResults;
+use self::{meta::WpMeta, post_status::PostStatus};
 
 mod builder;
+pub mod meta;
 pub mod post_status;
 mod sql;
 
@@ -145,6 +147,16 @@ fn get_date_now() -> Date {
 fn get_utc_date_now() -> Date {
     let local_now = chrono::offset::Utc::now().date_naive();
     Date::from_ordinal_date(local_now.year(), local_now.ordinal() as u16).unwrap()
+}
+
+/// Retrieves a post meta field for the given post ID.
+pub fn get_post_meta(post_id: u64, meta_key: &str, single: bool) -> WpMetaResults {
+    WpMeta::get_post_meta(post_id, meta_key, single)
+}
+
+/// Adds a meta field to the given post.
+pub fn add_post_meta(post_id: u64, meta_key: &str, meta_value: &str) -> Result<(), mysql::Error> {
+    WpMeta::add_post_meta(post_id, meta_key, meta_value)
 }
 
 #[cfg(test)]
