@@ -1,7 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use mysql::{OptsBuilder, PooledConn};
-use mysql_common::{time::Date, FromValueError, Row};
+use mysql_common::{time::PrimitiveDateTime, FromValueError, Row};
 
 use crate::{wp_post::post_status::PostStatus, WP_Post};
 
@@ -30,10 +30,11 @@ pub fn unwrap_row(row: &mut Row) -> Result<WP_Post, FromValueError> {
     let comment_count: u64 = row.take_opt(2).unwrap()?;
     let post_parent: u64 = row.take_opt(3).unwrap()?;
     let menu_order: u64 = row.take_opt(4).unwrap()?;
-    let post_date: Date = row.take_opt(5).unwrap()?;
-    let post_date_gmt: Date = row.take_opt(6).unwrap().unwrap_or(post_date.clone());
-    let post_modified: Date = row.take_opt(7).unwrap().unwrap_or(post_date.clone());
-    let post_modified_gmt: Date = row.take_opt(8).unwrap().unwrap_or(post_date_gmt.clone());
+    let post_date: PrimitiveDateTime = row.take_opt(5).unwrap()?;
+    let post_date_gmt: PrimitiveDateTime = row.take_opt(6).unwrap().unwrap_or(post_date.clone());
+    let post_modified: PrimitiveDateTime = row.take_opt(7).unwrap().unwrap_or(post_date.clone());
+    let post_modified_gmt: PrimitiveDateTime =
+        row.take_opt(8).unwrap().unwrap_or(post_date_gmt.clone());
     let post_status: String = row.take_opt(9).unwrap()?;
     let post_status = PostStatus::from_str(&post_status).unwrap();
     let post_content: String = row.take_opt(10).unwrap()?;

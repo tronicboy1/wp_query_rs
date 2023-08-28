@@ -1,4 +1,4 @@
-use chrono::Datelike;
+use chrono::{Datelike, Timelike};
 use ext_php_rs::{
     boxed::ZBox,
     convert::{FromZval, IntoZval},
@@ -6,7 +6,7 @@ use ext_php_rs::{
     flags::DataType,
     types::{ZendObject, Zval},
 };
-use mysql_common::time::Date;
+use mysql_common::time::{Date, PrimitiveDateTime, Time};
 
 pub use self::meta::WpMetaResults;
 use self::{meta::WpMeta, post_status::PostStatus};
@@ -22,8 +22,8 @@ mod sql;
 pub struct WP_Post {
     pub ID: u64,
     pub post_author: u64,
-    pub post_date: Date,
-    pub post_date_gmt: Date,
+    pub post_date: PrimitiveDateTime,
+    pub post_date_gmt: PrimitiveDateTime,
     pub post_content: String,
     pub post_title: String,
     pub post_excerpt: String,
@@ -34,8 +34,8 @@ pub struct WP_Post {
     pub post_name: String,
     pub to_ping: String,
     pub pinged: String,
-    pub post_modified: Date,
-    pub post_modified_gmt: Date,
+    pub post_modified: PrimitiveDateTime,
+    pub post_modified_gmt: PrimitiveDateTime,
     pub post_content_filtered: String,
     pub post_parent: u64,
     pub guid: String,
@@ -139,14 +139,30 @@ impl<'a> FromZval<'a> for WP_Post {
     }
 }
 
-fn get_date_now() -> Date {
-    let local_now = chrono::offset::Local::now().date_naive();
-    Date::from_ordinal_date(local_now.year(), local_now.ordinal() as u16).unwrap()
+fn get_date_now() -> PrimitiveDateTime {
+    let local_now = chrono::offset::Local::now();
+    PrimitiveDateTime::new(
+        Date::from_ordinal_date(local_now.year(), local_now.ordinal() as u16).unwrap(),
+        Time::from_hms(
+            local_now.hour() as u8,
+            local_now.minute() as u8,
+            local_now.second() as u8,
+        )
+        .unwrap(),
+    )
 }
 
-fn get_utc_date_now() -> Date {
-    let local_now = chrono::offset::Utc::now().date_naive();
-    Date::from_ordinal_date(local_now.year(), local_now.ordinal() as u16).unwrap()
+fn get_utc_date_now() -> PrimitiveDateTime {
+    let local_now = chrono::offset::Utc::now();
+    PrimitiveDateTime::new(
+        Date::from_ordinal_date(local_now.year(), local_now.ordinal() as u16).unwrap(),
+        Time::from_hms(
+            local_now.hour() as u8,
+            local_now.minute() as u8,
+            local_now.second() as u8,
+        )
+        .unwrap(),
+    )
 }
 
 /// Retrieves a post meta field for the given post ID.

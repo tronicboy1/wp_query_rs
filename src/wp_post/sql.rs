@@ -32,18 +32,20 @@ impl WP_Post {
             `post_type`,
             `post_mime_type`,
             `comment_count`
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
         )
     }
 
-    pub fn insert(self) -> Result<(), mysql::Error> {
+    pub fn insert(self) -> Result<u64, mysql::Error> {
         let mut conn = get_conn()?;
 
         let stmt = Self::get_stmt(&mut conn)?;
 
         conn.exec_drop(stmt, self)?;
 
-        Ok(())
+        let post_id: u64 = conn.exec_first("SELECT LAST_INSERT_ID();", ())?.unwrap();
+
+        Ok(post_id)
     }
 
     pub fn insert_bulk(v: Vec<Self>) -> Result<(), mysql::Error> {

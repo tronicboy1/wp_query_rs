@@ -7,7 +7,7 @@ fn add_post() -> u64 {
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_secs();
-    let title = format!("My Test Post {}", now);
+    let title = format!("My Test Meta Post {}", now);
     post.post_title = title.clone();
 
     post.insert().expect("InsertFailed");
