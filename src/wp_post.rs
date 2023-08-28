@@ -1,3 +1,4 @@
+use chrono::Datelike;
 use ext_php_rs::{
     boxed::ZBox,
     convert::{FromZval, IntoZval},
@@ -9,7 +10,9 @@ use mysql_common::time::Date;
 
 use self::post_status::PostStatus;
 
+mod builder;
 pub mod post_status;
+mod sql;
 
 /// A representation of a wp_posts entity queried from the database
 #[derive(Debug, Clone)]
@@ -41,6 +44,37 @@ pub struct WP_Post {
 }
 
 impl WP_Post {
+    pub fn new(post_author: u64) -> Self {
+        let now = get_date_now();
+        let now_utc = get_utc_date_now();
+
+        Self {
+            ID: 0,
+            post_author,
+            post_date: now.clone(),
+            post_date_gmt: now_utc.clone(),
+            post_content: String::new(),
+            post_title: String::new(),
+            post_excerpt: String::new(),
+            post_status: PostStatus::Draft,
+            comment_status: String::new(),
+            ping_status: String::new(),
+            post_password: String::new(),
+            post_name: String::new(),
+            to_ping: String::new(),
+            pinged: String::new(),
+            post_modified: now.clone(),
+            post_modified_gmt: now_utc.clone(),
+            post_content_filtered: String::new(),
+            post_parent: 0,
+            guid: String::new(),
+            menu_order: 0,
+            post_type: String::from("post"),
+            post_mime_type: String::new(),
+            comment_count: 0,
+        }
+    }
+
     fn build_zobj(self) -> ext_php_rs::error::Result<ZBox<_zend_object>> {
         let mut zobj = ZendObject::new_stdclass();
 
@@ -102,3 +136,16 @@ impl<'a> FromZval<'a> for WP_Post {
         None
     }
 }
+
+fn get_date_now() -> Date {
+    let local_now = chrono::offset::Local::now().date_naive();
+    Date::from_ordinal_date(local_now.year(), local_now.ordinal() as u16).unwrap()
+}
+
+fn get_utc_date_now() -> Date {
+    let local_now = chrono::offset::Utc::now().date_naive();
+    Date::from_ordinal_date(local_now.year(), local_now.ordinal() as u16).unwrap()
+}
+
+#[cfg(test)]
+mod tests {}

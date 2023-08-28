@@ -87,5 +87,11 @@ impl IntoZval for PostStatus {
     }
 }
 
+impl Into<mysql::Value> for PostStatus {
+    fn into(self) -> mysql::Value {
+        mysql::Value::Bytes(self.to_string().into_bytes())
+    }
+}
+
 #[cfg(test)]
 mod tests {}
