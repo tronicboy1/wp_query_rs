@@ -131,7 +131,7 @@ impl QueryBuilder {
         /* Add search conditions */
         if let Some(keyword) = params.s {
             self.query
-                .push_str(" AND wp_posts.post_content LIKE CONCAT('%',?,'%')");
+                .push_str(" AND wp_posts.post_content LIKE CONCAT('%',?,'%') OR LIKE wp_posts.post_title CONCAT('%',?,'%')");
             self.values.push(Value::Bytes(keyword.into_bytes()));
         }
 
