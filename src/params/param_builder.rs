@@ -254,7 +254,6 @@ impl ParamBuilder {
     /// use post types. Retrieves posts by post types, default value is ‘post‘.
     pub fn post_type(mut self, post_type: &str) -> Self {
         let mut types = self.post_type.unwrap_or(Vec::new());
-        dbg!(&types);
 
         types.push(post_type.to_string());
 
