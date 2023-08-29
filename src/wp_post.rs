@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use chrono::{Datelike, Timelike};
 use ext_php_rs::{
     boxed::ZBox,
@@ -171,7 +173,11 @@ pub fn get_post_meta(post_id: u64, meta_key: &str, single: bool) -> WpMetaResult
 }
 
 /// Adds a meta field to the given post.
-pub fn add_post_meta(post_id: u64, meta_key: &str, meta_value: &str) -> Result<(), mysql::Error> {
+pub fn add_post_meta(
+    post_id: u64,
+    meta_key: &str,
+    meta_value: impl Display,
+) -> Result<(), mysql::Error> {
     WpMeta::add_post_meta(post_id, meta_key, meta_value)
 }
 

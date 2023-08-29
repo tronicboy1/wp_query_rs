@@ -22,14 +22,14 @@ fn add_post() -> u64 {
 fn can_add_post_meta() {
     let post_id = add_post();
 
-    add_post_meta(post_id, "my_custom_rs_meta", &42.to_string()).expect("MetaInsertFailed");
+    add_post_meta(post_id, "my_custom_rs_meta", 42).expect("MetaInsertFailed");
 }
 
 #[test]
 fn can_get_post_meta() {
     let post_id = add_post();
 
-    add_post_meta(post_id, "my_custom_rs_meta", &42.to_string()).expect("MetaInsertFailed");
+    add_post_meta(post_id, "my_custom_rs_meta", 42).expect("MetaInsertFailed");
 
     let meta = get_post_meta(post_id, "my_custom_rs_meta", true);
 

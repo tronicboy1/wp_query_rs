@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use mysql::prelude::Queryable;
 use mysql_common::prelude::ToValue;
 
@@ -30,7 +32,7 @@ impl WpMeta {
             .expect("StmtError");
         let params = mysql::Params::Positional(vec![post_id.to_value(), meta_key.to_value()]);
 
-        let to_wp_post = |(meta_id, post_id, meta_key, meta_value)| WpMeta {
+        let to_wp_meta = |(meta_id, post_id, meta_key, meta_value)| WpMeta {
             meta_id,
             post_id,
             meta_value,
@@ -41,24 +43,31 @@ impl WpMeta {
             conn.exec_first(stmt, params)
                 .ok()
                 .flatten()
-                .map(to_wp_post)
-                .map(|post| WpMetaResults::Single(post))
+                .map(to_wp_meta)
+                .map(|meta| WpMetaResults::Single(meta))
                 .unwrap_or(WpMetaResults::Empty)
         } else {
-            conn.exec_map(stmt, params, to_wp_post)
-                .map(|posts| WpMetaResults::Array(posts))
+            conn.exec_map(stmt, params, to_wp_meta)
+                .map(|postmeta| WpMetaResults::Array(postmeta))
                 .unwrap_or(WpMetaResults::Empty)
         }
     }
 
-    pub fn add_post_meta(post_id: u64, meta_key: &str, meta_value: &str) -> Result<(), mysql::Error> {
+    pub fn add_post_meta<T>(post_id: u64, meta_key: &str, meta_value: T) -> Result<(), mysql::Error>
+    where
+        T: Display,
+    {
         let mut conn = get_conn()?;
 
-        let stmt = conn.prep("INSERT INTO wp_postmeta (
+        let stmt = conn.prep(
+            "INSERT INTO wp_postmeta (
             post_id,
             meta_key,
             meta_value
-        ) VALUES (?, ?, ?);")?;
+        ) VALUES (?, ?, ?);",
+        )?;
+
+        let meta_value = format!("{}", meta_value);
 
         conn.exec_drop(stmt, (post_id, meta_key, meta_value))?;
 
