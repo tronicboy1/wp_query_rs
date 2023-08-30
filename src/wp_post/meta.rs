@@ -67,7 +67,7 @@ impl WpMeta {
         ) VALUES (?, ?, ?);",
         )?;
 
-        let meta_value = format!("{}", meta_value);
+        let meta_value = meta_value.to_string();
 
         conn.exec_drop(stmt, (post_id, meta_key, meta_value))?;
 

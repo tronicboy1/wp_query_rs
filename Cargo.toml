@@ -1,12 +1,12 @@
 [package]
 name = "wp_query_rs"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 authors = ["Austin John Mayer"]
 description = "A rust implementation of the classic WP_Query utility to access WordPress posts outside of a WordPress environment."
 documentation = "https://github.com/tronicboy1/wp_query_rs"
 readme = "README.md"
-homepage = "https://github.com/tronicboy1/wp_query_rs"
+homepage = "https://crates.io/crates/wp_query_rs"
 repository = "https://github.com/tronicboy1/wp_query_rs"
 license = "MIT OR Apache-2.0"
 keywords = ["wordpress", "wp", "wp_query", "mysql", "wp_post"]

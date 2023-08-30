@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use crate::{
     sql::{SqlOrder, SqlSearchOperators},
@@ -423,7 +423,7 @@ impl ParamBuilder {
     }
 
     /// Custom field value.
-    pub fn meta_value(mut self, val: &str) -> Self {
+    pub fn meta_value(mut self, val: impl Display) -> Self {
         if self.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
