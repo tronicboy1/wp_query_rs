@@ -182,4 +182,31 @@ pub fn add_post_meta(
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use chrono::Datelike;
+
+    use super::*;
+
+    #[test]
+    fn can_create_wp_post() {
+        let p = WP_Post::new(1);
+        assert_eq!(p.post_author, 1);
+        assert_eq!(p.post_status, PostStatus::Draft);
+    }
+
+    #[test]
+    fn can_get_date_for_now() {
+        let date = get_date_now();
+        let now = chrono::Local::now();
+        assert_eq!(date.day(), now.day() as u8);
+        assert_eq!(date.year(), now.year());
+    }
+
+    #[test]
+    fn can_get_date_for_now_utc() {
+        let date = get_utc_date_now();
+        let now = chrono::Utc::now();
+        assert_eq!(date.day(), now.day() as u8);
+        assert_eq!(date.year(), now.year());
+    }
+}

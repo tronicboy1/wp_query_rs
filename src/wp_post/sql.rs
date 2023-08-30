@@ -98,9 +98,20 @@ mod tests {
 
     #[test]
     fn can_convert_post_to_params() {
-        let mut post = WP_Post::new(0);
+        let mut post = WP_Post::new(1);
         post.post_title = String::from("My Post");
 
         let params: mysql::Params = post.into();
+        match params {
+            mysql::Params::Positional(data) => {
+                let id = data.first().unwrap();
+                assert_eq!(id, &mysql::Value::UInt(0));
+                let author_id = &data[1];
+                assert_eq!(author_id, &mysql::Value::UInt(1));
+                let p_status = &data[7];
+                assert_eq!(p_status, &mysql::Value::Bytes("draft".as_bytes().to_vec()));
+            }
+            _ => panic!("Not positional"),
+        }
     }
 }

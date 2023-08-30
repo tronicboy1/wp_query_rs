@@ -15,22 +15,6 @@ pub enum PostStatus {
     Any,
 }
 
-impl PostStatus {
-    pub fn val(&self) -> &'static str {
-        match self {
-            Self::Publish => "publish",
-            Self::Pending => "pending",
-            Self::Draft => "draft",
-            Self::AutoDraft => "auto-draft",
-            Self::Future => "future",
-            Self::Private => "private",
-            Self::Inherit => "inherit",
-            Self::Trash => "trash",
-            Self::Any => "any",
-        }
-    }
-}
-
 impl FromStr for PostStatus {
     type Err = ();
 
@@ -44,7 +28,7 @@ impl FromStr for PostStatus {
             "private" => Self::Private,
             "inherit" => Self::Inherit,
             "trash" => Self::Trash,
-            other => Self::Any,
+            _ => Self::Any,
         };
 
         Ok(v)
@@ -94,4 +78,27 @@ impl Into<mysql::Value> for PostStatus {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn can_get_text_from_post_status() {
+        assert_eq!(&PostStatus::Publish.to_string(), "publish");
+        assert_eq!(&PostStatus::AutoDraft.to_string(), "auto-draft");
+    }
+
+    #[test]
+    fn can_convert_from_str() {
+        assert_eq!(
+            PostStatus::from_str("publish").unwrap(),
+            PostStatus::Publish
+        );
+        assert_eq!(PostStatus::from_str("future").unwrap(), PostStatus::Future);
+    }
+
+    #[test]
+    fn can_format() {
+        assert_eq!(&format!("{}", PostStatus::Pending), "pending");
+        assert_eq!(&format!("{}", PostStatus::Private), "private");
+    }
+}
