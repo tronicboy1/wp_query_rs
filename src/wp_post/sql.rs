@@ -1,3 +1,5 @@
+use std::{ops::Deref, str::FromStr};
+
 use mysql::{prelude::Queryable, PooledConn, Statement};
 use mysql_common::prelude::ToValue;
 
@@ -9,7 +11,6 @@ impl WP_Post {
     fn get_stmt(conn: &mut PooledConn) -> Result<Statement, mysql::Error> {
         conn.prep(
             "INSERT INTO `wp_posts` (
-            `ID`,
             `post_author`,
             `post_date`,
             `post_date_gmt`,
@@ -32,7 +33,7 @@ impl WP_Post {
             `post_type`,
             `post_mime_type`,
             `comment_count`
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
         )
     }
 
@@ -89,6 +90,49 @@ impl Into<mysql::Params> for WP_Post {
             self.post_mime_type.to_value(),
             self.comment_count.to_value(),
         ])
+    }
+}
+
+impl From<mysql::Row> for WP_Post {
+    fn from(mut row: mysql::Row) -> Self {
+        let mut post = WP_Post::new(0);
+
+        let cols = row.columns();
+        let col_names_i = cols.iter().enumerate().map(|(i, col)| (i, col.name_str()));
+
+        for (i, column) in col_names_i {
+            match column.deref() {
+                "ID" => post.ID = row.take(i).unwrap(),
+                "post_author" => post.post_author = row.take(i).unwrap(),
+                "post_date" => post.post_date = row.take(i).unwrap(),
+                "post_date_gmt" => post.post_date_gmt = row.take(i).unwrap(),
+                "post_content" => post.post_content = row.take(i).unwrap(),
+                "post_title" => post.post_title = row.take(i).unwrap(),
+                "post_excerpt" => post.post_excerpt = row.take(i).unwrap(),
+                "post_status" => {
+                    let s: String = row.take(i).unwrap();
+                    post.post_status = super::PostStatus::from_str(&s).unwrap()
+                }
+                "comment_status" => post.comment_status = row.take(i).unwrap(),
+                "ping_status" => post.ping_status = row.take(i).unwrap(),
+                "post_password" => post.post_password = row.take(i).unwrap(),
+                "post_name" => post.post_name = row.take(i).unwrap(),
+                "to_ping" => post.to_ping = row.take(i).unwrap(),
+                "pinged" => post.pinged = row.take(i).unwrap(),
+                "post_modified" => post.post_modified = row.take(i).unwrap(),
+                "post_modified_gmt" => post.post_modified_gmt = row.take(i).unwrap(),
+                "post_content_filtered" => post.post_content_filtered = row.take(i).unwrap(),
+                "post_parent" => post.post_parent = row.take(i).unwrap(),
+                "guid" => post.guid = row.take(i).unwrap(),
+                "menu_order" => post.menu_order = row.take(i).unwrap(),
+                "post_type" => post.post_type = row.take(i).unwrap(),
+                "post_mime_type" => post.post_mime_type = row.take(i).unwrap(),
+                "comment_count" => post.comment_count = row.take(i).unwrap(),
+                _ => {}
+            }
+        }
+
+        post
     }
 }
 

@@ -1,9 +1,6 @@
-use std::{fmt::Display, str::FromStr};
+use std::fmt::Display;
 
 use mysql::{OptsBuilder, PooledConn};
-use mysql_common::{time::PrimitiveDateTime, FromValueError, Row};
-
-use crate::{wp_post::post_status::PostStatus, WP_Post};
 
 use self::{env_vars::EnvVars, pool::get_pool};
 
@@ -22,60 +19,6 @@ fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
 
 pub fn get_conn() -> Result<PooledConn, mysql::Error> {
     get_pool().get_conn()
-}
-
-pub fn unwrap_row(row: &mut Row) -> Result<WP_Post, FromValueError> {
-    let id: u64 = row.take_opt(0).unwrap()?;
-    let post_author: u64 = row.take_opt(1).unwrap()?;
-    let comment_count: u64 = row.take_opt(2).unwrap()?;
-    let post_parent: u64 = row.take_opt(3).unwrap()?;
-    let menu_order: u64 = row.take_opt(4).unwrap()?;
-    let post_date: PrimitiveDateTime = row.take_opt(5).unwrap()?;
-    let post_date_gmt: PrimitiveDateTime = row.take_opt(6).unwrap().unwrap_or(post_date.clone());
-    let post_modified: PrimitiveDateTime = row.take_opt(7).unwrap().unwrap_or(post_date.clone());
-    let post_modified_gmt: PrimitiveDateTime =
-        row.take_opt(8).unwrap().unwrap_or(post_date_gmt.clone());
-    let post_status: String = row.take_opt(9).unwrap()?;
-    let post_status = PostStatus::from_str(&post_status).unwrap();
-    let post_content: String = row.take_opt(10).unwrap()?;
-    let post_title: String = row.take_opt(11).unwrap()?;
-    let post_excerpt: String = row.take_opt(12).unwrap()?;
-    let comment_status: String = row.take_opt(13).unwrap()?;
-    let ping_status: String = row.take_opt(14).unwrap()?;
-    let post_password: String = row.take_opt(15).unwrap()?;
-    let post_name: String = row.take_opt(16).unwrap()?;
-    let to_ping: String = row.take_opt(17).unwrap()?;
-    let pinged: String = row.take_opt(18).unwrap()?;
-    let post_content_filtered: String = row.take_opt(19).unwrap()?;
-    let guid: String = row.take_opt(20).unwrap()?;
-    let post_type: String = row.take_opt(21).unwrap()?;
-    let post_mime_type: String = row.take_opt(22).unwrap()?;
-
-    Ok(WP_Post {
-        ID: id,
-        post_author,
-        post_date,
-        post_date_gmt,
-        post_content,
-        post_title,
-        post_excerpt,
-        post_status,
-        comment_status,
-        ping_status,
-        post_password,
-        post_name,
-        to_ping,
-        pinged,
-        post_modified,
-        post_modified_gmt,
-        post_content_filtered,
-        post_parent,
-        guid,
-        menu_order,
-        post_type,
-        post_mime_type,
-        comment_count,
-    })
 }
 
 #[derive(Debug, PartialEq, Eq)]

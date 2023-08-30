@@ -6,7 +6,6 @@ use mysql::PooledConn;
 use mysql_common::Row;
 use query_builder::QueryBuilder;
 use sql::get_conn;
-use sql::unwrap_row;
 
 pub use params::date_query::DateColumn;
 pub use params::date_query::DateQuery;
@@ -90,13 +89,9 @@ impl WP_Query {
 
         let stmt = conn.prep(q)?;
 
-        let mut rows: Vec<Row> = conn.exec(stmt, values)?;
+        let rows: Vec<Row> = conn.exec(stmt, values)?;
 
-        Ok(rows
-            .iter_mut()
-            .map(|row| unwrap_row(row))
-            .filter_map(|row| row.ok())
-            .collect())
+        Ok(rows.into_iter().map(|row| WP_Post::from(row)).collect())
     }
 
     pub fn post_count(&self) -> usize {
