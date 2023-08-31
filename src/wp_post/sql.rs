@@ -11,6 +11,7 @@ impl WP_Post {
     fn get_stmt(conn: &mut PooledConn) -> Result<Statement, mysql::Error> {
         conn.prep(
             "INSERT INTO `wp_posts` (
+            /* For new posts, ID will be 0 so MySQL will create an ID for us */
             `ID`,
             `post_author`,
             `post_date`,
