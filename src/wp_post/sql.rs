@@ -5,12 +5,13 @@ use mysql_common::prelude::ToValue;
 
 use crate::sql::get_conn;
 
-use super::WP_Post;
+use super::{get_date_now, get_utc_date_now, WP_Post};
 
 impl WP_Post {
     fn get_stmt(conn: &mut PooledConn) -> Result<Statement, mysql::Error> {
         conn.prep(
             "INSERT INTO `wp_posts` (
+            `ID`,
             `post_author`,
             `post_date`,
             `post_date_gmt`,
@@ -33,7 +34,7 @@ impl WP_Post {
             `post_type`,
             `post_mime_type`,
             `comment_count`
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
         )
     }
 
@@ -104,8 +105,10 @@ impl From<mysql::Row> for WP_Post {
             match column.deref() {
                 "ID" => post.ID = row.take(i).unwrap(),
                 "post_author" => post.post_author = row.take(i).unwrap(),
-                "post_date" => post.post_date = row.take(i).unwrap(),
-                "post_date_gmt" => post.post_date_gmt = row.take(i).unwrap(),
+                "post_date" => post.post_date = row.take_opt(i).unwrap().unwrap_or(get_date_now()),
+                "post_date_gmt" => {
+                    post.post_date_gmt = row.take_opt(i).unwrap().unwrap_or(get_utc_date_now())
+                }
                 "post_content" => post.post_content = row.take(i).unwrap(),
                 "post_title" => post.post_title = row.take(i).unwrap(),
                 "post_excerpt" => post.post_excerpt = row.take(i).unwrap(),
@@ -119,8 +122,12 @@ impl From<mysql::Row> for WP_Post {
                 "post_name" => post.post_name = row.take(i).unwrap(),
                 "to_ping" => post.to_ping = row.take(i).unwrap(),
                 "pinged" => post.pinged = row.take(i).unwrap(),
-                "post_modified" => post.post_modified = row.take(i).unwrap(),
-                "post_modified_gmt" => post.post_modified_gmt = row.take(i).unwrap(),
+                "post_modified" => {
+                    post.post_modified = row.take_opt(i).unwrap().unwrap_or(get_date_now())
+                }
+                "post_modified_gmt" => {
+                    post.post_modified_gmt = row.take_opt(i).unwrap().unwrap_or(get_utc_date_now())
+                }
                 "post_content_filtered" => post.post_content_filtered = row.take(i).unwrap(),
                 "post_parent" => post.post_parent = row.take(i).unwrap(),
                 "guid" => post.guid = row.take(i).unwrap(),
