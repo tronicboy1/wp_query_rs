@@ -58,7 +58,6 @@ fn can_bulk_insert_meta() {
 
     match meta {
         WpMetaResults::Array(meta) => {
-            dbg!(&meta);
             assert_eq!(meta.len(), 2)
         }
         _ => panic!("MetaQueryFailed"),
