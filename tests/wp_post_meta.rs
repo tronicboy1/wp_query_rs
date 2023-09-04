@@ -1,5 +1,8 @@
 use std::time::{SystemTime, UNIX_EPOCH};
-use wp_query_rs::{wp_post::WpMetaResults, *};
+use wp_query_rs::{
+    wp_post::{meta::WpMeta, WpMetaResults},
+    *,
+};
 
 fn add_post() -> u64 {
     let mut post = WP_Post::new(1);
@@ -36,6 +39,27 @@ fn can_get_post_meta() {
     match meta {
         WpMetaResults::Single(meta) => {
             assert_eq!(meta.meta_value, "42")
+        }
+        _ => panic!("MetaQueryFailed"),
+    }
+}
+
+#[test]
+fn can_bulk_insert_meta() {
+    let post_id = add_post();
+
+    WpMeta::add_post_meta_bulk(
+        post_id,
+        &[("my_custom_rs_bulk_meta", 1), ("my_custom_rs_bulk_meta", 2)],
+    )
+    .expect("insertError");
+
+    let meta = get_post_meta(post_id, "my_custom_rs_bulk_meta", false);
+
+    match meta {
+        WpMetaResults::Array(meta) => {
+            dbg!(&meta);
+            assert_eq!(meta.len(), 2)
         }
         _ => panic!("MetaQueryFailed"),
     }

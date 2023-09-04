@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use mysql::prelude::Queryable;
+use mysql::{prelude::Queryable, PooledConn};
 use mysql_common::prelude::ToValue;
 
 use crate::sql::get_conn;
@@ -59,17 +59,43 @@ impl WpMeta {
     {
         let mut conn = get_conn()?;
 
-        let stmt = conn.prep(
+        let stmt = Self::prepare_insert_stmt(&mut conn)?;
+
+        let meta_value = meta_value.to_string();
+
+        conn.exec_drop(stmt, (post_id, meta_key, meta_value))?;
+
+        Ok(())
+    }
+
+    fn prepare_insert_stmt(conn: &mut PooledConn) -> Result<mysql::Statement, mysql::Error> {
+        conn.prep(
             "INSERT INTO wp_postmeta (
             post_id,
             meta_key,
             meta_value
         ) VALUES (?, ?, ?);",
+        )
+    }
+
+    /// Allows multiple meta to be added in the same prepared statement, improving speed
+    pub fn add_post_meta_bulk<T>(
+        post_id: u64,
+        meta_key_value_pairs: &[(&str, T)],
+    ) -> Result<(), mysql::Error>
+    where
+        T: Display + Into<mysql::Value> + Clone,
+    {
+        let mut conn = get_conn()?;
+
+        let stmt = Self::prepare_insert_stmt(&mut conn)?;
+
+        conn.exec_batch(
+            stmt,
+            meta_key_value_pairs
+                .iter()
+                .map(|(meta_key, meta_value)| (post_id, meta_key, meta_value)),
         )?;
-
-        let meta_value = meta_value.to_string();
-
-        conn.exec_drop(stmt, (post_id, meta_key, meta_value))?;
 
         Ok(())
     }
