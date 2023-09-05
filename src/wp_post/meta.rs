@@ -73,12 +73,7 @@ impl WpMeta {
     where
         T: Display,
     {
-        Self::insert(Self {
-            meta_id: 0,
-            post_id,
-            meta_value: meta_value.to_string(),
-            meta_key: meta_key.to_string(),
-        })
+        Self::insert(Self::new(post_id, meta_key, meta_value))
     }
 
     fn prepare_insert_stmt(conn: &mut PooledConn) -> Result<mysql::Statement, mysql::Error> {
