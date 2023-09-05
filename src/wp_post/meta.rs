@@ -1,6 +1,6 @@
 use std::{fmt::Display, vec};
 
-use mysql::{prelude::Queryable, PooledConn};
+use mysql::prelude::Queryable;
 use mysql_common::prelude::ToValue;
 
 use crate::sql::{get_conn, traits::Insertable};
@@ -76,7 +76,7 @@ impl WpMeta {
         Self::insert(Self::new(post_id, meta_key, meta_value))
     }
 
-    fn prepare_insert_stmt(conn: &mut PooledConn) -> Result<mysql::Statement, mysql::Error> {
+    fn prepare_insert_stmt(conn: &mut impl Queryable) -> Result<mysql::Statement, mysql::Error> {
         conn.prep(
             "INSERT INTO wp_postmeta (
             meta_id,

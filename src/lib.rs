@@ -2,7 +2,6 @@
 //! A rust implementation of the classic WP_Query utility to access WordPress posts outside of a WordPress environment.
 
 use mysql::prelude::Queryable;
-use mysql::PooledConn;
 use mysql_common::Row;
 use query_builder::QueryBuilder;
 use sql::get_conn;
@@ -16,9 +15,9 @@ pub use params::orderby::WpOrderBy;
 pub use params::param_builder::ParamBuilder;
 pub use params::Params;
 pub use sql::env_vars::EnvVars;
+pub use sql::traits::Insertable;
 pub use sql::SqlOrder;
 pub use sql::SqlSearchOperators;
-pub use sql::traits::Insertable;
 pub use wp_post::add_post_meta;
 pub use wp_post::get_post_meta;
 pub use wp_post::post_status::PostStatus;
@@ -79,13 +78,16 @@ impl WP_Query {
     ///
     /// # Errors
     /// When an error occurs in the SQL query.
-    pub fn with_connection(conn: &mut PooledConn, params: Params) -> Result<Self, mysql::Error> {
+    pub fn with_connection(
+        conn: &mut impl Queryable,
+        params: Params,
+    ) -> Result<Self, mysql::Error> {
         let posts: Vec<WP_Post> = Self::query(conn, params)?;
 
         Ok(Self { posts })
     }
 
-    fn query(conn: &mut PooledConn, params: Params) -> Result<Vec<WP_Post>, mysql::Error> {
+    fn query(conn: &mut impl Queryable, params: Params) -> Result<Vec<WP_Post>, mysql::Error> {
         let query_builder::QueryAndValues(q, values) = QueryBuilder::new(params).query();
 
         let stmt = conn.prep(q)?;
@@ -99,7 +101,7 @@ impl WP_Query {
         self.posts.len()
     }
 
-    fn max_num_pages(&self) -> usize {
+    fn _max_num_pages(&self) -> usize {
         0
     }
 }

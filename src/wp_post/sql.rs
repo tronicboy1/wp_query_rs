@@ -1,6 +1,6 @@
 use std::{ops::Deref, str::FromStr};
 
-use mysql::{prelude::Queryable, PooledConn, Statement};
+use mysql::{prelude::Queryable, Statement};
 use mysql_common::prelude::ToValue;
 
 use crate::{sql::get_conn, Insertable};
@@ -8,7 +8,7 @@ use crate::{sql::get_conn, Insertable};
 use super::{get_date_now, get_utc_date_now, WP_Post};
 
 impl WP_Post {
-    fn get_stmt(conn: &mut PooledConn) -> Result<Statement, mysql::Error> {
+    fn get_stmt(conn: &mut impl Queryable) -> Result<Statement, mysql::Error> {
         conn.prep(
             "INSERT INTO `wp_posts` (
             /* For new posts, ID will be 0 so MySQL will create an ID for us */

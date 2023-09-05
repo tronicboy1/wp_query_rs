@@ -100,7 +100,7 @@ impl DateQuery {
         let rel = match rel {
             SqlConditionOperator::And => rel,
             SqlConditionOperator::Or => rel,
-            other => SqlConditionOperator::And,
+            _ => SqlConditionOperator::And,
         };
 
         self.relation = rel;

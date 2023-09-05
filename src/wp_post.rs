@@ -119,7 +119,7 @@ impl IntoZval for WP_Post {
         zobj.into_zval(persistent)
     }
 
-    fn set_zval(self, zv: &mut Zval, persistent: bool) -> ext_php_rs::error::Result<()> {
+    fn set_zval(self, zv: &mut Zval, _persistent: bool) -> ext_php_rs::error::Result<()> {
         let mut zobj = self.build_zobj()?;
 
         zv.set_object(&mut zobj);
@@ -133,9 +133,9 @@ impl<'a> FromZval<'a> for WP_Post {
 
     // Do not implement as not used, must satisfy ext-php-rs traits
     fn from_zval(zval: &'a Zval) -> Option<Self> {
-        if let Some(array) = zval.array() {}
+        if let Some(_array) = zval.array() {}
 
-        if let Some(obj) = zval.object() {}
+        if let Some(_obj) = zval.object() {}
 
         None
     }
