@@ -3,7 +3,7 @@ use std::{ops::Deref, str::FromStr};
 use mysql::{prelude::Queryable, PooledConn, Statement};
 use mysql_common::prelude::ToValue;
 
-use crate::sql::get_conn;
+use crate::{sql::get_conn, Insertable};
 
 use super::{get_date_now, get_utc_date_now, WP_Post};
 
@@ -40,28 +40,11 @@ impl WP_Post {
     }
 
     pub fn insert(self) -> Result<u64, mysql::Error> {
-        let mut conn = get_conn()?;
-
-        let stmt = Self::get_stmt(&mut conn)?;
-
-        conn.exec_drop(stmt, self)?;
-
-        let post_id: u64 = conn.exec_first("SELECT LAST_INSERT_ID();", ())?.unwrap();
-
-        Ok(post_id)
+        <Self as Insertable>::insert(self)
     }
 
     pub fn insert_bulk(v: Vec<Self>) -> Result<(), mysql::Error> {
-        let mut conn = get_conn()?;
-
-        let stmt = Self::get_stmt(&mut conn)?;
-
-        conn.exec_batch(
-            stmt,
-            v.into_iter().map(|post| -> mysql::Params { post.into() }),
-        )?;
-
-        Ok(())
+        <Self as Insertable>::batch(v)
     }
 }
 
@@ -141,6 +124,35 @@ impl From<mysql::Row> for WP_Post {
         }
 
         post
+    }
+}
+
+impl Insertable for WP_Post {
+    fn batch(values: impl IntoIterator<Item = Self>) -> Result<(), mysql::Error> {
+        let mut conn = get_conn()?;
+
+        let stmt = Self::get_stmt(&mut conn)?;
+
+        conn.exec_batch(
+            stmt,
+            values
+                .into_iter()
+                .map(|post| -> mysql::Params { post.into() }),
+        )?;
+
+        Ok(())
+    }
+
+    fn insert(self) -> Result<u64, mysql::Error> {
+        let mut conn = get_conn()?;
+
+        let stmt = Self::get_stmt(&mut conn)?;
+
+        conn.exec_drop(stmt, self)?;
+
+        let post_id: u64 = conn.exec_first("SELECT LAST_INSERT_ID();", ())?.unwrap();
+
+        Ok(post_id)
     }
 }
 

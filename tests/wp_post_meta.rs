@@ -63,3 +63,20 @@ fn can_bulk_insert_meta() {
         _ => panic!("MetaQueryFailed"),
     }
 }
+
+#[test]
+fn can_insert_post_meta() {
+    let post_id = add_post();
+
+    let pm = WpMeta::new(post_id, "my_inserted_meta", 42);
+    pm.insert().expect("InsertFailed");
+
+    let meta = get_post_meta(post_id, "my_inserted_meta", true);
+
+    match meta {
+        WpMetaResults::Single(meta) => {
+            assert_eq!(meta.meta_value, "42")
+        }
+        _ => panic!("MetaQueryFailed"),
+    }
+}

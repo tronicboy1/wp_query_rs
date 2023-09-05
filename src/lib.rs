@@ -18,6 +18,7 @@ pub use params::Params;
 pub use sql::env_vars::EnvVars;
 pub use sql::SqlOrder;
 pub use sql::SqlSearchOperators;
+pub use sql::traits::Insertable;
 pub use wp_post::add_post_meta;
 pub use wp_post::get_post_meta;
 pub use wp_post::post_status::PostStatus;

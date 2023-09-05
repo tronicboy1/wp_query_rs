@@ -6,6 +6,7 @@ use self::{env_vars::EnvVars, pool::get_pool};
 
 pub mod env_vars;
 pub mod pool;
+pub mod traits;
 
 fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
     OptsBuilder::new()

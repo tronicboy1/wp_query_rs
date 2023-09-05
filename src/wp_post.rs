@@ -177,7 +177,7 @@ pub fn add_post_meta(
     post_id: u64,
     meta_key: &str,
     meta_value: impl Display,
-) -> Result<(), mysql::Error> {
+) -> Result<u64, mysql::Error> {
     WpMeta::add_post_meta(post_id, meta_key, meta_value)
 }
 
