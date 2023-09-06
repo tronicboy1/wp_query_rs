@@ -13,6 +13,7 @@ pub use params::meta_query::MetaQuery;
 pub use params::meta_query::MetaRelation;
 pub use params::orderby::WpOrderBy;
 pub use params::param_builder::ParamBuilder;
+pub use params::post_type::PostType;
 pub use params::Params;
 pub use sql::env_vars::EnvVars;
 pub use sql::traits::Insertable;
@@ -21,6 +22,7 @@ pub use sql::SqlSearchOperators;
 pub use wp_post::add_post_meta;
 pub use wp_post::get_post_meta;
 pub use wp_post::post_status::PostStatus;
+pub use params::traits::*;
 use wp_post::WpPost;
 
 // TODO remove on next major version
@@ -48,9 +50,9 @@ impl WpQuery {
     /// # Example
     ///
     /// ```
-    /// use wp_query_rs::{ParamBuilder, WP_Query};
+    /// use wp_query_rs::{ParamBuilder, WP_Query, PostType, PostQueryable};
     ///
-    /// let params = ParamBuilder::new().page(1).post_type("post");
+    /// let params = ParamBuilder::new().page(1).post_type(PostType::Post);
     ///
     /// let wp_q = WP_Query::new(params);
     /// ```
@@ -58,7 +60,10 @@ impl WpQuery {
     /// # Errors
     /// Will return an error if there is an error in the mysql query. This may be from innapropriate SQL built in the query builder,
     /// or more likely a connection issue from incorrect environment variables.
-    pub fn new(params: Params) -> Result<Self, mysql::Error> {
+    pub fn new<T>(params: T) -> Result<Self, mysql::Error>
+    where
+        T: Into<Params>,
+    {
         let mut conn = get_conn()?;
 
         let posts: Vec<WpPost> = Self::query(&mut conn, params)?;
@@ -66,35 +71,38 @@ impl WpQuery {
         Ok(Self { posts })
     }
 
-    /// Queries the WordPress database with a connection provided from a mysql connection pool.
+    /// Queries the WordPress database with a mysql connection.
     ///
     /// # Example
     ///
     /// ```rust,ignore
-    /// use wp_query_rs::{ParamBuilder, WP_Query};
+    /// use wp_query_rs::{ParamBuilder, WP_Query, PostType, PostQueryable};
     ///
     /// let my_pool: mysql::Pool;
     ///
     /// let mut conn = my_pool.get_conn().unwrap();
     ///
-    /// let params = ParamBuilder::new().page(1).post_type("post");
+    /// let params = ParamBuilder::new().page(1).post_type(PostType::Post);
     ///
     /// let wp_q = WP_Query::with_connection(&mut conn, params);
     /// ```
     ///
     /// # Errors
     /// When an error occurs in the SQL query.
-    pub fn with_connection(
-        conn: &mut impl Queryable,
-        params: Params,
-    ) -> Result<Self, mysql::Error> {
+    pub fn with_connection<T>(conn: &mut impl Queryable, params: T) -> Result<Self, mysql::Error>
+    where
+        T: Into<Params>,
+    {
         let posts: Vec<WpPost> = Self::query(conn, params)?;
 
         Ok(Self { posts })
     }
 
-    fn query(conn: &mut impl Queryable, params: Params) -> Result<Vec<WpPost>, mysql::Error> {
-        let query_builder::QueryAndValues(q, values) = QueryBuilder::new(params).query();
+    fn query<T>(conn: &mut impl Queryable, params: T) -> Result<Vec<WpPost>, mysql::Error>
+    where
+        T: Into<Params>,
+    {
+        let query_builder::QueryAndValues(q, values) = QueryBuilder::new(params.into()).query();
 
         let stmt = conn.prep(q)?;
 

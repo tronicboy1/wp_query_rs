@@ -1,3 +1,4 @@
+mod arg_builder;
 mod comment_approved;
 mod comment_type;
 
@@ -27,6 +28,7 @@ pub struct WpComment {
     pub comment_type: CommentType,
     pub comment_parent: u64,
     pub user_id: u64,
+    children: Option<Vec<WpComment>>,
 }
 
 impl WpComment {
@@ -47,6 +49,7 @@ impl WpComment {
             comment_type: CommentType::Comment,
             comment_parent: 0,
             user_id,
+            children: None,
         }
     }
 }

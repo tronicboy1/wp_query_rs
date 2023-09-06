@@ -11,7 +11,7 @@ fn select_by_post_id() {
 
 #[test]
 fn select_by_post_type() {
-    let params = ParamBuilder::new().post_type("page");
+    let params = ParamBuilder::new().post_type(PostType::Page);
 
     let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);
@@ -19,7 +19,9 @@ fn select_by_post_type() {
 
 #[test]
 fn select_by_multiple_post_types() {
-    let params = ParamBuilder::new().post_type("page").post_type("post");
+    let params = ParamBuilder::new()
+        .post_type(PostType::Page)
+        .post_type(PostType::Post);
 
     let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);

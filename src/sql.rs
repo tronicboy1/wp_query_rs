@@ -8,6 +8,7 @@ pub mod date;
 pub mod env_vars;
 pub mod pool;
 pub mod traits;
+pub mod cast_type;
 
 fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
     OptsBuilder::new()

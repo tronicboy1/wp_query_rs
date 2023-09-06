@@ -3,6 +3,8 @@ pub mod meta_query;
 pub mod orderby;
 pub mod param_builder;
 pub mod tax_query;
+pub mod traits;
+pub mod post_type;
 
 use std::collections::HashMap;
 

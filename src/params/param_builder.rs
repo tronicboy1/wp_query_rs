@@ -3,12 +3,13 @@ use std::{collections::HashMap, fmt::Display};
 use crate::{
     sql::{SqlOrder, SqlSearchOperators},
     wp_post::post_status::PostStatus,
-    DateQuery, MetaQuery, MetaRelation, Params,
+    DateQuery, MetaQuery, MetaRelation, Params, PostType,
 };
 
 use super::{
     orderby::WpOrderBy,
     tax_query::{TaxQuery, TaxRelation},
+    traits::{MetaQueryable, PostQueryable},
 };
 
 /// Builds query params by chaining option callbacks
@@ -16,7 +17,7 @@ use super::{
 /// # Examples
 ///
 /// ```
-/// use wp_query_rs::{ParamBuilder, PostStatus};
+/// use wp_query_rs::{ParamBuilder, PostStatus, PostQueryable};
 ///
 /// let params = ParamBuilder::new().page(2)
 ///     .post_status(PostStatus::AutoDraft)
@@ -33,10 +34,28 @@ use super::{
 /// let params = ParamBuilder::new()
 ///     .hour(24); // InvalidHour
 /// ```
-pub type ParamBuilder = Params;
+pub struct ParamBuilder(Params);
+
+impl std::ops::Deref for ParamBuilder {
+    type Target = Params;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for ParamBuilder {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
 
 #[allow(non_snake_case)]
 impl ParamBuilder {
+    pub fn new() -> Self {
+        Self(Params::new())
+    }
+
     /// use author id
     pub fn author(mut self, author_id: u64) -> Self {
         self.author = Some(author_id);
@@ -53,20 +72,20 @@ impl ParamBuilder {
 
     /// use author id
     pub fn author__in(mut self, author_id: u64) -> Self {
-        let mut authors = self.author__in.unwrap_or(Vec::new());
+        let mut authors = self.0.author__in.unwrap_or(Vec::new());
         authors.push(author_id);
 
-        self.author__in = Some(authors);
+        self.0.author__in = Some(authors);
 
         self
     }
 
     /// use author id
     pub fn author__not_in(mut self, author_id: u64) -> Self {
-        let mut authors = self.author__not_in.unwrap_or(Vec::new());
+        let mut authors = self.0.author__not_in.unwrap_or(Vec::new());
         authors.push(author_id);
 
-        self.author__not_in = Some(authors);
+        self.0.author__not_in = Some(authors);
 
         self
     }
@@ -84,28 +103,28 @@ impl ParamBuilder {
     }
 
     fn category__and(mut self, cat_id: u64) -> Self {
-        let mut ids = self.category__and.unwrap_or(Vec::new());
+        let mut ids = self.0.category__and.unwrap_or(Vec::new());
         ids.push(cat_id);
 
-        self.category__and = Some(ids);
+        self.0.category__and = Some(ids);
 
         self
     }
 
     pub fn category__in(mut self, cat_id: u64) -> Self {
-        let mut ids = self.category__in.unwrap_or(Vec::new());
+        let mut ids = self.0.category__in.unwrap_or(Vec::new());
         ids.push(cat_id);
 
-        self.category__in = Some(ids);
+        self.0.category__in = Some(ids);
 
         self
     }
 
     pub fn category__not_in(mut self, cat_id: u64) -> Self {
-        let mut ids = self.category__not_in.unwrap_or(Vec::new());
+        let mut ids = self.0.category__not_in.unwrap_or(Vec::new());
         ids.push(cat_id);
 
-        self.category__not_in = Some(ids);
+        self.0.category__not_in = Some(ids);
 
         self
     }
@@ -143,15 +162,15 @@ impl ParamBuilder {
     }
 
     pub fn tax_query(mut self, query: TaxQuery, relation: Option<TaxRelation>) -> Self {
-        let mut tax_q = self.tax_query.unwrap_or(HashMap::new());
+        let mut tax_q = self.0.tax_query.unwrap_or(HashMap::new());
 
         if let Some(rel) = relation {
             let qs_for_relation = tax_q.entry(rel).or_insert(vec![]);
             qs_for_relation.push(query);
 
-            self.tax_query = Some(tax_q);
+            self.0.tax_query = Some(tax_q);
         } else {
-            self.tax_query = Some(TaxQuery::new_single_tax_map(query));
+            self.0.tax_query = Some(TaxQuery::new_single_tax_map(query));
         }
 
         self
@@ -183,95 +202,6 @@ impl ParamBuilder {
     }
 
     fn pagename(self) -> Self {
-        self
-    }
-
-    /// use page id to return only child pages. Set to 0 to return only top-level entries.
-    pub fn post_parent(mut self, id: u64) -> Self {
-        self.post_parent = Some(id);
-
-        self
-    }
-
-    /// use post ids. Specify posts whose parent is in an array
-    pub fn post_parent__in(mut self, id: u64) -> Self {
-        let mut ids = self.post_parent__in.unwrap_or(Vec::new());
-
-        ids.push(id);
-
-        self.post_parent__in = Some(ids);
-
-        self
-    }
-
-    /// use post ids. Specify posts whose parent is not in an array
-    pub fn post_parent__not_in(mut self, id: u64) -> Self {
-        let mut ids = self.post_parent__not_in.unwrap_or(Vec::new());
-
-        ids.push(id);
-
-        self.post_parent__not_in = Some(ids);
-
-        self
-    }
-
-    /// use post ids. Specify posts to retrieve.
-    pub fn post__in(mut self, id: u64) -> Self {
-        let mut ids = self.post__in.unwrap_or(Vec::new());
-
-        ids.push(id);
-
-        self.post__in = Some(ids);
-
-        self
-    }
-
-    /// use post ids. Specify post NOT to retrieve.
-    pub fn post__not_in(mut self, id: u64) -> Self {
-        let mut ids = self.post__not_in.unwrap_or(Vec::new());
-
-        ids.push(id);
-
-        self.post__not_in = Some(ids);
-
-        self
-    }
-
-    pub fn post_name__in(mut self, s: &str) -> Self {
-        let mut names = self.post_name__in.unwrap_or(Vec::new());
-
-        names.push(s.to_string());
-
-        self.post_name__in = Some(names);
-
-        self
-    }
-
-    fn post_password(self) -> Self {
-        self
-    }
-
-    /// use post types. Retrieves posts by post types, default value is ‘post‘.
-    pub fn post_type(mut self, post_type: &str) -> Self {
-        let mut types = self.post_type.unwrap_or(Vec::new());
-
-        types.push(post_type.to_string());
-
-        self.post_type = Some(types);
-
-        self
-    }
-
-    /// Queries all post types. Will be overwritten if there is another call to post_type after this.
-    pub fn post_type_all(mut self) -> Self {
-        self.post_type = Some(Vec::new());
-
-        self
-    }
-
-    pub fn post_status(mut self, status: PostStatus) -> Self {
-        self.post_status = Some(status);
-
         self
     }
 
@@ -402,17 +332,111 @@ impl ParamBuilder {
     }
 
     pub fn date_query(mut self, query: DateQuery) -> Self {
-        let mut queries = self.date_query.unwrap_or(Vec::new());
+        let mut queries = self.0.date_query.unwrap_or(Vec::new());
 
         queries.push(query);
 
-        self.date_query = Some(queries);
+        self.0.date_query = Some(queries);
 
         self
     }
 
+    fn post_mime_type(self) -> Self {
+        self
+    }
+}
+
+#[allow(non_snake_case)]
+impl PostQueryable for ParamBuilder {
+    /// use page id to return only child pages. Set to 0 to return only top-level entries.
+    fn post_parent(mut self, id: u64) -> Self {
+        self.post_parent = Some(id);
+
+        self
+    }
+
+    /// use post ids. Specify posts whose parent is in an array
+    fn post_parent__in(mut self, id: u64) -> Self {
+        let mut ids = self.0.post_parent__in.unwrap_or(Vec::new());
+
+        ids.push(id);
+
+        self.0.post_parent__in = Some(ids);
+
+        self
+    }
+
+    /// use post ids. Specify posts whose parent is not in an array
+    fn post_parent__not_in(mut self, id: u64) -> Self {
+        let mut ids = self.0.post_parent__not_in.unwrap_or(Vec::new());
+
+        ids.push(id);
+
+        self.0.post_parent__not_in = Some(ids);
+
+        self
+    }
+
+    /// use post ids. Specify posts to retrieve.
+    fn post__in(mut self, id: u64) -> Self {
+        let mut ids = self.0.post__in.unwrap_or(Vec::new());
+
+        ids.push(id);
+
+        self.0.post__in = Some(ids);
+
+        self
+    }
+
+    /// use post ids. Specify post NOT to retrieve.
+    fn post__not_in(mut self, id: u64) -> Self {
+        let mut ids = self.0.post__not_in.unwrap_or(Vec::new());
+
+        ids.push(id);
+
+        self.0.post__not_in = Some(ids);
+
+        self
+    }
+
+    fn post_name__in(mut self, s: &str) -> Self {
+        let mut names = self.0.post_name__in.unwrap_or(Vec::new());
+
+        names.push(s.to_string());
+
+        self.0.post_name__in = Some(names);
+
+        self
+    }
+
+    /// use post types. Retrieves posts by post types, default value is ‘post‘.
+    fn post_type(mut self, post_type: PostType) -> Self {
+        let mut types = self.0.post_type.unwrap_or(Vec::new());
+
+        types.push(post_type.to_string());
+
+        self.0.post_type = Some(types);
+
+        self
+    }
+
+    /// Queries all post types. Will be overwritten if there is another call to post_type after this.
+    fn post_type_all(mut self) -> Self {
+        self.post_type = Some(Vec::new());
+
+        self
+    }
+
+    fn post_status(mut self, status: PostStatus) -> Self {
+        self.post_status = Some(status);
+
+        self
+    }
+}
+
+impl MetaQueryable for ParamBuilder {
     /// Custom field key.
-    pub fn meta_key(mut self, key: &str) -> Self {
+    fn meta_key(mut self, key: &str) -> Self {
         if self.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
@@ -423,7 +447,7 @@ impl ParamBuilder {
     }
 
     /// Custom field value.
-    pub fn meta_value(mut self, val: impl Display) -> Self {
+    fn meta_value(mut self, val: impl Display) -> Self {
         if self.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
@@ -438,7 +462,7 @@ impl ParamBuilder {
     }
 
     /// Custom field value (number).
-    pub fn meta_value_num(mut self, n: i64) -> Self {
+    fn meta_value_num(mut self, n: i64) -> Self {
         if self.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
@@ -453,32 +477,34 @@ impl ParamBuilder {
     }
 
     /// Operator to test the ‘meta_value‘
-    pub fn meta_compare(mut self, compare: SqlSearchOperators) -> Self {
+    fn meta_compare(mut self, compare: SqlSearchOperators) -> Self {
         self.meta_compare = Some(compare);
 
         self
     }
 
-    pub fn meta_query(mut self, query: MetaQuery, relation: MetaRelation) -> Self {
+    fn meta_query(mut self, query: MetaQuery, relation: MetaRelation) -> Self {
         // Clear single meta
         self.meta_compare = None;
         self.meta_key = None;
         self.meta_value = None;
         self.meta_value_num = None;
 
-        let mut meta_qs = self.meta_query.unwrap_or(HashMap::new());
+        let mut meta_qs = self.0.meta_query.unwrap_or(HashMap::new());
 
         let queries_for_relation = meta_qs.entry(relation).or_insert(vec![]);
 
         queries_for_relation.push(query);
 
-        self.meta_query = Some(meta_qs);
+        self.0.meta_query = Some(meta_qs);
 
         self
     }
+}
 
-    fn post_mime_type(self) -> Self {
-        self
+impl Into<Params> for ParamBuilder {
+    fn into(self) -> Params {
+        self.0
     }
 }
 
@@ -497,14 +523,14 @@ mod tests {
     fn can_add_author_in() {
         let id = 1;
         let q = ParamBuilder::new().author__in(id);
-        assert_eq!(id, *q.author__in.unwrap().first().unwrap());
+        assert_eq!(&id, q.0.author__in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_author_not_in() {
         let id = 1;
         let q = ParamBuilder::new().author__not_in(id);
-        assert_eq!(id, *q.author__not_in.unwrap().first().unwrap());
+        assert_eq!(id, *q.0.author__not_in.unwrap().first().unwrap());
     }
 
     #[test]
@@ -518,28 +544,28 @@ mod tests {
     fn can_add_category_and() {
         let id = 1;
         let q = ParamBuilder::new().category__and(id);
-        assert_eq!(id, *q.category__and.unwrap().first().unwrap());
+        assert_eq!(id, *q.0.category__and.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_category_in() {
         let id = 1;
         let q = ParamBuilder::new().category__in(id);
-        assert_eq!(id, *q.category__in.unwrap().first().unwrap());
+        assert_eq!(id, *q.0.category__in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_category_not_in() {
         let id = 1;
         let q = ParamBuilder::new().category__not_in(id);
-        assert_eq!(id, *q.category__not_in.unwrap().first().unwrap());
+        assert_eq!(id, *q.0.category__not_in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_tag() {
         let tag = "Tag";
         let q = ParamBuilder::new().tag(tag);
-        assert_eq!(tag, q.tag.unwrap());
+        assert_eq!(tag, q.0.tag.unwrap());
     }
 
     #[test]
@@ -548,7 +574,7 @@ mod tests {
         let terms = vec![String::from("1")];
         let tax = TaxQuery::new(tax_name.clone(), terms.clone());
         let q = ParamBuilder::new().tax_query(tax, None);
-        let stored = q.tax_query.unwrap();
+        let stored = q.0.tax_query.unwrap();
         assert!(stored.get(&TaxRelation::Single).is_some());
         let stored = stored.get(&TaxRelation::Single).unwrap().first().unwrap();
         assert_eq!(stored.taxonomy, tax_name);
@@ -569,7 +595,7 @@ mod tests {
             .tax_query(tax2, Some(TaxRelation::And))
             .tax_query(tax3, Some(TaxRelation::Or));
 
-        let created = q.tax_query.unwrap();
+        let created = q.0.tax_query.unwrap();
         assert_eq!(created.len(), 2);
         assert_eq!(created.get(&TaxRelation::And).unwrap().len(), 2);
         assert_eq!(created.get(&TaxRelation::Or).unwrap().len(), 1);
@@ -583,35 +609,35 @@ mod tests {
             .post_status(PostStatus::Publish);
         assert_eq!(q.p.unwrap(), 1);
         assert_eq!(q.post_parent.unwrap(), 2);
-        assert_eq!(q.post_status.unwrap(), PostStatus::Publish);
+        assert_eq!(q.0.post_status.unwrap(), PostStatus::Publish);
     }
 
     #[test]
     fn can_add_post_parent_in() {
         let id = 1;
         let q = ParamBuilder::new().post_parent__in(id);
-        assert_eq!(id, *q.post_parent__in.unwrap().first().unwrap());
+        assert_eq!(id, *q.0.post_parent__in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_post_parent_not_in() {
         let id = 1;
         let q = ParamBuilder::new().post_parent__not_in(id);
-        assert_eq!(id, *q.post_parent__not_in.unwrap().first().unwrap());
+        assert_eq!(id, *q.0.post_parent__not_in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_post_in() {
         let id = 1;
         let q = ParamBuilder::new().post__in(id);
-        assert_eq!(id, *q.post__in.unwrap().first().unwrap());
+        assert_eq!(id, *q.0.post__in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_post_not_in() {
         let id = 1;
         let q = ParamBuilder::new().post__not_in(id);
-        assert_eq!(id, *q.post__not_in.unwrap().first().unwrap());
+        assert_eq!(id, *q.0.post__not_in.unwrap().first().unwrap());
     }
 
     #[test]
@@ -620,26 +646,26 @@ mod tests {
         let q = ParamBuilder::new()
             .post_name__in("malcolm-x")
             .post_name__in("mlk");
-        let r = q.post_name__in.unwrap();
+        let r = q.0.post_name__in.unwrap();
         assert_eq!(r.first().unwrap(), "malcolm-x");
         assert_eq!(r.len(), 2);
     }
 
     #[test]
     fn can_add_post_type() {
-        let q = ParamBuilder::new().post_type("page");
-        assert_eq!(q.post_type.unwrap().first().unwrap(), "page");
+        let q = ParamBuilder::new().post_type(PostType::Page);
+        assert_eq!(q.0.post_type.unwrap().first().unwrap(), "page");
     }
 
     #[test]
     fn can_add_multiple_post_types() {
         let q = ParamBuilder::new()
-            .post_type("post")
-            .post_type("page")
+            .post_type(PostType::Post)
+            .post_type(PostType::Page)
             .p(1)
             .post_parent(2)
             .post_status(PostStatus::Publish);
-        assert_eq!(q.post_type.unwrap().len(), 2);
+        assert_eq!(q.0.post_type.unwrap().len(), 2);
     }
 
     #[test]
@@ -660,8 +686,8 @@ mod tests {
         let q = ParamBuilder::new()
             .orderby(WpOrderBy::Author)
             .order(SqlOrder::Asc);
-        assert_eq!(q.orderby.unwrap(), WpOrderBy::Author);
-        assert_eq!(q.order.unwrap(), SqlOrder::Asc);
+        assert_eq!(q.0.orderby.unwrap(), WpOrderBy::Author);
+        assert_eq!(q.0.order.unwrap(), SqlOrder::Asc);
     }
 
     #[test]
@@ -689,7 +715,7 @@ mod tests {
         let dq1 = DateQuery::new().after(crate::DateQueryAfterBefore::new(2022, 2, 2));
         let dq2 = DateQuery::new();
         let q = ParamBuilder::new().date_query(dq1).date_query(dq2);
-        let dq = q.date_query.unwrap();
+        let dq = q.0.date_query.unwrap();
         assert_eq!(dq.len(), 2);
         assert_eq!(dq.first().unwrap().after.as_ref().unwrap().day, 2);
     }
@@ -708,9 +734,9 @@ mod tests {
             .meta_key("key1")
             .meta_value("a")
             .meta_compare(SqlSearchOperators::Like);
-        assert_eq!(q.meta_key.unwrap(), "key1");
-        assert_eq!(q.meta_value.unwrap(), "a");
-        assert_eq!(q.meta_compare.unwrap(), SqlSearchOperators::Like);
+        assert_eq!(q.0.meta_key.unwrap(), "key1");
+        assert_eq!(q.0.meta_value.unwrap(), "a");
+        assert_eq!(q.0.meta_compare.unwrap(), SqlSearchOperators::Like);
     }
 
     #[test]
@@ -733,7 +759,7 @@ mod tests {
                 },
                 MetaRelation::And,
             );
-        let queries = q.meta_query.unwrap();
+        let queries = q.0.meta_query.unwrap();
         assert_eq!(queries.get(&MetaRelation::And).unwrap().len(), 2);
     }
 }
