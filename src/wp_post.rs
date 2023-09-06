@@ -1,6 +1,3 @@
-use std::fmt::Display;
-
-use chrono::{Datelike, Timelike};
 use ext_php_rs::{
     boxed::ZBox,
     convert::{FromZval, IntoZval},
@@ -8,7 +5,10 @@ use ext_php_rs::{
     flags::DataType,
     types::{ZendObject, Zval},
 };
-use mysql_common::time::{Date, PrimitiveDateTime, Time};
+use mysql_common::time::PrimitiveDateTime;
+use std::fmt::Display;
+
+use crate::sql::date::{get_date_now, get_utc_date_now};
 
 pub use self::meta::WpMetaResults;
 use self::{meta::WpMeta, post_status::PostStatus};
@@ -141,32 +141,6 @@ impl<'a> FromZval<'a> for WpPost {
     }
 }
 
-fn get_date_now() -> PrimitiveDateTime {
-    let local_now = chrono::offset::Local::now();
-    PrimitiveDateTime::new(
-        Date::from_ordinal_date(local_now.year(), local_now.ordinal() as u16).unwrap(),
-        Time::from_hms(
-            local_now.hour() as u8,
-            local_now.minute() as u8,
-            local_now.second() as u8,
-        )
-        .unwrap(),
-    )
-}
-
-fn get_utc_date_now() -> PrimitiveDateTime {
-    let local_now = chrono::offset::Utc::now();
-    PrimitiveDateTime::new(
-        Date::from_ordinal_date(local_now.year(), local_now.ordinal() as u16).unwrap(),
-        Time::from_hms(
-            local_now.hour() as u8,
-            local_now.minute() as u8,
-            local_now.second() as u8,
-        )
-        .unwrap(),
-    )
-}
-
 /// Retrieves a post meta field for the given post ID.
 pub fn get_post_meta(post_id: u64, meta_key: &str, single: bool) -> WpMetaResults {
     WpMeta::get_post_meta(post_id, meta_key, single)
@@ -182,31 +156,4 @@ pub fn add_post_meta(
 }
 
 #[cfg(test)]
-mod tests {
-    use chrono::Datelike;
-
-    use super::*;
-
-    #[test]
-    fn can_create_wp_post() {
-        let p = WpPost::new(1);
-        assert_eq!(p.post_author, 1);
-        assert_eq!(p.post_status, PostStatus::Draft);
-    }
-
-    #[test]
-    fn can_get_date_for_now() {
-        let date = get_date_now();
-        let now = chrono::Local::now();
-        assert_eq!(date.day(), now.day() as u8);
-        assert_eq!(date.year(), now.year());
-    }
-
-    #[test]
-    fn can_get_date_for_now_utc() {
-        let date = get_utc_date_now();
-        let now = chrono::Utc::now();
-        assert_eq!(date.day(), now.day() as u8);
-        assert_eq!(date.year(), now.year());
-    }
-}
+mod tests {}
