@@ -6,7 +6,7 @@ use std::{collections::HashMap, ops::DerefMut};
 
 use crate::{
     sql::{cast_type::CastType, SqlCompareOperator},
-    MetaQuery, MetaRelation, PostStatus, SqlOrder,
+    DateQuery, MetaQuery, MetaRelation, PostStatus, SqlOrder,
 };
 
 use self::{fields::Fields, hierarchical::Hierarchy, orderby::Orderby};
@@ -24,7 +24,7 @@ pub struct WpCommentQueryArgs {
     pub comment__not_in: Option<Vec<u64>>,
     pub count: bool,
     // TODO
-    // pub date_query: WpDateQuery,
+    pub date_query: Option<DateQuery>,
     pub fields: Fields,
     pub include_unapproved: Option<Vec<u64>>,
     pub karma: Option<u64>,
@@ -82,6 +82,7 @@ impl WpCommentArgBuilder {
                 count: false,
                 fields: Fields::All,
                 include_unapproved: None,
+                date_query: None,
                 karma: None,
                 meta_key: None,
                 meta_value: None,
