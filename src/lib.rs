@@ -23,6 +23,7 @@ pub use wp_post::get_post_meta;
 pub use wp_post::post_status::PostStatus;
 use wp_post::WpPost;
 
+// TODO remove on next major version
 #[allow(non_camel_case_types)]
 pub type WP_Post = WpPost;
 #[allow(non_camel_case_types)]
