@@ -5,9 +5,9 @@ use mysql_common::prelude::ToValue;
 
 use crate::{sql::get_conn, Insertable};
 
-use super::{get_date_now, get_utc_date_now, WP_Post};
+use super::{get_date_now, get_utc_date_now, WpPost};
 
-impl WP_Post {
+impl WpPost {
     fn get_stmt(conn: &mut impl Queryable) -> Result<Statement, mysql::Error> {
         conn.prep(
             "INSERT INTO `wp_posts` (
@@ -48,7 +48,7 @@ impl WP_Post {
     }
 }
 
-impl Into<mysql::Params> for WP_Post {
+impl Into<mysql::Params> for WpPost {
     fn into(self) -> mysql::Params {
         mysql::Params::Positional(vec![
             self.ID.to_value(),
@@ -78,9 +78,9 @@ impl Into<mysql::Params> for WP_Post {
     }
 }
 
-impl From<mysql::Row> for WP_Post {
+impl From<mysql::Row> for WpPost {
     fn from(mut row: mysql::Row) -> Self {
-        let mut post = WP_Post::new(0);
+        let mut post = WpPost::new(0);
 
         let cols = row.columns();
         let col_names_i = cols.iter().enumerate().map(|(i, col)| (i, col.name_str()));
@@ -127,7 +127,7 @@ impl From<mysql::Row> for WP_Post {
     }
 }
 
-impl Insertable for WP_Post {
+impl Insertable for WpPost {
     fn batch(values: impl IntoIterator<Item = Self>) -> Result<(), mysql::Error> {
         let mut conn = get_conn()?;
 
@@ -162,7 +162,7 @@ mod tests {
 
     #[test]
     fn can_convert_post_to_params() {
-        let mut post = WP_Post::new(1);
+        let mut post = WpPost::new(1);
         post.post_title = String::from("My Post");
 
         let params: mysql::Params = post.into();

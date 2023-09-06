@@ -21,7 +21,12 @@ pub use sql::SqlSearchOperators;
 pub use wp_post::add_post_meta;
 pub use wp_post::get_post_meta;
 pub use wp_post::post_status::PostStatus;
-pub use wp_post::WP_Post;
+use wp_post::WpPost;
+
+#[allow(non_camel_case_types)]
+pub type WP_Post = WpPost;
+#[allow(non_camel_case_types)]
+pub type WP_Query = WpQuery;
 
 mod params;
 mod query_builder;
@@ -29,12 +34,11 @@ mod sql;
 pub mod wp_post;
 
 #[derive(Debug)]
-#[allow(non_camel_case_types)]
-pub struct WP_Query {
-    pub posts: Vec<WP_Post>,
+pub struct WpQuery {
+    pub posts: Vec<WpPost>,
 }
 
-impl WP_Query {
+impl WpQuery {
     /// Queries the WordPress Database for posts.
     ///
     /// Uses environment variables to create a connection pool that is shared through the life of the application ('static).
@@ -55,7 +59,7 @@ impl WP_Query {
     pub fn new(params: Params) -> Result<Self, mysql::Error> {
         let mut conn = get_conn()?;
 
-        let posts: Vec<WP_Post> = Self::query(&mut conn, params)?;
+        let posts: Vec<WpPost> = Self::query(&mut conn, params)?;
 
         Ok(Self { posts })
     }
@@ -82,19 +86,19 @@ impl WP_Query {
         conn: &mut impl Queryable,
         params: Params,
     ) -> Result<Self, mysql::Error> {
-        let posts: Vec<WP_Post> = Self::query(conn, params)?;
+        let posts: Vec<WpPost> = Self::query(conn, params)?;
 
         Ok(Self { posts })
     }
 
-    fn query(conn: &mut impl Queryable, params: Params) -> Result<Vec<WP_Post>, mysql::Error> {
+    fn query(conn: &mut impl Queryable, params: Params) -> Result<Vec<WpPost>, mysql::Error> {
         let query_builder::QueryAndValues(q, values) = QueryBuilder::new(params).query();
 
         let stmt = conn.prep(q)?;
 
         let rows: Vec<Row> = conn.exec(stmt, values)?;
 
-        Ok(rows.into_iter().map(|row| WP_Post::from(row)).collect())
+        Ok(rows.into_iter().map(|row| WpPost::from(row)).collect())
     }
 
     pub fn post_count(&self) -> usize {

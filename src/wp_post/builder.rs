@@ -1,7 +1,7 @@
-use super::WP_Post;
+use super::WpPost;
 
 #[allow(non_snake_case)]
-impl WP_Post {
+impl WpPost {
     pub fn ID(mut self, id: u64) -> Self {
         self.ID = id;
 

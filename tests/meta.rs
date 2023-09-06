@@ -31,6 +31,7 @@ fn meta_value_num() {
 fn meta_queries() {
     let params = ParamBuilder::new()
         .post_type_all()
+        .post_status(PostStatus::Any)
         .meta_query(
             MetaQuery::new("my_inserted_meta", "42", SqlSearchOperators::Equals),
             MetaRelation::Or,

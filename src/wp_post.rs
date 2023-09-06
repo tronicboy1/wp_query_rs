@@ -20,8 +20,8 @@ mod sql;
 
 /// A representation of a wp_posts entity queried from the database
 #[derive(Debug, Clone)]
-#[allow(non_camel_case_types, non_snake_case)]
-pub struct WP_Post {
+#[allow(non_snake_case)]
+pub struct WpPost {
     pub ID: u64,
     pub post_author: u64,
     pub post_date: PrimitiveDateTime,
@@ -47,7 +47,7 @@ pub struct WP_Post {
     pub comment_count: u64,
 }
 
-impl WP_Post {
+impl WpPost {
     pub fn new(post_author: u64) -> Self {
         let now = get_date_now();
         let now_utc = get_utc_date_now();
@@ -110,7 +110,7 @@ impl WP_Post {
     }
 }
 
-impl IntoZval for WP_Post {
+impl IntoZval for WpPost {
     const TYPE: ext_php_rs::flags::DataType = DataType::Object(Some("RS_WP_Post"));
 
     fn into_zval(self, persistent: bool) -> ext_php_rs::error::Result<ext_php_rs::types::Zval> {
@@ -128,7 +128,7 @@ impl IntoZval for WP_Post {
     }
 }
 
-impl<'a> FromZval<'a> for WP_Post {
+impl<'a> FromZval<'a> for WpPost {
     const TYPE: ext_php_rs::flags::DataType = DataType::Object(Some("RS_WP_Post"));
 
     // Do not implement as not used, must satisfy ext-php-rs traits
@@ -189,7 +189,7 @@ mod tests {
 
     #[test]
     fn can_create_wp_post() {
-        let p = WP_Post::new(1);
+        let p = WpPost::new(1);
         assert_eq!(p.post_author, 1);
         assert_eq!(p.post_status, PostStatus::Draft);
     }
