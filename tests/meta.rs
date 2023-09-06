@@ -2,7 +2,10 @@ use wp_query_rs::*;
 
 #[test]
 fn meta_key() {
-    let params = ParamBuilder::new().meta_key("my_inserted_meta");
+    let params = ParamBuilder::new()
+        .post_type_all()
+        .post_status(PostStatus::Any)
+        .meta_key("my_inserted_meta");
 
     let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);
@@ -10,7 +13,7 @@ fn meta_key() {
 
 #[test]
 fn meta_value() {
-    let params = ParamBuilder::new().meta_value("42");
+    let params = ParamBuilder::new().post_type_all().meta_value("42");
 
     let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);
@@ -18,7 +21,7 @@ fn meta_value() {
 
 #[test]
 fn meta_value_num() {
-    let params = ParamBuilder::new().meta_value_num(1);
+    let params = ParamBuilder::new().post_type_all().meta_value_num(1);
 
     let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);
@@ -27,12 +30,9 @@ fn meta_value_num() {
 #[test]
 fn meta_queries() {
     let params = ParamBuilder::new()
+        .post_type_all()
         .meta_query(
-            MetaQuery {
-                key: String::from("my_inserted_meta"),
-                value: String::from("42"),
-                compare: SqlSearchOperators::Equals,
-            },
+            MetaQuery::new("my_inserted_meta", "42", SqlSearchOperators::Equals),
             MetaRelation::Or,
         )
         .meta_query(
