@@ -32,6 +32,7 @@ pub type WP_Query = WpQuery;
 mod params;
 mod query_builder;
 mod sql;
+mod wp_comment;
 pub mod wp_post;
 
 #[derive(Debug)]
