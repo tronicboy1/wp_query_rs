@@ -54,6 +54,21 @@ pub enum TaxField {
     TermTaxonomyId,
 }
 
+impl std::fmt::Display for TaxField {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Name => "name",
+                Self::Slug => "slug",
+                Self::TermId => "term_id",
+                Self::TermTaxonomyId => "term_taxonomy_id",
+            }
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
