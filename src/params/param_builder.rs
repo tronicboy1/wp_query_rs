@@ -90,74 +90,121 @@ impl ParamBuilder {
         self
     }
 
+    /// Searches by category ID
     pub fn cat(mut self, cat_id: u64) -> Self {
-        self.cat = Some(cat_id);
+        let mut term_ids = self.0.term_and.unwrap_or(Vec::new());
+
+        term_ids.push(cat_id);
+
+        self.0.term_and = Some(term_ids);
 
         self
     }
 
     pub fn category_name(mut self, s: &str) -> Self {
-        self.category_name = Some(s.to_string());
+        let mut slugs = self.0.term_slug_and.unwrap_or(Vec::new());
+
+        slugs.push(s.to_string());
+
+        self.0.term_slug_and = Some(slugs);
 
         self
     }
 
-    fn category__and(mut self, cat_id: u64) -> Self {
-        let mut ids = self.0.category__and.unwrap_or(Vec::new());
+    pub fn category__and(mut self, cat_id: u64) -> Self {
+        let mut ids = self.0.term_and.unwrap_or(Vec::new());
         ids.push(cat_id);
 
-        self.0.category__and = Some(ids);
+        self.0.term_and = Some(ids);
 
         self
     }
 
     pub fn category__in(mut self, cat_id: u64) -> Self {
-        let mut ids = self.0.category__in.unwrap_or(Vec::new());
+        let mut ids = self.0.term_in.unwrap_or(Vec::new());
         ids.push(cat_id);
 
-        self.0.category__in = Some(ids);
+        self.0.term_in = Some(ids);
 
         self
     }
 
     pub fn category__not_in(mut self, cat_id: u64) -> Self {
-        let mut ids = self.0.category__not_in.unwrap_or(Vec::new());
+        let mut ids = self.0.term_not_in.unwrap_or(Vec::new());
         ids.push(cat_id);
 
-        self.0.category__not_in = Some(ids);
+        self.0.term_not_in = Some(ids);
 
         self
     }
 
     pub fn tag(mut self, slug: &str) -> Self {
-        self.tag = Some(slug.to_string());
+        let mut term_slugs = self.0.term_slug_and.unwrap_or(Vec::new());
+
+        term_slugs.push(slug.to_string());
+
+        self.0.term_slug_and = Some(term_slugs);
 
         self
     }
 
     pub fn tag_id(mut self, tag_id: u64) -> Self {
-        self.tag_id = Some(tag_id);
+        let mut terms = self.0.term_and.unwrap_or(Vec::new());
+
+        terms.push(tag_id);
+
+        self.0.term_and = Some(terms);
 
         self
     }
 
-    fn tag__and(self) -> Self {
+    pub fn tag__and(mut self, tag_id: u64) -> Self {
+        let mut tag_ids = self.0.term_and.unwrap_or(Vec::new());
+
+        tag_ids.push(tag_id);
+
+        self.0.term_and = Some(tag_ids);
+
         self
     }
 
-    fn tag__in(self) -> Self {
+    pub fn tag__in(mut self, tag_id: u64) -> Self {
+        let mut terms = self.0.term_in.unwrap_or(Vec::new());
+
+        terms.push(tag_id);
+
+        self.0.term_in = Some(terms);
+
         self
     }
 
-    fn tag__not_in(self) -> Self {
+    pub fn tag__not_in(mut self, tag_id: u64) -> Self {
+        let mut terms = self.0.term_not_in.unwrap_or(Vec::new());
+
+        terms.push(tag_id);
+
+        self.0.term_not_in = Some(terms);
+
         self
     }
 
-    fn tag_slug__and(self) -> Self {
+    pub fn tag_slug__and(mut self, tag_slug: &str) -> Self {
+        let mut terms = self.0.term_slug_and.unwrap_or(Vec::new());
+
+        terms.push(tag_slug.to_string());
+
+        self.0.term_slug_and = Some(terms);
+
         self
     }
 
-    fn tag_slug__in(self) -> Self {
+    pub fn tag_slug__in(mut self, tag_slug: &str) -> Self {
+        let mut terms = self.0.term_slug_in.unwrap_or(Vec::new());
+
+        terms.push(tag_slug.to_string());
+
+        self.0.term_slug_in = Some(terms);
+
         self
     }
 
@@ -537,35 +584,84 @@ mod tests {
     fn can_add_category() {
         let cat = 1;
         let q = ParamBuilder::new().cat(cat);
-        assert_eq!(cat, q.cat.unwrap());
+        assert_eq!(cat, q.0.term_and.unwrap()[0]);
     }
 
     #[test]
     fn can_add_category_and() {
         let id = 1;
         let q = ParamBuilder::new().category__and(id);
-        assert_eq!(id, *q.0.category__and.unwrap().first().unwrap());
+        assert_eq!(id, *q.0.term_and.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_category_in() {
         let id = 1;
         let q = ParamBuilder::new().category__in(id);
-        assert_eq!(id, *q.0.category__in.unwrap().first().unwrap());
+        assert_eq!(id, *q.0.term_in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_category_not_in() {
         let id = 1;
         let q = ParamBuilder::new().category__not_in(id);
-        assert_eq!(id, *q.0.category__not_in.unwrap().first().unwrap());
+        assert_eq!(id, *q.0.term_not_in.unwrap().first().unwrap());
     }
 
     #[test]
     fn can_add_tag() {
         let tag = "Tag";
         let q = ParamBuilder::new().tag(tag);
-        assert_eq!(tag, q.0.tag.unwrap());
+        assert_eq!(tag, q.0.term_slug_and.unwrap()[0]);
+    }
+
+    #[test]
+    fn can_add_tag_and() {
+        let q = ParamBuilder::new().tag__and(42).tag__and(27);
+
+        let tag_and = q.0.term_and.unwrap();
+        assert_eq!(tag_and[0], 42);
+        assert_eq!(tag_and[1], 27);
+    }
+
+    #[test]
+    fn can_add_tag_in() {
+        let q = ParamBuilder::new().tag__in(42).tag__in(27);
+
+        let tag_in = q.0.term_in.unwrap();
+        assert_eq!(tag_in[0], 42);
+        assert_eq!(tag_in[1], 27);
+    }
+
+    #[test]
+    fn can_add_tag_not_in() {
+        let q = ParamBuilder::new().tag__not_in(42).tag__not_in(27);
+
+        let tag_in = q.0.term_not_in.unwrap();
+        assert_eq!(tag_in[0], 42);
+        assert_eq!(tag_in[1], 27);
+    }
+
+    #[test]
+    fn can_add_tag_slug_and() {
+        let q = ParamBuilder::new()
+            .tag_slug__and("russian")
+            .tag_slug__and("food");
+
+        let tag_slug_and = q.0.term_slug_and.unwrap();
+        assert_eq!(tag_slug_and[0], String::from("russian"));
+        assert_eq!(tag_slug_and[1], String::from("food"));
+    }
+
+    #[test]
+    fn can_add_tag_slug_in() {
+        let q = ParamBuilder::new()
+            .tag_slug__in("russian")
+            .tag_slug__in("food");
+
+        let tag_slug_in = q.0.term_slug_in.unwrap();
+        assert_eq!(tag_slug_in[0], String::from("russian"));
+        assert_eq!(tag_slug_in[1], String::from("food"));
     }
 
     #[test]

@@ -95,37 +95,28 @@ impl QueryBuilder {
                 .push_str(&format!(" AND post_status = '{}'", PostStatus::Publish));
         }
 
-        /* Add category conditions */
-        if let Some(cat) = params.cat {
-            self.query.push_str(" AND wp_terms.term_id = ?");
-            self.values.push(Value::UInt(cat));
+        /* Add category, tag, and term conditions */
+        if let Some(term_slugs) = params.term_slug_and {
+            for term_slug in term_slugs.into_iter() {
+                self.query.push_str(" AND wp_terms.slug = ?");
+                self.values.push(Value::Bytes(term_slug.into_bytes()));
+            }
         }
 
-        if let Some(cat) = params.category_name {
-            self.query.push_str(" AND wp_terms.slug = ?");
-            self.values.push(Value::Bytes(cat.into_bytes()));
-        }
-
-        if let Some(cat_ids) = params.category__in {
-            let q_marks = implode_to_question_mark(&cat_ids);
+        if let Some(term_ids) = params.term_in {
+            let q_marks = implode_to_question_mark(&term_ids);
             self.query
                 .push_str(&format!(" AND wp_terms.term_id IN ({})", q_marks));
-            let mut ids: Vec<Value> = cat_ids.iter().map(|id| Value::UInt(*id)).collect();
+            let mut ids: Vec<Value> = term_ids.into_iter().map(|id| Value::UInt(id)).collect();
             self.values.append(&mut ids);
         }
 
-        if let Some(cat_ids) = params.category__not_in {
-            let q_marks = implode_to_question_mark(&cat_ids);
+        if let Some(term_ids) = params.term_not_in {
+            let q_marks = implode_to_question_mark(&term_ids);
             self.query
                 .push_str(&format!(" AND wp_terms.term_id NOT IN ({})", q_marks));
-            let mut ids: Vec<Value> = cat_ids.iter().map(|id| Value::UInt(*id)).collect();
+            let mut ids: Vec<Value> = term_ids.into_iter().map(|id| Value::UInt(id)).collect();
             self.values.append(&mut ids);
-        }
-
-        /* Add tag conditions */
-        if let Some(tag) = params.tag {
-            self.query.push_str(" AND wp_terms.slug = ?");
-            self.values.push(Value::Bytes(tag.into_bytes()));
         }
 
         /* Add search conditions */
@@ -315,19 +306,12 @@ impl QueryBuilder {
 }
 
 fn check_if_term_join_necessary(params: &Params) -> bool {
-    params.tag.is_some()
-        || params.tag__and.is_some()
-        || params.tag__in.is_some()
-        || params.tag__not_in.is_some()
-        || params.tag_id.is_some()
-        || params.tag_slug__and.is_some()
-        || params.tag_slug__in.is_some()
+    params.term_and.is_some()
+        || params.term_in.is_some()
+        || params.term_not_in.is_some()
+        || params.term_slug_and.is_some()
+        || params.term_slug_in.is_some()
         || params.tax_query.is_some()
-        || params.cat.is_some()
-        || params.category__and.is_some()
-        || params.category__in.is_some()
-        || params.category__not_in.is_some()
-        || params.category_name.is_some()
 }
 
 fn check_if_meta_join_necessary(params: &Params) -> bool {

@@ -2,9 +2,9 @@ pub mod date_query;
 pub mod meta_query;
 pub mod orderby;
 pub mod param_builder;
+pub mod post_type;
 pub mod tax_query;
 pub mod traits;
-pub mod post_type;
 
 use std::collections::HashMap;
 
@@ -26,18 +26,11 @@ pub struct Params {
     pub author_name: Option<String>,
     pub author__in: Option<Vec<u64>>,
     pub author__not_in: Option<Vec<u64>>,
-    pub cat: Option<u64>,
-    pub category_name: Option<String>,
-    pub category__and: Option<Vec<u64>>,
-    pub category__in: Option<Vec<u64>>,
-    pub category__not_in: Option<Vec<u64>>,
-    pub tag: Option<String>,
-    pub tag_id: Option<u64>,
-    pub tag__and: Option<Vec<u64>>,
-    pub tag__in: Option<Vec<u64>>,
-    pub tag__not_in: Option<Vec<u64>>,
-    pub tag_slug__and: Option<Vec<String>>,
-    pub tag_slug__in: Option<Vec<String>>,
+    pub term_and: Option<Vec<u64>>,
+    pub term_in: Option<Vec<u64>>,
+    pub term_not_in: Option<Vec<u64>>,
+    pub term_slug_and: Option<Vec<String>>,
+    pub term_slug_in: Option<Vec<String>>,
     /**
      * Key is The logical relationship between each inner taxonomy array when there is more than one. Possible values are ‘AND’, ‘OR’. Do not use with a single inner taxonomy array
      */
@@ -103,18 +96,12 @@ impl Params {
             author_name: None,
             author__in: None,
             author__not_in: None,
-            cat: None,
-            category_name: None,
-            category__and: None,
-            category__in: None,
-            category__not_in: None,
-            tag: None,
-            tag_id: None,
-            tag__and: None,
-            tag__in: None,
-            tag__not_in: None,
-            tag_slug__and: None,
-            tag_slug__in: None,
+            // Holds ids for both categories and tags
+            term_and: None,
+            term_in: None,
+            term_not_in: None,
+            term_slug_and: None,
+            term_slug_in: None,
             tax_query: None,
             s: None,
             p: None,
