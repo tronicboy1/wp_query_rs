@@ -14,3 +14,33 @@ fn tag() {
 
     let posts = WP_Query::new(params).expect("SqlFailed");
 }
+
+#[test]
+fn tag_in() {
+    let params = ParamBuilder::new().tag__in(1);
+
+    let posts = WP_Query::new(params).expect("SqlFailed");
+    assert!(posts.posts.len() > 0);
+}
+
+#[test]
+fn tag_not_in() {
+    let params = ParamBuilder::new().tag__not_in(1);
+
+    let posts = WP_Query::new(params).expect("SqlFailed");
+    assert!(posts.posts.len() > 0);
+}
+
+#[test]
+fn tag_slug_and() {
+    let params = ParamBuilder::new().tag_slug__and("tag-a");
+
+    let posts = WP_Query::new(params).expect("SqlFailed");
+}
+
+#[test]
+fn tag_slug_in() {
+    let params = ParamBuilder::new().tag_slug__in("tag-a");
+
+    let posts = WP_Query::new(params).expect("SqlFailed");
+}

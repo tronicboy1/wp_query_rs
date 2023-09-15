@@ -75,16 +75,20 @@ impl QueryBuilder {
             let q_marks = implode_to_question_mark(&author_ids);
             self.query
                 .push_str(&format!(" AND post_author IN ({})", q_marks));
-            let mut ids: Vec<Value> = author_ids.into_iter().map(|id| Value::UInt(id)).collect();
-            self.values.append(&mut ids);
+
+            let ids = author_ids.into_iter().map(|id| Value::UInt(id));
+
+            self.values.extend(ids);
         }
 
         if let Some(author_ids) = params.author__not_in {
             let q_marks = implode_to_question_mark(&author_ids);
             self.query
                 .push_str(&format!(" AND post_author NOT IN ({})", q_marks));
-            let mut ids: Vec<Value> = author_ids.into_iter().map(|id| Value::UInt(id)).collect();
-            self.values.append(&mut ids);
+
+            let ids = author_ids.into_iter().map(|id| Value::UInt(id));
+
+            self.values.extend(ids);
         }
 
         /* Add Post Status conditions */
@@ -103,20 +107,37 @@ impl QueryBuilder {
             }
         }
 
+        if let Some(term_slugs) = params.term_slug_in {
+            let q_marks = implode_to_question_mark(&term_slugs);
+
+            self.query
+                .push_str(&format!(" AND wp_terms.slug IN ({})", q_marks));
+
+            let values = term_slugs
+                .into_iter()
+                .map(|slug| Value::Bytes(slug.into_bytes()));
+
+            self.values.extend(values);
+        }
+
         if let Some(term_ids) = params.term_in {
             let q_marks = implode_to_question_mark(&term_ids);
             self.query
                 .push_str(&format!(" AND wp_terms.term_id IN ({})", q_marks));
-            let mut ids: Vec<Value> = term_ids.into_iter().map(|id| Value::UInt(id)).collect();
-            self.values.append(&mut ids);
+
+            let ids = term_ids.into_iter().map(|id| Value::UInt(id));
+
+            self.values.extend(ids);
         }
 
         if let Some(term_ids) = params.term_not_in {
             let q_marks = implode_to_question_mark(&term_ids);
             self.query
                 .push_str(&format!(" AND wp_terms.term_id NOT IN ({})", q_marks));
-            let mut ids: Vec<Value> = term_ids.into_iter().map(|id| Value::UInt(id)).collect();
-            self.values.append(&mut ids);
+
+            let ids = term_ids.into_iter().map(|id| Value::UInt(id));
+
+            self.values.extend(ids);
         }
 
         /* Add search conditions */
@@ -150,43 +171,50 @@ impl QueryBuilder {
             let q_marks = implode_to_question_mark(&p_ids);
             self.query
                 .push_str(&format!(" AND wp_posts.post_parent IN ({})", q_marks));
-            let mut ids: Vec<Value> = p_ids.into_iter().map(|id| Value::UInt(id)).collect();
-            self.values.append(&mut ids);
+
+            let ids = p_ids.into_iter().map(|id| Value::UInt(id));
+
+            self.values.extend(ids);
         }
 
         if let Some(p_ids) = params.post_parent__not_in {
             let q_marks = implode_to_question_mark(&p_ids);
             self.query
                 .push_str(&format!(" AND wp_posts.post_parent NOT IN ({})", q_marks));
-            let mut ids: Vec<Value> = p_ids.into_iter().map(|id| Value::UInt(id)).collect();
-            self.values.append(&mut ids);
+
+            let ids = p_ids.into_iter().map(|id| Value::UInt(id));
+
+            self.values.extend(ids);
         }
 
         if let Some(p_ids) = params.post__in {
             let q_marks = implode_to_question_mark(&p_ids);
             self.query
                 .push_str(&format!(" AND wp_posts.ID IN ({})", q_marks));
-            let mut ids: Vec<Value> = p_ids.iter().map(|id| Value::UInt(*id)).collect();
-            self.values.append(&mut ids);
+
+            let ids = p_ids.into_iter().map(|id| Value::UInt(id));
+            self.values.extend(ids);
         }
 
         if let Some(p_ids) = params.post__not_in {
             let q_marks = implode_to_question_mark(&p_ids);
             self.query
                 .push_str(&format!(" AND wp_posts.ID NOT IN ({})", q_marks));
-            let mut ids: Vec<Value> = p_ids.iter().map(|id| Value::UInt(*id)).collect();
-            self.values.append(&mut ids);
+
+            let ids = p_ids.into_iter().map(|id| Value::UInt(id));
+            self.values.extend(ids);
         }
 
         if let Some(p_names) = params.post_name__in {
             let q_marks = implode_to_question_mark(&p_names);
             self.query
                 .push_str(&format!(" AND wp_posts.post_name IN ({})", q_marks));
-            let mut ids: Vec<Value> = p_names
+
+            let ids = p_names
                 .into_iter()
-                .map(|name| Value::Bytes(name.into_bytes()))
-                .collect();
-            self.values.append(&mut ids);
+                .map(|name| Value::Bytes(name.into_bytes()));
+
+            self.values.extend(ids);
         }
 
         /* Add specific date condition */
