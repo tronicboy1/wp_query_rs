@@ -16,41 +16,42 @@ use crate::wp_post::post_status::PostStatus;
 use self::date_query::DateQuery;
 use self::meta_query::{MetaQuery, MetaRelation};
 use self::orderby::WpOrderBy;
+use self::post_type::PostType;
 use self::tax_query::{TaxQuery, TaxRelation};
 
 /// Configuration for running a WordPress database query.
 #[allow(non_snake_case)]
 #[derive(Debug)]
-pub struct Params {
+pub struct Params<'a> {
     pub author: Option<u64>,
-    pub author_name: Option<String>,
+    pub author_name: Option<&'a str>,
     pub author__in: Option<Vec<u64>>,
     pub author__not_in: Option<Vec<u64>>,
     pub term_and: Option<Vec<u64>>,
     pub term_in: Option<Vec<u64>>,
     pub term_not_in: Option<Vec<u64>>,
-    pub term_slug_and: Option<Vec<String>>,
-    pub term_slug_in: Option<Vec<String>>,
+    pub term_slug_and: Option<Vec<&'a str>>,
+    pub term_slug_in: Option<Vec<&'a str>>,
     /**
      * Key is The logical relationship between each inner taxonomy array when there is more than one. Possible values are ‘AND’, ‘OR’. Do not use with a single inner taxonomy array
      */
     pub tax_query: Option<HashMap<TaxRelation, Vec<TaxQuery>>>,
-    pub s: Option<String>,
+    pub s: Option<&'a str>,
     pub p: Option<u64>,
-    pub name: Option<String>,
+    pub name: Option<&'a str>,
     pub page_id: Option<u64>,
-    pub pagename: Option<String>,
+    pub pagename: Option<&'a str>,
     pub post_parent: Option<u64>,
     pub post_parent__in: Option<Vec<u64>>,
     pub post_parent__not_in: Option<Vec<u64>>,
     pub post__in: Option<Vec<u64>>,
     pub post__not_in: Option<Vec<u64>>,
-    pub post_name__in: Option<Vec<String>>,
-    pub post_password: Option<String>,
+    pub post_name__in: Option<Vec<&'a str>>,
+    pub post_password: Option<&'a str>,
     /**
      * Retrieves posts by post types, default value is ‘post‘. If ‘tax_query‘ is set for a query, the default value becomes ‘any‘;
      */
-    pub post_type: Option<Vec<String>>,
+    pub post_type: Option<Vec<PostType<'a>>>,
     pub post_status: Option<PostStatus>,
     /**
      * The amount of comments your CPT has to have ( Search operator will do a ‘=’ operation )
@@ -76,7 +77,7 @@ pub struct Params {
      */
     pub m: Option<u64>,
     pub date_query: Option<Vec<DateQuery>>,
-    pub meta_key: Option<String>,
+    pub meta_key: Option<&'a str>,
     pub meta_value: Option<String>,
     pub meta_value_num: Option<i64>,
     pub meta_compare: Option<SqlSearchOperators>,
@@ -86,10 +87,10 @@ pub struct Params {
      * Possible values are ‘AND’, ‘OR’. Do not use with a single inner meta_query array
      */
     pub meta_query: Option<HashMap<MetaRelation, Vec<MetaQuery>>>,
-    pub post_mime_type: Option<String>,
+    pub post_mime_type: Option<&'a str>,
 }
 
-impl Params {
+impl<'a> Params<'a> {
     pub fn new() -> Self {
         Self {
             author: None,
@@ -151,7 +152,7 @@ pub struct CommentCount {
     pub compare: SqlCompareOperator,
 }
 
-impl<'a> FromZval<'a> for Params {
+impl<'a> FromZval<'a> for Params<'a> {
     const TYPE: ext_php_rs::flags::DataType = ext_php_rs::flags::DataType::Array;
 
     fn from_zval(zval: &'a ext_php_rs::types::Zval) -> Option<Self> {
@@ -168,7 +169,7 @@ impl<'a> FromZval<'a> for Params {
             }
 
             if let Some(auth_name) = array.get("author_name") {
-                params.author_name = auth_name.string();
+                params.author_name = auth_name.str();
             }
 
             if let Some(auth_ids) = array.get("author__in").map(|v| v.array()).flatten() {
@@ -182,13 +183,14 @@ impl<'a> FromZval<'a> for Params {
             /* Post Type */
             // PHP Version allows for array or string, accounts for both possibilies
             if let Some(post_types) = array.get("post_type").map(|r| r.array()).flatten() {
-                let p_types: Vec<String> = post_types
+                let p_types: Vec<PostType> = post_types
                     .iter()
-                    .filter_map(|p_type| p_type.2.string())
+                    .filter_map(|p_type| p_type.2.str())
+                    .map(|p_type| PostType::from(p_type))
                     .collect();
                 params.post_type = Some(p_types)
-            } else if let Some(post_type) = array.get("post_type").map(|v| v.string()).flatten() {
-                params.post_type = Some(vec![post_type]);
+            } else if let Some(post_type) = array.get("post_type").map(|v| v.str()).flatten() {
+                params.post_type = Some(vec![PostType::from(post_type)]);
             }
 
             /* Posts Per Page */

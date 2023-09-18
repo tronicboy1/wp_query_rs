@@ -1,20 +1,20 @@
 use mysql_common::{prelude::ToValue, Value};
 use sql_paginatorr::LimitOffsetPair;
 
-use crate::{params::Params, sql::SqlOrder, wp_post::post_status::PostStatus};
+use crate::{params::Params, sql::SqlOrder, wp_post::post_status::PostStatus, PostType};
 
 type StmtValues = Vec<Value>;
 
-pub struct QueryBuilder {
-    params: Params,
+pub struct QueryBuilder<'a> {
+    params: Params<'a>,
     query: String,
     values: StmtValues,
 }
 
 pub struct QueryAndValues(pub String, pub Vec<Value>);
 
-impl QueryBuilder {
-    pub fn new(params: Params) -> Self {
+impl<'a> QueryBuilder<'a> {
+    pub fn new(params: Params<'a>) -> Self {
         Self {
             params,
             query: String::new(),
@@ -68,7 +68,7 @@ impl QueryBuilder {
 
         if let Some(author_name) = params.author_name {
             self.query.push_str(" AND wp_users.user_nicename = ?");
-            self.values.push(Value::Bytes(author_name.into_bytes()));
+            self.values.push(Value::Bytes(author_name.into()));
         }
 
         if let Some(author_ids) = params.author__in {
@@ -103,7 +103,7 @@ impl QueryBuilder {
         if let Some(term_slugs) = params.term_slug_and {
             for term_slug in term_slugs.into_iter() {
                 self.query.push_str(" AND wp_terms.slug = ?");
-                self.values.push(Value::Bytes(term_slug.into_bytes()));
+                self.values.push(Value::Bytes(term_slug.into()));
             }
         }
 
@@ -115,7 +115,7 @@ impl QueryBuilder {
 
             let values = term_slugs
                 .into_iter()
-                .map(|slug| Value::Bytes(slug.into_bytes()));
+                .map(|slug| Value::Bytes(slug.into()));
 
             self.values.extend(values);
         }
@@ -145,7 +145,7 @@ impl QueryBuilder {
             self.query
                 .push_str(" AND wp_posts.post_content LIKE CONCAT('%',?,'%') OR wp_posts.post_title LIKE CONCAT('%',?,'%')");
             self.values.push(Value::Bytes(keyword.as_bytes().to_vec())); // Clone this so it can be used again
-            self.values.push(Value::Bytes(keyword.into_bytes()));
+            self.values.push(Value::Bytes(keyword.into()));
         }
 
         /* Add page/post conditions */
@@ -156,7 +156,7 @@ impl QueryBuilder {
 
         if let Some(name) = params.name {
             self.query.push_str(" AND wp_posts.post_name = ?");
-            self.values.push(Value::Bytes(name.into_bytes()));
+            self.values.push(Value::Bytes(name.into()));
         }
 
         /* Post types */
@@ -212,7 +212,7 @@ impl QueryBuilder {
 
             let ids = p_names
                 .into_iter()
-                .map(|name| Value::Bytes(name.into_bytes()));
+                .map(|name| Value::Bytes(name.into()));
 
             self.values.extend(ids);
         }
@@ -267,7 +267,7 @@ impl QueryBuilder {
         if let Some(meta_k) = params.meta_key {
             self.query
                 .push_str(&format!(" AND wp_postmeta.meta_key {} ?", meta_op));
-            self.values.push(Value::Bytes(meta_k.into_bytes()));
+            self.values.push(Value::Bytes(meta_k.into()));
         }
 
         if let Some(meta_v) = params.meta_value {
@@ -366,7 +366,7 @@ fn push_post_status(s: &mut String, v: &mut StmtValues, post_status: &PostStatus
     v.push(Value::Bytes(post_status.to_string().into_bytes()));
 }
 
-fn push_post_type(s: &mut String, v: &mut StmtValues, post_type: Option<Vec<String>>) {
+fn push_post_type(s: &mut String, v: &mut StmtValues, post_type: Option<Vec<PostType>>) {
     if let Some(post_types) = post_type {
         if post_types.len() == 0 {
             return;
@@ -375,7 +375,7 @@ fn push_post_type(s: &mut String, v: &mut StmtValues, post_type: Option<Vec<Stri
         let q_marks = implode_to_question_mark(&post_types);
         s.push_str(&format!(" AND wp_posts.post_type IN ({})", q_marks));
         for post_type in post_types {
-            v.push(Value::Bytes(post_type.into_bytes()));
+            v.push(Value::Bytes(post_type.into()));
         }
     } else {
         s.push_str(" AND wp_posts.post_type = 'post'");

@@ -60,9 +60,9 @@ impl WpQuery {
     /// # Errors
     /// Will return an error if there is an error in the mysql query. This may be from innapropriate SQL built in the query builder,
     /// or more likely a connection issue from incorrect environment variables.
-    pub fn new<T>(params: T) -> Result<Self, mysql::Error>
+    pub fn new<'a, T>(params: T) -> Result<Self, mysql::Error>
     where
-        T: Into<Params>,
+        T: Into<Params<'a>>,
     {
         let mut conn = get_conn()?;
 
@@ -89,18 +89,18 @@ impl WpQuery {
     ///
     /// # Errors
     /// When an error occurs in the SQL query.
-    pub fn with_connection<T>(conn: &mut impl Queryable, params: T) -> Result<Self, mysql::Error>
+    pub fn with_connection<'a, T>(conn: &mut impl Queryable, params: T) -> Result<Self, mysql::Error>
     where
-        T: Into<Params>,
+        T: Into<Params<'a>>,
     {
         let posts: Vec<WpPost> = Self::query(conn, params)?;
 
         Ok(Self { posts })
     }
 
-    fn query<T>(conn: &mut impl Queryable, params: T) -> Result<Vec<WpPost>, mysql::Error>
+    fn query<'a, T>(conn: &mut impl Queryable, params: T) -> Result<Vec<WpPost>, mysql::Error>
     where
-        T: Into<Params>,
+        T: Into<Params<'a>>,
     {
         let query_builder::QueryAndValues(q, values) = QueryBuilder::new(params.into()).query();
 

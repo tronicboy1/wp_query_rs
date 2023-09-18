@@ -34,24 +34,24 @@ use super::{
 /// let params = ParamBuilder::new()
 ///     .hour(24); // InvalidHour
 /// ```
-pub struct ParamBuilder(Params);
+pub struct ParamBuilder<'a>(Params<'a>);
 
-impl std::ops::Deref for ParamBuilder {
-    type Target = Params;
+impl<'a> std::ops::Deref for ParamBuilder<'a> {
+    type Target = Params<'a>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl std::ops::DerefMut for ParamBuilder {
+impl<'a> std::ops::DerefMut for ParamBuilder<'a> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
 #[allow(non_snake_case)]
-impl ParamBuilder {
+impl<'a> ParamBuilder<'a> {
     pub fn new() -> Self {
         Self(Params::new())
     }
@@ -64,8 +64,8 @@ impl ParamBuilder {
     }
 
     /// use ‘user_nicename‘ – NOT name.
-    pub fn author_name(mut self, s: &str) -> Self {
-        self.author_name = Some(s.to_string());
+    pub fn author_name(mut self, s: &'a str) -> Self {
+        self.author_name = Some(s);
 
         self
     }
@@ -95,10 +95,10 @@ impl ParamBuilder {
         self
     }
 
-    pub fn category_name(mut self, s: &str) -> Self {
+    pub fn category_name(mut self, s: &'a str) -> Self {
         let slugs = self.term_slug_and.get_or_insert(Vec::new());
 
-        slugs.push(s.to_string());
+        slugs.push(s);
 
         self
     }
@@ -124,9 +124,9 @@ impl ParamBuilder {
         self
     }
 
-    pub fn tag(mut self, slug: &str) -> Self {
+    pub fn tag(mut self, slug: &'a str) -> Self {
         let term_slugs = self.term_slug_and.get_or_insert(Vec::new());
-        term_slugs.push(slug.to_string());
+        term_slugs.push(slug);
 
         self
     }
@@ -159,16 +159,16 @@ impl ParamBuilder {
         self
     }
 
-    pub fn tag_slug__and(mut self, tag_slug: &str) -> Self {
+    pub fn tag_slug__and(mut self, tag_slug: &'a str) -> Self {
         let terms = self.term_slug_and.get_or_insert(Vec::new());
-        terms.push(tag_slug.to_string());
+        terms.push(tag_slug);
 
         self
     }
 
-    pub fn tag_slug__in(mut self, tag_slug: &str) -> Self {
+    pub fn tag_slug__in(mut self, tag_slug: &'a str) -> Self {
         let terms = self.term_slug_in.get_or_insert(Vec::new());
-        terms.push(tag_slug.to_string());
+        terms.push(tag_slug);
 
         self
     }
@@ -189,8 +189,8 @@ impl ParamBuilder {
     }
 
     /// Search keyword
-    pub fn s(mut self, s: &str) -> Self {
-        self.s = Some(s.to_string());
+    pub fn s(mut self, s: &'a str) -> Self {
+        self.s = Some(s);
 
         self
     }
@@ -203,8 +203,8 @@ impl ParamBuilder {
     }
 
     /// use post slug
-    pub fn name(mut self, slug: &str) -> Self {
-        self.name = Some(slug.to_string());
+    pub fn name(mut self, slug: &'a str) -> Self {
+        self.name = Some(slug);
 
         self
     }
@@ -359,7 +359,7 @@ impl ParamBuilder {
 }
 
 #[allow(non_snake_case)]
-impl PostQueryable for ParamBuilder {
+impl<'a> PostQueryable<'a> for ParamBuilder<'a> {
     /// use page id to return only child pages. Set to 0 to return only top-level entries.
     fn post_parent(mut self, id: u64) -> Self {
         self.post_parent = Some(id);
@@ -399,17 +399,17 @@ impl PostQueryable for ParamBuilder {
         self
     }
 
-    fn post_name__in(mut self, s: &str) -> Self {
+    fn post_name__in(mut self, s: &'a str) -> Self {
         let names = self.post_name__in.get_or_insert(Vec::new());
-        names.push(s.to_string());
+        names.push(s);
 
         self
     }
 
     /// use post types. Retrieves posts by post types, default value is ‘post‘.
-    fn post_type(mut self, post_type: PostType) -> Self {
+    fn post_type(mut self, post_type: PostType<'a>) -> Self {
         let types = self.post_type.get_or_insert(Vec::new());
-        types.push(post_type.to_string());
+        types.push(post_type);
 
         self
     }
@@ -428,14 +428,14 @@ impl PostQueryable for ParamBuilder {
     }
 }
 
-impl MetaQueryable for ParamBuilder {
+impl<'a> MetaQueryable<'a> for ParamBuilder<'a> {
     /// Custom field key.
-    fn meta_key(mut self, key: &str) -> Self {
+    fn meta_key(mut self, key: &'a str) -> Self {
         if self.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
 
-        self.meta_key = Some(key.to_string());
+        self.meta_key = Some(key);
 
         self
     }
@@ -494,8 +494,8 @@ impl MetaQueryable for ParamBuilder {
     }
 }
 
-impl Into<Params> for ParamBuilder {
-    fn into(self) -> Params {
+impl<'a> Into<Params<'a>> for ParamBuilder<'a> {
+    fn into(self) -> Params<'a> {
         self.0
     }
 }
@@ -688,14 +688,14 @@ mod tests {
             .post_name__in("malcolm-x")
             .post_name__in("mlk");
         let r = q.0.post_name__in.unwrap();
-        assert_eq!(r.first().unwrap(), "malcolm-x");
+        assert_eq!(r.first().unwrap(), &"malcolm-x");
         assert_eq!(r.len(), 2);
     }
 
     #[test]
     fn can_add_post_type() {
         let q = ParamBuilder::new().post_type(PostType::Page);
-        assert_eq!(q.0.post_type.unwrap().first().unwrap(), "page");
+        assert_eq!(q.0.post_type.unwrap().first().unwrap(), &PostType::Page);
     }
 
     #[test]
