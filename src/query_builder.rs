@@ -242,14 +242,14 @@ impl QueryBuilder {
                 }
 
                 let op = dq.relation.to_string();
-                if let Some(after) = &dq.after {
+                if let Some(after) = dq.after {
                     let d_op = if dq.inclusive { ">=" } else { ">" };
                     self.query
                         .push_str(&format!(" {} wp_posts.{} {} ?", &op, col, d_op));
                     self.values.push(after.to_value());
                 }
 
-                if let Some(before) = &dq.before {
+                if let Some(before) = dq.before {
                     let d_op = if dq.inclusive { "<=" } else { "<" };
                     self.query
                         .push_str(&format!(" {} wp_posts.{} {} ?", &op, col, d_op));

@@ -72,138 +72,103 @@ impl ParamBuilder {
 
     /// use author id
     pub fn author__in(mut self, author_id: u64) -> Self {
-        let mut authors = self.0.author__in.unwrap_or(Vec::new());
+        let authors = self.author__in.get_or_insert(Vec::new());
         authors.push(author_id);
-
-        self.0.author__in = Some(authors);
 
         self
     }
 
     /// use author id
     pub fn author__not_in(mut self, author_id: u64) -> Self {
-        let mut authors = self.0.author__not_in.unwrap_or(Vec::new());
+        let authors = self.author__not_in.get_or_insert(Vec::new());
         authors.push(author_id);
-
-        self.0.author__not_in = Some(authors);
 
         self
     }
 
     /// Searches by category ID
     pub fn cat(mut self, cat_id: u64) -> Self {
-        let mut term_ids = self.0.term_and.unwrap_or(Vec::new());
+        let term_ids = self.term_and.get_or_insert(Vec::new());
 
         term_ids.push(cat_id);
-
-        self.0.term_and = Some(term_ids);
 
         self
     }
 
     pub fn category_name(mut self, s: &str) -> Self {
-        let mut slugs = self.0.term_slug_and.unwrap_or(Vec::new());
+        let slugs = self.term_slug_and.get_or_insert(Vec::new());
 
         slugs.push(s.to_string());
-
-        self.0.term_slug_and = Some(slugs);
 
         self
     }
 
     pub fn category__and(mut self, cat_id: u64) -> Self {
-        let mut ids = self.0.term_and.unwrap_or(Vec::new());
+        let ids = self.term_and.get_or_insert(Vec::new());
         ids.push(cat_id);
-
-        self.0.term_and = Some(ids);
 
         self
     }
 
     pub fn category__in(mut self, cat_id: u64) -> Self {
-        let mut ids = self.0.term_in.unwrap_or(Vec::new());
+        let ids = self.term_in.get_or_insert(Vec::new());
         ids.push(cat_id);
-
-        self.0.term_in = Some(ids);
 
         self
     }
 
     pub fn category__not_in(mut self, cat_id: u64) -> Self {
-        let mut ids = self.0.term_not_in.unwrap_or(Vec::new());
+        let ids = self.term_not_in.get_or_insert(Vec::new());
         ids.push(cat_id);
-
-        self.0.term_not_in = Some(ids);
 
         self
     }
 
     pub fn tag(mut self, slug: &str) -> Self {
-        let mut term_slugs = self.0.term_slug_and.unwrap_or(Vec::new());
-
+        let term_slugs = self.term_slug_and.get_or_insert(Vec::new());
         term_slugs.push(slug.to_string());
-
-        self.0.term_slug_and = Some(term_slugs);
 
         self
     }
 
     pub fn tag_id(mut self, tag_id: u64) -> Self {
-        let mut terms = self.0.term_and.unwrap_or(Vec::new());
-
+        let terms = self.term_and.get_or_insert(Vec::new());
         terms.push(tag_id);
-
-        self.0.term_and = Some(terms);
 
         self
     }
 
     pub fn tag__and(mut self, tag_id: u64) -> Self {
-        let mut tag_ids = self.0.term_and.unwrap_or(Vec::new());
-
+        let tag_ids = self.term_and.get_or_insert(Vec::new());
         tag_ids.push(tag_id);
-
-        self.0.term_and = Some(tag_ids);
 
         self
     }
 
     pub fn tag__in(mut self, tag_id: u64) -> Self {
-        let mut terms = self.0.term_in.unwrap_or(Vec::new());
-
+        let terms = self.term_in.get_or_insert(Vec::new());
         terms.push(tag_id);
-
-        self.0.term_in = Some(terms);
 
         self
     }
 
     pub fn tag__not_in(mut self, tag_id: u64) -> Self {
-        let mut terms = self.0.term_not_in.unwrap_or(Vec::new());
-
+        let terms = self.term_not_in.get_or_insert(Vec::new());
         terms.push(tag_id);
-
-        self.0.term_not_in = Some(terms);
 
         self
     }
 
     pub fn tag_slug__and(mut self, tag_slug: &str) -> Self {
-        let mut terms = self.0.term_slug_and.unwrap_or(Vec::new());
-
+        let terms = self.term_slug_and.get_or_insert(Vec::new());
         terms.push(tag_slug.to_string());
-
-        self.0.term_slug_and = Some(terms);
 
         self
     }
 
     pub fn tag_slug__in(mut self, tag_slug: &str) -> Self {
-        let mut terms = self.0.term_slug_in.unwrap_or(Vec::new());
-
+        let terms = self.term_slug_in.get_or_insert(Vec::new());
         terms.push(tag_slug.to_string());
-
-        self.0.term_slug_in = Some(terms);
 
         self
     }
@@ -404,65 +369,47 @@ impl PostQueryable for ParamBuilder {
 
     /// use post ids. Specify posts whose parent is in an array
     fn post_parent__in(mut self, id: u64) -> Self {
-        let mut ids = self.0.post_parent__in.unwrap_or(Vec::new());
-
+        let ids = self.post_parent__in.get_or_insert(Vec::new());
         ids.push(id);
-
-        self.0.post_parent__in = Some(ids);
 
         self
     }
 
     /// use post ids. Specify posts whose parent is not in an array
     fn post_parent__not_in(mut self, id: u64) -> Self {
-        let mut ids = self.0.post_parent__not_in.unwrap_or(Vec::new());
-
+        let ids = self.post_parent__not_in.get_or_insert(Vec::new());
         ids.push(id);
-
-        self.0.post_parent__not_in = Some(ids);
 
         self
     }
 
     /// use post ids. Specify posts to retrieve.
     fn post__in(mut self, id: u64) -> Self {
-        let mut ids = self.0.post__in.unwrap_or(Vec::new());
-
+        let ids = self.post__in.get_or_insert(Vec::new());
         ids.push(id);
-
-        self.0.post__in = Some(ids);
 
         self
     }
 
     /// use post ids. Specify post NOT to retrieve.
     fn post__not_in(mut self, id: u64) -> Self {
-        let mut ids = self.0.post__not_in.unwrap_or(Vec::new());
-
+        let ids = self.post__not_in.get_or_insert(Vec::new());
         ids.push(id);
-
-        self.0.post__not_in = Some(ids);
 
         self
     }
 
     fn post_name__in(mut self, s: &str) -> Self {
-        let mut names = self.0.post_name__in.unwrap_or(Vec::new());
-
+        let names = self.post_name__in.get_or_insert(Vec::new());
         names.push(s.to_string());
-
-        self.0.post_name__in = Some(names);
 
         self
     }
 
     /// use post types. Retrieves posts by post types, default value is ‘post‘.
     fn post_type(mut self, post_type: PostType) -> Self {
-        let mut types = self.0.post_type.unwrap_or(Vec::new());
-
+        let types = self.post_type.get_or_insert(Vec::new());
         types.push(post_type.to_string());
-
-        self.0.post_type = Some(types);
 
         self
     }
@@ -537,13 +484,11 @@ impl MetaQueryable for ParamBuilder {
         self.meta_value = None;
         self.meta_value_num = None;
 
-        let mut meta_qs = self.0.meta_query.unwrap_or(HashMap::new());
+        let meta_qs = self.meta_query.get_or_insert(HashMap::new());
 
         let queries_for_relation = meta_qs.entry(relation).or_insert(vec![]);
 
         queries_for_relation.push(query);
-
-        self.0.meta_query = Some(meta_qs);
 
         self
     }
