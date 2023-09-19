@@ -173,7 +173,7 @@ impl<'a> ParamBuilder<'a> {
         self
     }
 
-    pub fn tax_query(mut self, query: TaxQuery, relation: Option<TaxRelation>) -> Self {
+    pub fn tax_query(mut self, query: TaxQuery<'a>, relation: Option<TaxRelation>) -> Self {
         let mut tax_q = self.0.tax_query.unwrap_or(HashMap::new());
 
         if let Some(rel) = relation {
@@ -611,14 +611,13 @@ mod tests {
 
     #[test]
     fn can_add_single_tax() {
-        let tax_name = String::from("custom_tax");
         let terms = vec![String::from("1")];
-        let tax = TaxQuery::new(tax_name.clone(), terms.clone());
+        let tax = TaxQuery::new("custom_tax", terms.clone());
         let q = ParamBuilder::new().tax_query(tax, None);
         let stored = q.0.tax_query.unwrap();
         assert!(stored.get(&TaxRelation::Single).is_some());
         let stored = stored.get(&TaxRelation::Single).unwrap().first().unwrap();
-        assert_eq!(stored.taxonomy, tax_name);
+        assert_eq!(stored.taxonomy, "custom_tax");
         assert_eq!(stored.terms, terms);
     }
 
@@ -628,9 +627,9 @@ mod tests {
         let tax_name_two = String::from("category");
         let tax_name_three = String::from("cust_2");
         let terms = vec![String::from("1")];
-        let tax1 = TaxQuery::new(tax_name.clone(), terms.clone());
-        let tax2 = TaxQuery::new(tax_name_two.clone(), terms.clone());
-        let tax3 = TaxQuery::new(tax_name_three.clone(), terms.clone());
+        let tax1 = TaxQuery::new("custom_tax", terms.clone());
+        let tax2 = TaxQuery::new("category", terms.clone());
+        let tax3 = TaxQuery::new("cust_2", terms.clone());
         let q = ParamBuilder::new()
             .tax_query(tax1, Some(TaxRelation::And))
             .tax_query(tax2, Some(TaxRelation::And))

@@ -35,7 +35,7 @@ pub struct Params<'a> {
     /**
      * Key is The logical relationship between each inner taxonomy array when there is more than one. Possible values are ‘AND’, ‘OR’. Do not use with a single inner taxonomy array
      */
-    pub tax_query: Option<HashMap<TaxRelation, Vec<TaxQuery>>>,
+    pub tax_query: Option<HashMap<TaxRelation, Vec<TaxQuery<'a>>>>,
     pub s: Option<&'a str>,
     pub p: Option<u64>,
     pub name: Option<&'a str>,

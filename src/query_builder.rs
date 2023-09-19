@@ -48,7 +48,8 @@ impl<'a> QueryBuilder<'a> {
             self.query.push_str(
                 " INNER JOIN wp_term_relationships
             ON wp_posts.ID = wp_term_relationships.object_id
-            INNER JOIN wp_terms ON wp_terms.term_id = wp_term_relationships.term_taxonomy_id",
+            INNER JOIN wp_term_taxonomy ON wp_term_taxonomy.term_taxonomy_id = wp_term_relationships.term_taxonomy_id
+            INNER JOIN wp_terms ON wp_terms.term_id = wp_term_taxonomy.term_id",
             );
         }
 
@@ -113,9 +114,7 @@ impl<'a> QueryBuilder<'a> {
             self.query
                 .push_str(&format!(" AND wp_terms.slug IN ({})", q_marks));
 
-            let values = term_slugs
-                .into_iter()
-                .map(|slug| Value::Bytes(slug.into()));
+            let values = term_slugs.into_iter().map(|slug| Value::Bytes(slug.into()));
 
             self.values.extend(values);
         }
@@ -138,6 +137,34 @@ impl<'a> QueryBuilder<'a> {
             let ids = term_ids.into_iter().map(|id| Value::UInt(id));
 
             self.values.extend(ids);
+        }
+
+        /* Tax Query */
+        if let Some(queries) = params.tax_query {
+            for (relationship, tax_queries) in queries.into_iter() {
+                self.query.push_str(" AND");
+
+                // Operator for comparing multiple tax queries
+                let rel_str = relationship.to_string();
+
+                for (i, tax_q) in tax_queries.into_iter().enumerate() {
+                    // Add internal operator if length is greater than 1
+                    if i > 0 {
+                        self.query.push_str(" ");
+                        self.query.push_str(&rel_str);
+                    }
+
+                    let q_marks = implode_to_question_mark(&tax_q.terms);
+
+                    let prefix = "wp";
+                    self.query.push_str(&format!(
+                        " {}_{} {} ({})",
+                        prefix, tax_q.field, tax_q.operator, q_marks
+                    ));
+                    self.values
+                        .extend(tax_q.terms.into_iter().map(|v| Value::Bytes(v.into())))
+                }
+            }
         }
 
         /* Add search conditions */
@@ -210,9 +237,7 @@ impl<'a> QueryBuilder<'a> {
             self.query
                 .push_str(&format!(" AND wp_posts.post_name IN ({})", q_marks));
 
-            let ids = p_names
-                .into_iter()
-                .map(|name| Value::Bytes(name.into()));
+            let ids = p_names.into_iter().map(|name| Value::Bytes(name.into()));
 
             self.values.extend(ids);
         }

@@ -14,6 +14,10 @@ pub use params::meta_query::MetaRelation;
 pub use params::orderby::WpOrderBy;
 pub use params::param_builder::ParamBuilder;
 pub use params::post_type::PostType;
+pub use params::tax_query::TaxField;
+pub use params::tax_query::TaxQuery;
+pub use params::tax_query::TaxRelation;
+pub use params::traits::*;
 pub use params::Params;
 pub use sql::env_vars::EnvVars;
 pub use sql::traits::Insertable;
@@ -22,7 +26,6 @@ pub use sql::SqlSearchOperators;
 pub use wp_post::add_post_meta;
 pub use wp_post::get_post_meta;
 pub use wp_post::post_status::PostStatus;
-pub use params::traits::*;
 use wp_post::WpPost;
 
 // TODO remove on next major version
@@ -89,7 +92,10 @@ impl WpQuery {
     ///
     /// # Errors
     /// When an error occurs in the SQL query.
-    pub fn with_connection<'a, T>(conn: &mut impl Queryable, params: T) -> Result<Self, mysql::Error>
+    pub fn with_connection<'a, T>(
+        conn: &mut impl Queryable,
+        params: T,
+    ) -> Result<Self, mysql::Error>
     where
         T: Into<Params<'a>>,
     {
