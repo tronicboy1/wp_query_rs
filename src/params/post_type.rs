@@ -25,6 +25,25 @@ impl<'a> std::fmt::Display for PostType<'a> {
     }
 }
 
+impl<'a> Into<Vec<u8>> for PostType<'a> {
+    fn into(self) -> Vec<u8> {
+        self.to_string().into_bytes()
+    }
+}
+
+impl<'a> From<&'a str> for PostType<'a> {
+    fn from(value: &'a str) -> Self {
+        match value {
+            "post" => Self::Post,
+            "page" => Self::Page,
+            "revision" => Self::Revision,
+            "attachment" => Self::Attachment,
+            "nav_menu_item" => Self::NavMenuItem,
+            _ => Self::CustomPostType(value),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

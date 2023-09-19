@@ -9,6 +9,14 @@ fn can_join_user_table() {
 }
 
 #[test]
+fn can_search_author_name() {
+    let params = ParamBuilder::new().author_name("admin");
+
+    let posts = WP_Query::new(params).expect("SqlFailed");
+    assert!(posts.post_count() > 0);
+}
+
+#[test]
 fn query_user_id() {
     let params = ParamBuilder::new().author(1);
 

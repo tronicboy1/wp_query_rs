@@ -5,7 +5,7 @@ use crate::{MetaQuery, MetaRelation, PostStatus, SqlSearchOperators};
 use super::post_type::PostType;
 
 #[allow(non_snake_case)]
-pub trait PostQueryable {
+pub trait PostQueryable<'a> {
     /// use page id to return only child pages. Set to 0 to return only top-level entries.
     fn post_parent(self, id: u64) -> Self;
 
@@ -21,10 +21,10 @@ pub trait PostQueryable {
     /// use post ids. Specify post NOT to retrieve.
     fn post__not_in(self, id: u64) -> Self;
 
-    fn post_name__in(self, s: &str) -> Self;
+    fn post_name__in(self, s: &'a str) -> Self;
 
     /// use post types. Retrieves posts by post types, default value is ‘post‘.
-    fn post_type(self, post_type: PostType) -> Self;
+    fn post_type(self, post_type: PostType<'a>) -> Self;
 
     /// Queries all post types. Will be overwritten if there is another call to post_type after this.
     fn post_type_all(self) -> Self;
@@ -32,9 +32,9 @@ pub trait PostQueryable {
     fn post_status(self, status: PostStatus) -> Self;
 }
 
-pub trait MetaQueryable {
+pub trait MetaQueryable<'a> {
     /// Custom field key.
-    fn meta_key(self, key: &str) -> Self;
+    fn meta_key(self, key: &'a str) -> Self;
 
     /// Custom field value.
     fn meta_value(self, val: impl Display) -> Self;
