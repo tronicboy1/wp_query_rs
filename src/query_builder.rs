@@ -25,6 +25,28 @@ impl<'a> QueryBuilder<'a> {
     pub fn query(mut self) -> QueryAndValues {
         let params = self.params;
 
+        macro_rules! add_if_some_id {
+            ($prop: ident, $query: expr) => {
+                if let Some(id) = params.$prop {
+                    self.query.push_str($query);
+                    self.values.push(Value::UInt(id));
+                }
+            };
+        }
+
+        macro_rules! add_multiple_if_some_ids {
+            ($prop: ident, $q: expr) => {
+                if let Some(ids) = params.$prop {
+                    let q_marks = implode_to_question_mark(&ids);
+                    self.query.push_str(&format!($q, q_marks));
+
+                    let ids = ids.into_iter().map(|id| Value::UInt(id));
+
+                    self.values.extend(ids);
+                }
+            };
+        }
+
         self.query.push_str(
             "SELECT DISTINCT(wp_posts.ID),post_author,comment_count,post_parent,menu_order,
             post_date,post_date_gmt,post_modified,post_modified_gmt,
@@ -61,36 +83,16 @@ impl<'a> QueryBuilder<'a> {
         // Avoid dangling WHERE issue
         self.query.push_str(" WHERE 1 = 1");
 
-        /* Author conditions */
-        if let Some(author_id) = params.author {
-            self.query.push_str(" AND post_author = ?");
-            self.values.push(Value::UInt(author_id));
-        }
+        add_if_some_id!(author, " AND post_author = ?");
 
         if let Some(author_name) = params.author_name {
             self.query.push_str(" AND wp_users.user_nicename = ?");
             self.values.push(Value::Bytes(author_name.into()));
         }
 
-        if let Some(author_ids) = params.author__in {
-            let q_marks = implode_to_question_mark(&author_ids);
-            self.query
-                .push_str(&format!(" AND post_author IN ({})", q_marks));
+        add_multiple_if_some_ids!(author__in, " AND post_author IN ({})");
 
-            let ids = author_ids.into_iter().map(|id| Value::UInt(id));
-
-            self.values.extend(ids);
-        }
-
-        if let Some(author_ids) = params.author__not_in {
-            let q_marks = implode_to_question_mark(&author_ids);
-            self.query
-                .push_str(&format!(" AND post_author NOT IN ({})", q_marks));
-
-            let ids = author_ids.into_iter().map(|id| Value::UInt(id));
-
-            self.values.extend(ids);
-        }
+        add_multiple_if_some_ids!(author__not_in, " AND post_author NOT IN ({})");
 
         /* Add Post Status conditions */
         if let Some(post_status) = params.post_status {
@@ -119,25 +121,9 @@ impl<'a> QueryBuilder<'a> {
             self.values.extend(values);
         }
 
-        if let Some(term_ids) = params.term_in {
-            let q_marks = implode_to_question_mark(&term_ids);
-            self.query
-                .push_str(&format!(" AND wp_terms.term_id IN ({})", q_marks));
+        add_multiple_if_some_ids!(term_in, " AND wp_terms.term_id IN ({})");
 
-            let ids = term_ids.into_iter().map(|id| Value::UInt(id));
-
-            self.values.extend(ids);
-        }
-
-        if let Some(term_ids) = params.term_not_in {
-            let q_marks = implode_to_question_mark(&term_ids);
-            self.query
-                .push_str(&format!(" AND wp_terms.term_id NOT IN ({})", q_marks));
-
-            let ids = term_ids.into_iter().map(|id| Value::UInt(id));
-
-            self.values.extend(ids);
-        }
+        add_multiple_if_some_ids!(term_not_in, " AND wp_terms.term_id NOT IN ({})");
 
         /* Tax Query */
         if let Some(queries) = params.tax_query {
@@ -176,10 +162,7 @@ impl<'a> QueryBuilder<'a> {
         }
 
         /* Add page/post conditions */
-        if let Some(p_id) = params.p {
-            self.query.push_str(" AND wp_posts.ID = ?");
-            self.values.push(Value::UInt(p_id));
-        }
+        add_if_some_id!(p, " AND wp_posts.ID = ?");
 
         if let Some(name) = params.name {
             self.query.push_str(" AND wp_posts.post_name = ?");
@@ -189,48 +172,15 @@ impl<'a> QueryBuilder<'a> {
         /* Post types */
         push_post_type(&mut self.query, &mut self.values, params.post_type);
 
-        if let Some(par_id) = params.post_parent {
-            self.query.push_str(" AND wp_posts.post_parent = ?");
-            self.values.push(Value::UInt(par_id));
-        }
+        add_if_some_id!(post_parent, " AND wp_posts.post_parent = ?");
 
-        if let Some(p_ids) = params.post_parent__in {
-            let q_marks = implode_to_question_mark(&p_ids);
-            self.query
-                .push_str(&format!(" AND wp_posts.post_parent IN ({})", q_marks));
+        add_multiple_if_some_ids!(post_parent__in, " AND wp_posts.post_parent IN ({})");
 
-            let ids = p_ids.into_iter().map(|id| Value::UInt(id));
+        add_multiple_if_some_ids!(post_parent__not_in, " AND wp_posts.post_parent NOT IN ({})");
 
-            self.values.extend(ids);
-        }
+        add_multiple_if_some_ids!(post__in, " AND wp_posts.ID IN ({})");
 
-        if let Some(p_ids) = params.post_parent__not_in {
-            let q_marks = implode_to_question_mark(&p_ids);
-            self.query
-                .push_str(&format!(" AND wp_posts.post_parent NOT IN ({})", q_marks));
-
-            let ids = p_ids.into_iter().map(|id| Value::UInt(id));
-
-            self.values.extend(ids);
-        }
-
-        if let Some(p_ids) = params.post__in {
-            let q_marks = implode_to_question_mark(&p_ids);
-            self.query
-                .push_str(&format!(" AND wp_posts.ID IN ({})", q_marks));
-
-            let ids = p_ids.into_iter().map(|id| Value::UInt(id));
-            self.values.extend(ids);
-        }
-
-        if let Some(p_ids) = params.post__not_in {
-            let q_marks = implode_to_question_mark(&p_ids);
-            self.query
-                .push_str(&format!(" AND wp_posts.ID NOT IN ({})", q_marks));
-
-            let ids = p_ids.into_iter().map(|id| Value::UInt(id));
-            self.values.extend(ids);
-        }
+        add_multiple_if_some_ids!(post__not_in, " AND wp_posts.ID NOT IN ({})");
 
         if let Some(p_names) = params.post_name__in {
             let q_marks = implode_to_question_mark(&p_names);
