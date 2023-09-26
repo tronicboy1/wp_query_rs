@@ -1,8 +1,9 @@
 use std::{fmt::Display, str::FromStr};
 
 use ext_php_rs::convert::IntoZval;
+use serde::Serialize;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub enum PostStatus {
     Publish,
     Pending,

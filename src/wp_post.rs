@@ -6,6 +6,7 @@ use ext_php_rs::{
     types::{ZendObject, Zval},
 };
 use mysql_common::time::PrimitiveDateTime;
+use serde::ser::{Serialize, SerializeStruct};
 use std::fmt::Display;
 
 use crate::sql::date::{get_date_now, get_utc_date_now};
@@ -47,6 +48,70 @@ pub struct WpPost {
     pub comment_count: u64,
 }
 
+macro_rules! apply_to_all_fields {
+    ($obj: ident, $method: ident, $self: expr) => {
+        $obj.$method("ID", $self.ID)?;
+        $obj.$method("post_status", $self.post_status)?;
+        $obj.$method("post_author", $self.post_author)?;
+        $obj.$method("post_date", $self.post_date.to_string())?;
+        $obj.$method("post_date_gmt", $self.post_date_gmt.to_string())?;
+        $obj.$method("post_content", $self.post_content)?;
+        $obj.$method("post_title", $self.post_title)?;
+        $obj.$method("post_excerpt", $self.post_excerpt)?;
+        $obj.$method("comment_status", $self.comment_status)?;
+        $obj.$method("ping_status", $self.ping_status)?;
+        $obj.$method("post_password", $self.post_password)?;
+        $obj.$method("post_name", $self.post_name)?;
+        $obj.$method("to_ping", $self.to_ping)?;
+        $obj.$method("pinged", $self.pinged)?;
+        $obj.$method("post_modified", $self.post_modified.to_string())?;
+        $obj.$method("post_modified_gmt", $self.post_modified_gmt.to_string())?;
+        $obj.$method("post_content_filtered", $self.post_content_filtered)?;
+        $obj.$method("post_parent", $self.post_parent)?;
+        $obj.$method("guid", $self.guid)?;
+        $obj.$method("menu_order", $self.menu_order)?;
+        $obj.$method("post_type", $self.post_type)?;
+        $obj.$method("post_mime_type", $self.post_mime_type)?;
+        $obj.$method("comment_count", $self.comment_count)?;
+    };
+}
+
+/// Applies some objects methods to all the fields on a WpPost, where the fields on the
+/// WpPost are references.
+///
+/// # Example
+/// ```
+/// let mut state = serializer.serialize_struct("WpPost", 23)?;
+/// apply_to_all_fields_ref!(state, serialize_field, self);
+#[macro_export]
+macro_rules! apply_to_all_fields_ref {
+    ($obj: ident, $method: ident, $self: expr) => {
+        $obj.$method("ID", &$self.ID)?;
+        $obj.$method("post_status", &$self.post_status)?;
+        $obj.$method("post_author", &$self.post_author)?;
+        $obj.$method("post_date", &$self.post_date.to_string())?;
+        $obj.$method("post_date_gmt", &$self.post_date_gmt.to_string())?;
+        $obj.$method("post_content", &$self.post_content)?;
+        $obj.$method("post_title", &$self.post_title)?;
+        $obj.$method("post_excerpt", &$self.post_excerpt)?;
+        $obj.$method("comment_status", &$self.comment_status)?;
+        $obj.$method("ping_status", &$self.ping_status)?;
+        $obj.$method("post_password", &$self.post_password)?;
+        $obj.$method("post_name", &$self.post_name)?;
+        $obj.$method("to_ping", &$self.to_ping)?;
+        $obj.$method("pinged", &$self.pinged)?;
+        $obj.$method("post_modified", &$self.post_modified.to_string())?;
+        $obj.$method("post_modified_gmt", &$self.post_modified_gmt.to_string())?;
+        $obj.$method("post_content_filtered", &$self.post_content_filtered)?;
+        $obj.$method("post_parent", &$self.post_parent)?;
+        $obj.$method("guid", &$self.guid)?;
+        $obj.$method("menu_order", &$self.menu_order)?;
+        $obj.$method("post_type", &$self.post_type)?;
+        $obj.$method("post_mime_type", &$self.post_mime_type)?;
+        $obj.$method("comment_count", &$self.comment_count)?;
+    };
+}
+
 impl WpPost {
     pub fn new(post_author: u64) -> Self {
         let now = get_date_now();
@@ -82,31 +147,22 @@ impl WpPost {
     fn build_zobj(self) -> ext_php_rs::error::Result<ZBox<_zend_object>> {
         let mut zobj = ZendObject::new_stdclass();
 
-        zobj.set_property("ID", self.ID)?;
-        zobj.set_property("post_status", self.post_status)?;
-        zobj.set_property("post_author", self.post_author)?;
-        zobj.set_property("post_date", self.post_date.to_string())?;
-        zobj.set_property("post_date_gmt", self.post_date_gmt.to_string())?;
-        zobj.set_property("post_content", self.post_content)?;
-        zobj.set_property("post_title", self.post_title)?;
-        zobj.set_property("post_excerpt", self.post_excerpt)?;
-        zobj.set_property("comment_status", self.comment_status)?;
-        zobj.set_property("ping_status", self.ping_status)?;
-        zobj.set_property("post_password", self.post_password)?;
-        zobj.set_property("post_name", self.post_name)?;
-        zobj.set_property("to_ping", self.to_ping)?;
-        zobj.set_property("pinged", self.pinged)?;
-        zobj.set_property("post_modified", self.post_modified.to_string())?;
-        zobj.set_property("post_modified_gmt", self.post_modified_gmt.to_string())?;
-        zobj.set_property("post_content_filtered", self.post_content_filtered)?;
-        zobj.set_property("post_parent", self.post_parent)?;
-        zobj.set_property("guid", self.guid)?;
-        zobj.set_property("menu_order", self.menu_order)?;
-        zobj.set_property("post_type", self.post_type)?;
-        zobj.set_property("post_mime_type", self.post_mime_type)?;
-        zobj.set_property("comment_count", self.comment_count)?;
+        apply_to_all_fields!(zobj, set_property, self);
 
         Ok(zobj)
+    }
+}
+
+impl Serialize for WpPost {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut state = serializer.serialize_struct("WpPost", 23)?;
+
+        apply_to_all_fields_ref!(state, serialize_field, self);
+
+        state.end()
     }
 }
 
