@@ -36,24 +36,11 @@ use super::{
 /// ```
 pub struct ParamBuilder<'a>(Params<'a>);
 
-impl<'a> std::ops::Deref for ParamBuilder<'a> {
-    type Target = Params<'a>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<'a> std::ops::DerefMut for ParamBuilder<'a> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
 
 /// Adds a value to an internal optional vector property for Params
 macro_rules! add_to_vec {
     ($self: ident, $prop: ident, $v_key: ident) => {{
-        let vec = $self.$prop.get_or_insert(Vec::new());
+        let vec = $self.0.$prop.get_or_insert(Vec::new());
         vec.push($v_key);
 
         $self
@@ -68,14 +55,14 @@ impl<'a> ParamBuilder<'a> {
 
     /// use author id
     pub fn author(mut self, author_id: u64) -> Self {
-        self.author = Some(author_id);
+        self.0.author = Some(author_id);
 
         self
     }
 
     /// use ‘user_nicename‘ – NOT name.
     pub fn author_name(mut self, s: &'a str) -> Self {
-        self.author_name = Some(s);
+        self.0.author_name = Some(s);
 
         self
     }
@@ -156,21 +143,21 @@ impl<'a> ParamBuilder<'a> {
 
     /// Search keyword
     pub fn s(mut self, s: &'a str) -> Self {
-        self.s = Some(s);
+        self.0.s = Some(s);
 
         self
     }
 
     /// use post id
     pub fn p(mut self, id: u64) -> Self {
-        self.p = Some(id);
+        self.0.p = Some(id);
 
         self
     }
 
     /// use post slug
     pub fn name(mut self, slug: &'a str) -> Self {
-        self.name = Some(slug);
+        self.0.name = Some(slug);
 
         self
     }
@@ -184,20 +171,20 @@ impl<'a> ParamBuilder<'a> {
     }
 
     fn comment_count(mut self, count: u64) -> Self {
-        self.comment_count = Some(count);
+        self.0.comment_count = Some(count);
 
         self
     }
 
     pub fn posts_per_page(mut self, n: u64) -> Self {
-        self.posts_per_page = Some(n);
+        self.0.posts_per_page = Some(n);
 
         self
     }
 
     /// Starts from page 1
     pub fn page(mut self, n: u64) -> Self {
-        self.page = Some(n - 1);
+        self.0.page = Some(n - 1);
 
         self
     }
@@ -207,14 +194,14 @@ impl<'a> ParamBuilder<'a> {
     }
 
     pub fn order(mut self, o: SqlOrder) -> Self {
-        self.order = Some(o);
+        self.0.order = Some(o);
 
         self
     }
 
     /// Sort retrieved posts by parameter.
     pub fn orderby(mut self, ob: WpOrderBy) -> Self {
-        self.orderby = Some(ob);
+        self.0.orderby = Some(ob);
 
         self
     }
@@ -225,7 +212,7 @@ impl<'a> ParamBuilder<'a> {
             panic!("InvalidYear");
         }
 
-        self.year = Some(y);
+        self.0.year = Some(y);
 
         self
     }
@@ -236,7 +223,7 @@ impl<'a> ParamBuilder<'a> {
             panic!("InvalidMonth");
         }
 
-        self.monthnum = Some(m);
+        self.0.monthnum = Some(m);
 
         self
     }
@@ -247,7 +234,7 @@ impl<'a> ParamBuilder<'a> {
             panic!("InalidWeekNo");
         }
 
-        self.w = Some(w);
+        self.0.w = Some(w);
 
         self
     }
@@ -258,7 +245,7 @@ impl<'a> ParamBuilder<'a> {
             panic!("InvalidDay");
         }
 
-        self.day = Some(d);
+        self.0.day = Some(d);
 
         self
     }
@@ -269,7 +256,7 @@ impl<'a> ParamBuilder<'a> {
             panic!("InvalidHour");
         }
 
-        self.hour = Some(h);
+        self.0.hour = Some(h);
 
         self
     }
@@ -280,7 +267,7 @@ impl<'a> ParamBuilder<'a> {
             panic!("InvalidMinutes");
         }
 
-        self.minute = Some(min);
+        self.0.minute = Some(min);
 
         self
     }
@@ -291,7 +278,7 @@ impl<'a> ParamBuilder<'a> {
             panic!("InvalidSeconds");
         }
 
-        self.second = Some(s);
+        self.0.second = Some(s);
 
         self
     }
@@ -302,9 +289,9 @@ impl<'a> ParamBuilder<'a> {
             panic!("InvalidYearMonth");
         }
 
-        self.monthnum = None;
-        self.year = None;
-        self.m = Some(m);
+        self.0.monthnum = None;
+        self.0.year = None;
+        self.0.m = Some(m);
 
         self
     }
@@ -328,7 +315,7 @@ impl<'a> ParamBuilder<'a> {
 impl<'a> PostQueryable<'a> for ParamBuilder<'a> {
     /// use page id to return only child pages. Set to 0 to return only top-level entries.
     fn post_parent(mut self, id: u64) -> Self {
-        self.post_parent = Some(id);
+        self.0.post_parent = Some(id);
 
         self
     }
@@ -364,13 +351,13 @@ impl<'a> PostQueryable<'a> for ParamBuilder<'a> {
 
     /// Queries all post types. Will be overwritten if there is another call to post_type after this.
     fn post_type_all(mut self) -> Self {
-        self.post_type = Some(Vec::new());
+        self.0.post_type = Some(Vec::new());
 
         self
     }
 
     fn post_status(mut self, status: PostStatus) -> Self {
-        self.post_status = Some(status);
+        self.0.post_status = Some(status);
 
         self
     }
@@ -379,60 +366,60 @@ impl<'a> PostQueryable<'a> for ParamBuilder<'a> {
 impl<'a> MetaQueryable<'a> for ParamBuilder<'a> {
     /// Custom field key.
     fn meta_key(mut self, key: &'a str) -> Self {
-        if self.meta_query.is_some() {
+        if self.0.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
 
-        self.meta_key = Some(key);
+        self.0.meta_key = Some(key);
 
         self
     }
 
     /// Custom field value.
     fn meta_value(mut self, val: impl Display) -> Self {
-        if self.meta_query.is_some() {
+        if self.0.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
 
-        if self.meta_value_num.is_some() {
-            self.meta_value_num = None;
+        if self.0.meta_value_num.is_some() {
+            self.0.meta_value_num = None;
         }
 
-        self.meta_value = Some(val.to_string());
+        self.0.meta_value = Some(val.to_string());
 
         self
     }
 
     /// Custom field value (number).
     fn meta_value_num(mut self, n: i64) -> Self {
-        if self.meta_query.is_some() {
+        if self.0.meta_query.is_some() {
             panic!("CannotAddSingleMetaKeyQueryWhenMetaQueryIsSet");
         }
 
-        if self.meta_value.is_some() {
-            self.meta_value = None;
+        if self.0.meta_value.is_some() {
+            self.0.meta_value = None;
         }
 
-        self.meta_value_num = Some(n);
+        self.0.meta_value_num = Some(n);
 
         self
     }
 
     /// Operator to test the ‘meta_value‘
     fn meta_compare(mut self, compare: SqlSearchOperators) -> Self {
-        self.meta_compare = Some(compare);
+        self.0.meta_compare = Some(compare);
 
         self
     }
 
     fn meta_query(mut self, query: MetaQuery, relation: MetaRelation) -> Self {
         // Clear single meta
-        self.meta_compare = None;
-        self.meta_key = None;
-        self.meta_value = None;
-        self.meta_value_num = None;
+        self.0.meta_compare = None;
+        self.0.meta_key = None;
+        self.0.meta_value = None;
+        self.0.meta_value_num = None;
 
-        let meta_qs = self.meta_query.get_or_insert(HashMap::new());
+        let meta_qs = self.0.meta_query.get_or_insert(HashMap::new());
 
         let queries_for_relation = meta_qs.entry(relation).or_insert(vec![]);
 
@@ -456,7 +443,7 @@ mod tests {
     fn can_add_author() {
         let id = 1;
         let q = ParamBuilder::new().author(id);
-        assert_eq!(id, q.author.unwrap());
+        assert_eq!(id, q.0.author.unwrap());
     }
 
     #[test]
@@ -595,8 +582,8 @@ mod tests {
             .p(1)
             .post_parent(2)
             .post_status(PostStatus::Publish);
-        assert_eq!(q.p.unwrap(), 1);
-        assert_eq!(q.post_parent.unwrap(), 2);
+        assert_eq!(q.0.p.unwrap(), 1);
+        assert_eq!(q.0.post_parent.unwrap(), 2);
         assert_eq!(q.0.post_status.unwrap(), PostStatus::Publish);
     }
 
@@ -659,14 +646,14 @@ mod tests {
     #[test]
     fn can_add_comment_params() {
         let q = ParamBuilder::new().comment_count(2);
-        assert_eq!(q.comment_count.unwrap(), 2);
+        assert_eq!(q.0.comment_count.unwrap(), 2);
     }
 
     #[test]
     fn can_add_pagination_params() {
         let q = ParamBuilder::new().page(3).posts_per_page(20);
-        assert_eq!(q.page.unwrap(), 2);
-        assert_eq!(q.posts_per_page.unwrap(), 20);
+        assert_eq!(q.0.page.unwrap(), 2);
+        assert_eq!(q.0.posts_per_page.unwrap(), 20);
     }
 
     #[test]
@@ -689,13 +676,13 @@ mod tests {
             .hour(23)
             .minute(60)
             .second(60);
-        assert_eq!(q.year.unwrap(), 2023);
-        assert_eq!(q.monthnum.unwrap(), 1);
-        assert_eq!(q.w.unwrap(), 53);
-        assert_eq!(q.day.unwrap(), 31);
-        assert_eq!(q.hour.unwrap(), 23);
-        assert_eq!(q.minute.unwrap(), 60);
-        assert_eq!(q.second.unwrap(), 60);
+        assert_eq!(q.0.year.unwrap(), 2023);
+        assert_eq!(q.0.monthnum.unwrap(), 1);
+        assert_eq!(q.0.w.unwrap(), 53);
+        assert_eq!(q.0.day.unwrap(), 31);
+        assert_eq!(q.0.hour.unwrap(), 23);
+        assert_eq!(q.0.minute.unwrap(), 60);
+        assert_eq!(q.0.second.unwrap(), 60);
     }
 
     #[test]
@@ -711,9 +698,9 @@ mod tests {
     #[test]
     fn m_clears_year_and_monthnum() {
         let q = ParamBuilder::new().year(2000).monthnum(7).m(202308);
-        assert!(q.year.is_none());
-        assert!(q.monthnum.is_none());
-        assert_eq!(q.m.unwrap(), 202308);
+        assert!(q.0.year.is_none());
+        assert!(q.0.monthnum.is_none());
+        assert_eq!(q.0.m.unwrap(), 202308);
     }
 
     #[test]
