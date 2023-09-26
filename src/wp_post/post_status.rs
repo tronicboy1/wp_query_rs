@@ -1,9 +1,8 @@
 use std::{fmt::Display, str::FromStr};
 
 use ext_php_rs::convert::IntoZval;
-use serde::Serialize;
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum PostStatus {
     Publish,
     Pending,
@@ -53,6 +52,15 @@ impl Display for PostStatus {
                 Self::Any => "any",
             }
         )
+    }
+}
+
+impl serde::Serialize for PostStatus {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
     }
 }
 
