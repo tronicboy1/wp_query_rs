@@ -124,6 +124,10 @@ impl WpQuery {
     fn _max_num_pages(&self) -> usize {
         0
     }
+
+    pub fn to_vec(self) -> Vec<WpPost> {
+        self.posts
+    }
 }
 
 #[cfg(test)]
