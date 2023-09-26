@@ -35,5 +35,45 @@ impl ToString for WpOrderBy {
     }
 }
 
+impl Into<WpOrderBy> for &str {
+    fn into(self) -> WpOrderBy {
+        match self {
+            "ID" | "id" => WpOrderBy::ID,
+            "post_author" | "author" => WpOrderBy::Author,
+            "post_title" | "title" => WpOrderBy::Title,
+            "post_name" | "name" | "slug" => WpOrderBy::Name,
+            "post_type" | "type" => WpOrderBy::Type,
+            "post_date" | "date" => WpOrderBy::Date,
+            "post_modified" | "modified" => WpOrderBy::Modified,
+            "post_parent" | "parent" => WpOrderBy::Parent,
+            "comment_count" => WpOrderBy::CommentCount,
+            "meta_value" => WpOrderBy::MetaValue,
+            "meta_value_num" => WpOrderBy::MetaValueNum,
+            _ => WpOrderBy::None,
+        }
+    }
+}
+
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn can_convert_from_str() {
+        let str = "ID";
+        let order: WpOrderBy = str.into();
+        assert_eq!(order, WpOrderBy::ID);
+
+        let str = "date";
+        let order: WpOrderBy = str.into();
+        assert_eq!(order, WpOrderBy::Date);
+
+        let str = "slug";
+        let order: WpOrderBy = str.into();
+        assert_eq!(order, WpOrderBy::Name);
+
+        let str = "modified";
+        let order: WpOrderBy = str.into();
+        assert_eq!(order, WpOrderBy::Modified);
+    }
+}

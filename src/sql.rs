@@ -4,11 +4,11 @@ use mysql::{OptsBuilder, PooledConn};
 
 use self::{env_vars::EnvVars, pool::get_pool};
 
+pub mod cast_type;
 pub mod date;
 pub mod env_vars;
 pub mod pool;
 pub mod traits;
-pub mod cast_type;
 
 fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
     OptsBuilder::new()
@@ -71,6 +71,8 @@ pub enum SqlSearchOperators {
     LessThanOrEqualTo,
     Like,
     NotLike,
+    Exists,
+    NotExists
 }
 
 impl Display for SqlSearchOperators {
@@ -87,6 +89,8 @@ impl Display for SqlSearchOperators {
                 Self::LessThanOrEqualTo => "<=",
                 Self::Like => "LIKE",
                 Self::NotLike => "NOT LIKE",
+                Self::Exists => "EXISTS",
+                Self::NotExists => "NOT EXISTS"
             }
         )
     }
@@ -104,5 +108,46 @@ impl ToString for SqlOrder {
             Self::Asc => String::from("ASC"),
             Self::Desc => String::from("DESC"),
         }
+    }
+}
+
+impl Into<SqlOrder> for &str {
+    fn into(self) -> SqlOrder {
+        match self.to_uppercase().as_str() {
+            "ASC" => SqlOrder::Asc,
+            "DESC" => SqlOrder::Desc,
+            _ => SqlOrder::Desc,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn can_convert_order_from_str() {
+        let str = "ASC";
+        let order: SqlOrder = str.into();
+
+        assert_eq!(order, SqlOrder::Asc);
+
+        let str = "DESC";
+        let order: SqlOrder = str.into();
+
+        assert_eq!(order, SqlOrder::Desc);
+    }
+
+    #[test]
+    fn can_convert_order_from_str_undercase_mixed() {
+        let str = "Asc";
+        let order: SqlOrder = str.into();
+
+        assert_eq!(order, SqlOrder::Asc);
+
+        let str = "desC";
+        let order: SqlOrder = str.into();
+
+        assert_eq!(order, SqlOrder::Desc);
     }
 }
