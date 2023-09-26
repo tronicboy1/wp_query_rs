@@ -1,7 +1,9 @@
 use mysql_common::{prelude::ToValue, Value};
 use sql_paginatorr::LimitOffsetPair;
 
-use crate::{params::Params, sql::SqlOrder, wp_post::post_status::PostStatus, PostType};
+use crate::{
+    params::Params, sql::SqlOrder, wp_post::post_status::PostStatus, PostType, SqlSearchOperators,
+};
 
 type StmtValues = Vec<Value>;
 
@@ -267,16 +269,27 @@ impl<'a> QueryBuilder<'a> {
                         self.query.push_str(relation.to_string().as_str());
                     }
 
-                    let op = query.compare.to_string();
-                    self.query.push_str(
-                        format!(
-                            " (wp_postmeta.meta_value {} ? AND wp_postmeta.meta_key {} ?)",
-                            op, op
-                        )
-                        .as_str(),
-                    );
-                    self.values.push(Value::Bytes(query.value.into_bytes()));
-                    self.values.push(Value::Bytes(query.key.into_bytes()));
+                    // If Exists or NOT EXISTS, we need to make a different query structure
+                    match query.compare {
+                        op @ (SqlSearchOperators::Exists | SqlSearchOperators::NotExists) => {
+                            self.query.push_str(&format!(
+                                // Must have AND post_id to ensure that we are not comparing all meta rows for exists/not exist
+                                " {} (SELECT * FROM wp_postmeta WHERE meta_key = ? AND wp_postmeta.post_id = wp_posts.ID)",
+                                op.to_string()
+                            ));
+                            // Only push keyname if exists query
+                            self.values.push(Value::Bytes(query.key.into_bytes()));
+                        }
+                        _ => {
+                            let op = query.compare.to_string();
+                            self.query.push_str(&format!(
+                                " (wp_postmeta.meta_value {} ? AND wp_postmeta.meta_key {} ?)",
+                                op, op
+                            ));
+                            self.values.push(Value::Bytes(query.value.into_bytes()));
+                            self.values.push(Value::Bytes(query.key.into_bytes()));
+                        }
+                    };
                 }
             }
         }

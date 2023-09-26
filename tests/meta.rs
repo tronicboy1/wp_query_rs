@@ -88,3 +88,31 @@ fn meta_queries() {
     let posts = WP_Query::new(params).expect("SqlFailed");
     assert!(posts.post_count() > 0);
 }
+
+#[test]
+fn can_query_exists() {
+    let params = ParamBuilder::new()
+        .post_type_all()
+        .post_status(PostStatus::Any)
+        .meta_query(
+            MetaQuery::new("my_inserted_meta", "", SqlSearchOperators::Exists),
+            MetaRelation::And,
+        );
+
+    let posts = WP_Query::new(params).expect("SqlFailed");
+    assert!(posts.post_count() > 0);
+}
+
+#[test]
+fn can_query_not_exists() {
+    let params = ParamBuilder::new()
+        .post_type_all()
+        .post_status(PostStatus::Any)
+        .meta_query(
+            MetaQuery::new("my_inserted_meta", "", SqlSearchOperators::NotExists),
+            MetaRelation::And,
+        );
+
+    let posts = WP_Query::new(params).expect("SqlFailed");
+    assert!(posts.post_count() > 0);
+}
