@@ -78,6 +78,12 @@ impl Into<mysql::Value> for PostStatus {
     }
 }
 
+impl Into<PostStatus> for String {
+    fn into(self) -> PostStatus {
+        PostStatus::from_str(&self).unwrap()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

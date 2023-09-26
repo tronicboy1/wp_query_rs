@@ -80,7 +80,7 @@ macro_rules! apply_to_all_fields {
 /// WpPost are references.
 ///
 /// # Example
-/// ```
+/// ```rust,ignore
 /// let mut state = serializer.serialize_struct("WpPost", 23)?;
 /// apply_to_all_fields_ref!(state, serialize_field, self);
 #[macro_export]

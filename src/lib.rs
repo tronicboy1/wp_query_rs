@@ -27,6 +27,7 @@ pub use wp_post::add_post_meta;
 pub use wp_post::get_post_meta;
 pub use wp_post::post_status::PostStatus;
 use wp_post::WpPost;
+pub use wp_user::WpUser;
 
 // TODO remove on next major version
 #[allow(non_camel_case_types)]
@@ -39,6 +40,7 @@ mod query_builder;
 mod sql;
 mod wp_comment;
 pub mod wp_post;
+mod wp_user;
 
 #[derive(Debug)]
 pub struct WpQuery {

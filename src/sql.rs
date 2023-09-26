@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use mysql::{OptsBuilder, PooledConn};
+use mysql_common::prelude::FromValue;
 
 use self::{env_vars::EnvVars, pool::get_pool};
 
@@ -72,7 +73,7 @@ pub enum SqlSearchOperators {
     Like,
     NotLike,
     Exists,
-    NotExists
+    NotExists,
 }
 
 impl Display for SqlSearchOperators {
@@ -90,7 +91,7 @@ impl Display for SqlSearchOperators {
                 Self::Like => "LIKE",
                 Self::NotLike => "NOT LIKE",
                 Self::Exists => "EXISTS",
-                Self::NotExists => "NOT EXISTS"
+                Self::NotExists => "NOT EXISTS",
             }
         )
     }
@@ -119,6 +120,25 @@ impl Into<SqlOrder> for &str {
             _ => SqlOrder::Desc,
         }
     }
+}
+
+/// Finds a value T in a row by it's column name
+///
+/// # Example
+/// ```rust,ignore
+/// let id: u64 = find_col(&mut value, "ID").unwrap_or(0);
+/// ```
+pub fn find_col<T>(row: &mut mysql::Row, col_name: &str) -> Option<T>
+where
+    T: FromValue,
+{
+    let (i, ..) = row
+        .columns_ref()
+        .iter()
+        .enumerate()
+        .find(|(_, col)| col.name_str() == col_name)?;
+
+    row.take_opt(i).map(|r| r.ok()).flatten()
 }
 
 #[cfg(test)]

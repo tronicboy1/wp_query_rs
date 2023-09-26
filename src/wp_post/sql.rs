@@ -1,9 +1,10 @@
-use std::{ops::Deref, str::FromStr};
-
 use mysql::{prelude::Queryable, Statement};
 use mysql_common::prelude::ToValue;
 
-use crate::{sql::get_conn, Insertable};
+use crate::{
+    sql::{find_col, get_conn},
+    Insertable,
+};
 
 use super::{get_date_now, get_utc_date_now, WpPost};
 
@@ -80,50 +81,35 @@ impl Into<mysql::Params> for WpPost {
 
 impl From<mysql::Row> for WpPost {
     fn from(mut row: mysql::Row) -> Self {
-        let mut post = WpPost::new(0);
-
-        let cols = row.columns();
-        let col_names_i = cols.iter().enumerate().map(|(i, col)| (i, col.name_str()));
-
-        for (i, column) in col_names_i {
-            match column.deref() {
-                "ID" => post.ID = row.take(i).unwrap(),
-                "post_author" => post.post_author = row.take(i).unwrap(),
-                "post_date" => post.post_date = row.take_opt(i).unwrap().unwrap_or(get_date_now()),
-                "post_date_gmt" => {
-                    post.post_date_gmt = row.take_opt(i).unwrap().unwrap_or(get_utc_date_now())
-                }
-                "post_content" => post.post_content = row.take(i).unwrap(),
-                "post_title" => post.post_title = row.take(i).unwrap(),
-                "post_excerpt" => post.post_excerpt = row.take(i).unwrap(),
-                "post_status" => {
-                    let s: String = row.take(i).unwrap();
-                    post.post_status = super::PostStatus::from_str(&s).unwrap()
-                }
-                "comment_status" => post.comment_status = row.take(i).unwrap(),
-                "ping_status" => post.ping_status = row.take(i).unwrap(),
-                "post_password" => post.post_password = row.take(i).unwrap(),
-                "post_name" => post.post_name = row.take(i).unwrap(),
-                "to_ping" => post.to_ping = row.take(i).unwrap(),
-                "pinged" => post.pinged = row.take(i).unwrap(),
-                "post_modified" => {
-                    post.post_modified = row.take_opt(i).unwrap().unwrap_or(get_date_now())
-                }
-                "post_modified_gmt" => {
-                    post.post_modified_gmt = row.take_opt(i).unwrap().unwrap_or(get_utc_date_now())
-                }
-                "post_content_filtered" => post.post_content_filtered = row.take(i).unwrap(),
-                "post_parent" => post.post_parent = row.take(i).unwrap(),
-                "guid" => post.guid = row.take(i).unwrap(),
-                "menu_order" => post.menu_order = row.take(i).unwrap(),
-                "post_type" => post.post_type = row.take(i).unwrap(),
-                "post_mime_type" => post.post_mime_type = row.take(i).unwrap(),
-                "comment_count" => post.comment_count = row.take(i).unwrap(),
-                _ => {}
-            }
+        Self {
+            ID: find_col(&mut row, "ID").unwrap(),
+            post_author: find_col(&mut row, "post_author").unwrap(),
+            post_date: find_col(&mut row, "post_date").unwrap_or(get_date_now()),
+            post_date_gmt: find_col(&mut row, "post_date_gmt").unwrap_or(get_utc_date_now()),
+            post_content: find_col(&mut row, "post_content").unwrap(),
+            post_title: find_col(&mut row, "post_title").unwrap(),
+            post_excerpt: find_col(&mut row, "post_excerpt").unwrap(),
+            post_status: {
+                let post_status: String = find_col(&mut row, "post_status").unwrap();
+                post_status.into()
+            },
+            comment_status: find_col(&mut row, "comment_status").unwrap(),
+            ping_status: find_col(&mut row, "ping_status").unwrap(),
+            post_password: find_col(&mut row, "post_password").unwrap(),
+            post_name: find_col(&mut row, "post_name").unwrap(),
+            to_ping: find_col(&mut row, "to_ping").unwrap(),
+            pinged: find_col(&mut row, "pinged").unwrap(),
+            post_modified: find_col(&mut row, "post_modified").unwrap_or(get_date_now()),
+            post_modified_gmt: find_col(&mut row, "post_modified_gmt")
+                .unwrap_or(get_utc_date_now()),
+            post_content_filtered: find_col(&mut row, "post_content_filtered").unwrap(),
+            post_parent: find_col(&mut row, "post_parent").unwrap(),
+            guid: find_col(&mut row, "guid").unwrap(),
+            menu_order: find_col(&mut row, "menu_order").unwrap(),
+            post_type: find_col(&mut row, "post_type").unwrap(),
+            post_mime_type: find_col(&mut row, "post_mime_type").unwrap(),
+            comment_count: find_col(&mut row, "comment_count").unwrap(),
         }
-
-        post
     }
 }
 
