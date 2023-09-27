@@ -3,7 +3,10 @@ use std::{fmt::Display, vec};
 use mysql::prelude::Queryable;
 use mysql_common::prelude::ToValue;
 
-use crate::sql::{get_conn, traits::Insertable};
+use crate::{
+    ok_or_row_error,
+    sql::{find_col, get_conn, traits::Insertable},
+};
 
 #[derive(Debug)]
 pub struct WpMeta {
@@ -33,35 +36,29 @@ impl WpMeta {
         }
     }
 
-    pub fn get_post_meta(post_id: u64, meta_key: &str, single: bool) -> WpMetaResults {
+    pub fn get_post_meta(
+        post_id: u64,
+        meta_key: &str,
+        single: bool,
+    ) -> Result<WpMetaResults, mysql::Error> {
         let mut conn = get_conn().expect("CouldNotGetConnection");
 
         let stmt = conn
             .prep(
-                "SELECT meta_id,post_id,meta_key,meta_value
-                FROM wp_postmeta WHERE post_id = ? AND meta_key = ?;",
+                "SELECT * FROM wp_postmeta
+                WHERE post_id = ? AND meta_key = ?;",
             )
             .expect("StmtError");
         let params = mysql::Params::Positional(vec![post_id.to_value(), meta_key.to_value()]);
 
-        let to_wp_meta = |(meta_id, post_id, meta_key, meta_value)| WpMeta {
-            meta_id,
-            post_id,
-            meta_value,
-            meta_key,
-        };
-
         if single {
-            conn.exec_first(stmt, params)
-                .ok()
-                .flatten()
-                .map(to_wp_meta)
-                .map(|meta| WpMetaResults::Single(meta))
-                .unwrap_or(WpMetaResults::Empty)
+            conn.exec_first(stmt, params).map(|meta| match meta {
+                Some(meta) => WpMetaResults::Single(meta),
+                None => WpMetaResults::Empty,
+            })
         } else {
-            conn.exec_map(stmt, params, to_wp_meta)
+            conn.exec(stmt, params)
                 .map(|postmeta| WpMetaResults::Array(postmeta))
-                .unwrap_or(WpMetaResults::Empty)
         }
     }
 
@@ -100,6 +97,22 @@ impl WpMeta {
             .map(|(meta_key, meta_value)| WpMeta::new(post_id, meta_key, meta_value));
 
         Self::batch(values)
+    }
+}
+
+impl mysql_common::prelude::FromRow for WpMeta {
+    fn from_row_opt(mut row: mysql_common::Row) -> Result<Self, mysql_common::FromRowError>
+    where
+        Self: Sized,
+    {
+        let meta = Self {
+            meta_id: ok_or_row_error!(row, "meta_id"),
+            post_id: ok_or_row_error!(row, "post_id"),
+            meta_value: ok_or_row_error!(row, "meta_value"),
+            meta_key: ok_or_row_error!(row, "meta_key"),
+        };
+
+        Ok(meta)
     }
 }
 

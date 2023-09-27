@@ -199,7 +199,7 @@ impl<'a> FromZval<'a> for WpPost {
 
 /// Retrieves a post meta field for the given post ID.
 pub fn get_post_meta(post_id: u64, meta_key: &str, single: bool) -> WpMetaResults {
-    WpMeta::get_post_meta(post_id, meta_key, single)
+    WpMeta::get_post_meta(post_id, meta_key, single).unwrap()
 }
 
 /// Adds a meta field to the given post.

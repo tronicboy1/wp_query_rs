@@ -1,10 +1,7 @@
 use mysql::{prelude::Queryable, Statement};
 use mysql_common::prelude::ToValue;
 
-use crate::{
-    sql::{find_col, get_conn},
-    Insertable,
-};
+use crate::{sql::{get_conn, find_col}, Insertable};
 
 use super::{get_date_now, get_utc_date_now, WpPost};
 
@@ -79,6 +76,7 @@ impl Into<mysql::Params> for WpPost {
     }
 }
 
+#[macro_export]
 macro_rules! ok_or_row_error {
     ($row: ident, $col: expr) => {
         find_col(&mut $row, $col).ok_or(mysql_common::FromRowError($row.clone()))?
