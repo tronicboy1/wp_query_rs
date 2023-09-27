@@ -5,8 +5,9 @@ pub mod param_builder;
 pub mod post_type;
 pub mod tax_query;
 pub mod traits;
-// Keep zval code around, no plans to implement now
-// mod zval;
+
+#[cfg(feature = "php")]
+mod zval;
 
 use std::collections::HashMap;
 

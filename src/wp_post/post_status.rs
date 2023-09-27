@@ -1,5 +1,8 @@
 use std::{fmt::Display, str::FromStr};
 
+#[cfg(feature = "php")]
+mod zval;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum PostStatus {
     Publish,
@@ -61,6 +64,7 @@ impl serde::Serialize for PostStatus {
         serializer.serialize_str(&self.to_string())
     }
 }
+
 impl Into<mysql::Value> for PostStatus {
     fn into(self) -> mysql::Value {
         mysql::Value::Bytes(self.to_string().into_bytes())

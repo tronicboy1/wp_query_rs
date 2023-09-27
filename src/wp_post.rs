@@ -11,8 +11,9 @@ mod builder;
 pub mod meta;
 pub mod post_status;
 mod sql;
-// Keep zval code for future implementation, for now not working on it
-// mod zval;
+
+#[cfg(feature = "php")]
+mod zval;
 
 /// A representation of a wp_posts entity queried from the database
 #[derive(Debug, Clone)]

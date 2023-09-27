@@ -1,6 +1,6 @@
 [package]
 name = "wp_query_rs"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 authors = ["Austin John Mayer"]
 description = "A rust implementation of the classic WP_Query utility to access WordPress posts outside of a WordPress environment."
@@ -12,10 +12,14 @@ license = "MIT OR Apache-2.0"
 keywords = ["wordpress", "wp", "wp_query", "mysql", "wp_post"]
 
 [dependencies]
-# Do not use ext-php-rs for now as it takes compilation times and we have no plans of implenting
-# ext-php-rs = "0.10.1"
-mysql = "24.0.0"
+ext-php-rs = { version = "0.10.1", optional = true }
+mysql = { version = "24.0.0", default-features = false }
 mysql_common = "0.30.6"
 sql_paginatorr = "0.1.1"
 chrono = "0.4.26"
 serde = "1.0.188"
+
+[features]
+native-tls = ["mysql/native-tls"]
+rustls = ["mysql/rustls"]
+php = ["ext-php-rs"]
