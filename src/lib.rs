@@ -2,7 +2,6 @@
 //! A rust implementation of the classic WP_Query utility to access WordPress posts outside of a WordPress environment.
 
 use mysql::prelude::Queryable;
-use mysql_common::Row;
 use query_builder::QueryBuilder;
 use sql::get_conn;
 
@@ -114,9 +113,7 @@ impl WpQuery {
 
         let stmt = conn.prep(q)?;
 
-        let rows: Vec<Row> = conn.exec(stmt, values)?;
-
-        Ok(rows.into_iter().map(|row| WpPost::from(row)).collect())
+        conn.exec(stmt, values)
     }
 
     pub fn post_count(&self) -> usize {

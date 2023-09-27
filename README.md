@@ -51,6 +51,47 @@ let params = ParamBuilder::new()
         .second(61); // Panics!
 ```
 
+# Inserting Posts
+
+This package can also be used to insert posts into WordPress. This functionality uses the default connection pool initiated by this package.
+
+```rust
+let mut post = WP_Post::new(1);
+let title = "My Test Post".to_string();
+post.post_title = title.clone();
+
+let post_id: u64 = post.insert().expect("InsertFailed");
+```
+
+# Reading and Writing Meta Data
+
+You can also read and write metadata.
+
+```rust
+let post_id: u64 = post.insert().expect("InsertFailed");
+
+add_post_meta(post_id, "my_custom_rs_meta", 42).expect("MetaInsertFailed");
+
+let meta = get_post_meta(post_id, "my_custom_rs_meta", true);
+
+match meta {
+WpMetaResults::Single(meta) => {
+        assert_eq!(meta.meta_value, "42")
+}
+_ => unreachable!("MetaQueryFailed"),
+}
+```
+
+# Reading WP User Data
+
+You can load WP User data from the database usin `WpUser` as well.
+
+```rust
+let user = WpUser::get_user_by_id(1).unwrap().unwrap();
+
+assert_eq!(user.id, 1);
+```
+
 # Goals
 
 The author of this package would like to add tooling to the rust community for working with WordPress websites and data. In the future, possibly even building extensions for WordPress written in Rust to increase performance.

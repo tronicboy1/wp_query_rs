@@ -19,6 +19,9 @@ pub struct WpUser {
 }
 
 impl WpUser {
+    /// Retrieves a user from the database by their user ID
+    /// Returns a result containing an option as either the database query could fail, or there could be
+    /// no user for the ID provided.
     pub fn get_user_by_id(id: u64) -> Result<Option<Self>, mysql::Error> {
         let mut conn = get_conn()?;
 

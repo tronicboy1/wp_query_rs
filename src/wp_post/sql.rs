@@ -79,37 +79,43 @@ impl Into<mysql::Params> for WpPost {
     }
 }
 
-impl From<mysql::Row> for WpPost {
-    fn from(mut row: mysql::Row) -> Self {
-        Self {
-            ID: find_col(&mut row, "ID").unwrap(),
-            post_author: find_col(&mut row, "post_author").unwrap(),
+macro_rules! ok_or_row_error {
+    ($row: ident, $col: expr) => {
+        find_col(&mut $row, $col).ok_or(mysql_common::FromRowError($row.clone()))?
+    };
+}
+
+impl mysql_common::prelude::FromRow for WpPost {
+    fn from_row_opt(mut row: mysql_common::Row) -> Result<Self, mysql_common::FromRowError>
+    where
+        Self: Sized,
+    {
+        Ok(Self {
+            ID: ok_or_row_error!(row, "ID"),
+            post_author: ok_or_row_error!(row, "post_author"),
             post_date: find_col(&mut row, "post_date").unwrap_or(get_date_now()),
             post_date_gmt: find_col(&mut row, "post_date_gmt").unwrap_or(get_utc_date_now()),
-            post_content: find_col(&mut row, "post_content").unwrap(),
-            post_title: find_col(&mut row, "post_title").unwrap(),
-            post_excerpt: find_col(&mut row, "post_excerpt").unwrap(),
-            post_status: {
-                let post_status: String = find_col(&mut row, "post_status").unwrap();
-                post_status.into()
-            },
-            comment_status: find_col(&mut row, "comment_status").unwrap(),
-            ping_status: find_col(&mut row, "ping_status").unwrap(),
-            post_password: find_col(&mut row, "post_password").unwrap(),
-            post_name: find_col(&mut row, "post_name").unwrap(),
-            to_ping: find_col(&mut row, "to_ping").unwrap(),
-            pinged: find_col(&mut row, "pinged").unwrap(),
+            post_content: ok_or_row_error!(row, "post_content"),
+            post_title: ok_or_row_error!(row, "post_title"),
+            post_excerpt: ok_or_row_error!(row, "post_excerpt"),
+            post_status: ok_or_row_error!(row, "post_status"),
+            comment_status: ok_or_row_error!(row, "comment_status"),
+            ping_status: ok_or_row_error!(row, "ping_status"),
+            post_password: ok_or_row_error!(row, "post_password"),
+            post_name: ok_or_row_error!(row, "post_name"),
+            to_ping: ok_or_row_error!(row, "to_ping"),
+            pinged: ok_or_row_error!(row, "pinged"),
             post_modified: find_col(&mut row, "post_modified").unwrap_or(get_date_now()),
             post_modified_gmt: find_col(&mut row, "post_modified_gmt")
                 .unwrap_or(get_utc_date_now()),
-            post_content_filtered: find_col(&mut row, "post_content_filtered").unwrap(),
-            post_parent: find_col(&mut row, "post_parent").unwrap(),
-            guid: find_col(&mut row, "guid").unwrap(),
-            menu_order: find_col(&mut row, "menu_order").unwrap(),
-            post_type: find_col(&mut row, "post_type").unwrap(),
-            post_mime_type: find_col(&mut row, "post_mime_type").unwrap(),
-            comment_count: find_col(&mut row, "comment_count").unwrap(),
-        }
+            post_content_filtered: ok_or_row_error!(row, "post_content_filtered"),
+            post_parent: ok_or_row_error!(row, "post_parent"),
+            guid: ok_or_row_error!(row, "guid"),
+            menu_order: ok_or_row_error!(row, "menu_order"),
+            post_type: ok_or_row_error!(row, "post_type"),
+            post_mime_type: ok_or_row_error!(row, "post_mime_type"),
+            comment_count: ok_or_row_error!(row, "comment_count"),
+        })
     }
 }
 

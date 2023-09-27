@@ -92,8 +92,14 @@ impl Into<PostStatus> for String {
     }
 }
 
+impl mysql_common::prelude::FromValue for PostStatus {
+    type Intermediate = String;
+}
+
 #[cfg(test)]
 mod tests {
+    use mysql_common::prelude::FromValue;
+
     use super::*;
 
     #[test]
@@ -115,5 +121,13 @@ mod tests {
     fn can_format() {
         assert_eq!(&format!("{}", PostStatus::Pending), "pending");
         assert_eq!(&format!("{}", PostStatus::Private), "private");
+    }
+
+    #[test]
+    fn can_convert_from_mysql_value() {
+        let value = mysql_common::Value::Bytes(String::from("publish").into_bytes());
+
+        let status = PostStatus::from_value(value);
+        assert_eq!(PostStatus::Publish, status);
     }
 }
