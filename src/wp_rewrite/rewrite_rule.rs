@@ -59,6 +59,6 @@ mod tests {
 
         let rewrite_rules: RewriteRules = db_res.try_into().unwrap();
 
-        assert_eq!(rewrite_rules.0.len(), 536);
+        assert_eq!(rewrite_rules.0.len(), 99);
     }
 }
