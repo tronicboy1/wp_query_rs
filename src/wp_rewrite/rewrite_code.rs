@@ -14,6 +14,7 @@ pub enum RewriteCode {
     Author,
     Pagename,
     Search,
+    Custom(Regex),
 }
 
 impl ToRegex for RewriteCode {
@@ -30,6 +31,7 @@ impl ToRegex for RewriteCode {
             Self::Author => Regex::new("([^/]+)").unwrap(),
             Self::Pagename => Regex::new("([^/]+?)").unwrap(),
             Self::Search => Regex::new("(.+)").unwrap(),
+            Self::Custom(r) => r,
         }
     }
 }
