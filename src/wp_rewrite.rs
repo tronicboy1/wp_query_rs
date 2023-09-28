@@ -1,5 +1,6 @@
 mod rewrite_code;
 mod rewrite_filters;
+mod rewrite_rule;
 
 pub use rewrite_code::RewriteCode;
 pub use rewrite_filters::RewriteFilters;
@@ -75,7 +76,6 @@ impl WpRewrite {
         }
     }
 }
-
 trait ToRegex {
     fn to_regex(self) -> regex::Regex;
 }

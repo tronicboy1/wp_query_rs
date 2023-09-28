@@ -20,9 +20,10 @@ chrono = "0.4.26"
 serde = "1.0.188"
 url = { version = "2.4.1", optional = true }
 regex = { version = "1.9.5", optional = true }
+serde_php = { version = "0.5.0", optional = true }
 
 [features]
 native-tls = ["mysql/native-tls"]
 rustls = ["mysql/default-rustls"]
 php = ["ext-php-rs"]
-rewrite = ["url", "regex"]
+rewrite = ["url", "regex", "serde_php"]
