@@ -1,5 +1,7 @@
+mod rewrite_code;
 mod rewrite_filters;
 
+pub use rewrite_code::RewriteCode;
 pub use rewrite_filters::RewriteFilters;
 
 use self::rewrite_filters::RewriteFilterCache;
@@ -72,6 +74,10 @@ impl WpRewrite {
             hooks: RewriteFilterCache::new(),
         }
     }
+}
+
+trait ToRegex {
+    fn to_regex(self) -> regex::Regex;
 }
 
 #[cfg(test)]
