@@ -41,6 +41,9 @@ mod wp_comment;
 pub mod wp_post;
 mod wp_user;
 
+#[cfg(feature = "rewrite")]
+pub mod wp_rewrite;
+
 #[derive(Debug)]
 pub struct WpQuery {
     pub posts: Vec<WpPost>,
