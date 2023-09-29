@@ -12,7 +12,7 @@ use mysql::prelude::Queryable;
 pub use rewrite_code::RewriteCode;
 pub use rewrite_filters::RewriteFilters;
 
-use crate::{sql::get_conn, ParamBuilder, Params};
+use crate::{sql::get_conn, ParamBuilder, Params, PostQueryable, PostType};
 
 use self::{
     permalink_structure::PermalinkStructure, rewrite_filters::RewriteFilterCache,
@@ -119,24 +119,39 @@ impl WpRewrite {
     }
 }
 
-pub fn parse_request<'a>(
+pub fn parse_request(
     wp_rewrite: &WpRewrite,
     url: url::Url,
-) -> Result<Params<'a>, Box<dyn std::error::Error>> {
+) -> Result<url::Url, Box<dyn std::error::Error>> {
     let rules = wp_rewrite.wp_rewrite_rules()?;
 
     // If no rules, just return the query parameter p for post id
-    if rules.is_none() {
-        let q = url
-            .query_pairs()
-            .find(|(key, q)| key == "p")
-            .map(|(_, p)| p.parse())
-            .ok_or(WpParseError {})??;
-
-        return Ok(ParamBuilder::new().p(q).into());
+    if rules.is_none() && url.query().and_then(|q| q.find("p=")).is_some() {
+        return Ok(url);
     }
 
-    Ok(Params::new())
+    Ok(url)
+}
+
+impl<'a> TryFrom<url::Url> for Params<'a> {
+    type Error = Box<dyn std::error::Error>;
+
+    fn try_from(url_v: url::Url) -> Result<Self, Self::Error> {
+        let mut params = ParamBuilder::new();
+
+        for (key, value) in url_v.query_pairs() {
+            match key.deref() {
+                "p" => {
+                    let p: u64 = value.parse()?;
+                    params = params.p(p);
+                }
+                "post_type" => params = params.post_type(PostType::from(value.deref())),
+                _ => {}
+            }
+        }
+
+        Ok(params.into())
+    }
 }
 
 #[derive(Debug)]
@@ -175,7 +190,9 @@ mod tests {
         let mut rewrite = WpRewrite::new();
         rewrite.rules_init = RefCell::new(true);
 
-        let params = parse_request(&rewrite, url).unwrap();
+        let params: Params = parse_request(&rewrite, url)
+            .and_then(|op| Params::try_from(op))
+            .unwrap();
 
         assert_eq!(params.p, Some(123));
     }

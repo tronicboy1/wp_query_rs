@@ -1,14 +1,14 @@
 #[derive(Debug, PartialEq, Eq)]
-pub enum PostType<'a> {
+pub enum PostType {
     Post,
     Page,
     Revision,
     Attachment,
     NavMenuItem,
-    CustomPostType(&'a str),
+    CustomPostType(String),
 }
 
-impl<'a> std::fmt::Display for PostType<'a> {
+impl std::fmt::Display for PostType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -25,21 +25,21 @@ impl<'a> std::fmt::Display for PostType<'a> {
     }
 }
 
-impl<'a> Into<Vec<u8>> for PostType<'a> {
+impl Into<Vec<u8>> for PostType {
     fn into(self) -> Vec<u8> {
         self.to_string().into_bytes()
     }
 }
 
-impl<'a> From<&'a str> for PostType<'a> {
-    fn from(value: &'a str) -> Self {
+impl From<&str> for PostType {
+    fn from(value: &str) -> Self {
         match value {
             "post" => Self::Post,
             "page" => Self::Page,
             "revision" => Self::Revision,
             "attachment" => Self::Attachment,
             "nav_menu_item" => Self::NavMenuItem,
-            _ => Self::CustomPostType(value),
+            _ => Self::CustomPostType(value.to_string()),
         }
     }
 }
@@ -56,7 +56,7 @@ mod tests {
 
     #[test]
     fn can_create_cpt() {
-        let cpt = PostType::CustomPostType("cpt");
+        let cpt = PostType::from("cpt");
 
         match cpt {
             PostType::CustomPostType(s) => assert_eq!(s, "cpt"),

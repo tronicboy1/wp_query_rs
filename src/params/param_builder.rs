@@ -345,7 +345,7 @@ impl<'a> PostQueryable<'a> for ParamBuilder<'a> {
     }
 
     /// use post types. Retrieves posts by post types, default value is ‘post‘.
-    fn post_type(mut self, post_type: PostType<'a>) -> Self {
+    fn post_type(mut self, post_type: PostType) -> Self {
         add_to_vec!(self, post_type, post_type)
     }
 
