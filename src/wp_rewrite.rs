@@ -3,13 +3,16 @@ mod rewrite_code;
 mod rewrite_filters;
 mod rewrite_rule;
 
-use std::cell::{Ref, RefCell};
+use std::{
+    cell::{Ref, RefCell},
+    ops::Deref,
+};
 
 use mysql::prelude::Queryable;
 pub use rewrite_code::RewriteCode;
 pub use rewrite_filters::RewriteFilters;
 
-use crate::sql::get_conn;
+use crate::{sql::get_conn, ParamBuilder, Params};
 
 use self::{
     permalink_structure::PermalinkStructure, rewrite_filters::RewriteFilterCache,
@@ -55,6 +58,8 @@ pub struct WpRewrite {
     /// The root of your WordPress install. Prepended to all structures.
     root: String,
     rules: RefCell<Option<RewriteRules>>,
+    /// Know whether the rules were fetched from the DB or not, do not refetch if the results were bad/None
+    rules_init: RefCell<bool>,
 
     /// Filters
     hooks: RewriteFilterCache,
@@ -81,6 +86,7 @@ impl WpRewrite {
             front: String::new(),
             root: String::new(),
             rules: RefCell::new(None),
+            rules_init: RefCell::new(false),
             hooks: RewriteFilterCache::new(),
         }
     }
@@ -89,9 +95,11 @@ impl WpRewrite {
     /// Results are cached if database result is valid
     pub fn wp_rewrite_rules(&self) -> Result<Ref<'_, Option<RewriteRules>>, mysql::Error> {
         let rules = self.rules.borrow();
-        if rules.is_some() {
+
+        if rules.is_some() || *self.rules_init.borrow().deref() {
             return Ok(rules);
         }
+
         // Get rid of imutable borrow so we can mutate it
         drop(rules);
 
@@ -110,6 +118,38 @@ impl WpRewrite {
         Ok(self.rules.borrow())
     }
 }
+
+pub fn parse_request<'a>(
+    wp_rewrite: &WpRewrite,
+    url: url::Url,
+) -> Result<Params<'a>, Box<dyn std::error::Error>> {
+    let rules = wp_rewrite.wp_rewrite_rules()?;
+
+    // If no rules, just return the query parameter p for post id
+    if rules.is_none() {
+        let q = url
+            .query_pairs()
+            .find(|(key, q)| key == "p")
+            .map(|(_, p)| p.parse())
+            .ok_or(WpParseError {})??;
+
+        return Ok(ParamBuilder::new().p(q).into());
+    }
+
+    Ok(Params::new())
+}
+
+#[derive(Debug)]
+pub struct WpParseError {}
+
+impl std::fmt::Display for WpParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Could not parse request")
+    }
+}
+
+impl std::error::Error for WpParseError {}
+
 trait ToRegex {
     fn to_regex(self) -> Result<regex::Regex, regex::Error>;
 }
@@ -126,5 +166,17 @@ mod tests {
             rules.push(String::from("New Rule??"));
             rules
         });
+    }
+
+    #[test]
+    fn can_rewrite_default() {
+        let url = url::Url::parse("http://localhost:8080/?p=123").unwrap();
+
+        let mut rewrite = WpRewrite::new();
+        rewrite.rules_init = RefCell::new(true);
+
+        let params = parse_request(&rewrite, url).unwrap();
+
+        assert_eq!(params.p, Some(123));
     }
 }
