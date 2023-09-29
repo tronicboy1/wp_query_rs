@@ -1,3 +1,4 @@
+mod permalink_structure;
 mod rewrite_code;
 mod rewrite_filters;
 mod rewrite_rule;
@@ -5,11 +6,11 @@ mod rewrite_rule;
 pub use rewrite_code::RewriteCode;
 pub use rewrite_filters::RewriteFilters;
 
-use self::rewrite_filters::RewriteFilterCache;
+use self::{permalink_structure::PermalinkStructure, rewrite_filters::RewriteFilterCache};
 
 pub struct WpRewrite {
     /// The permalink structure as in the database. This is what you set on the Permalink Options page, and includes ‘tags’ like %year%, %month% and %post_id%.
-    permalink_structure: String,
+    permalink_structure: PermalinkStructure,
     /// Anything to be inserted before category archive URLs. Defaults to ‘category/’.
     category_base: String,
     /// Structure for category archive URLs. This is just the $category_base plus ‘%category%’.
@@ -54,7 +55,7 @@ pub struct WpRewrite {
 impl WpRewrite {
     pub fn new() -> Self {
         Self {
-            permalink_structure: String::new(),
+            permalink_structure: PermalinkStructure::new(),
             category_base: String::new(),
             category_structure: String::new(),
             author_base: String::new(),
@@ -77,7 +78,7 @@ impl WpRewrite {
     }
 }
 trait ToRegex {
-    fn to_regex(self) -> regex::Regex;
+    fn to_regex(self) -> Result<regex::Regex, regex::Error>;
 }
 
 #[cfg(test)]
