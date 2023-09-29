@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::sql::find_col;
 
+#[derive(Debug)]
 pub struct RewriteRule {
     /// Regular expression to match request against.
     regex: regex::Regex,
@@ -10,11 +11,14 @@ pub struct RewriteRule {
     /// Priority of the new rule. Accepts 'top' or 'bottom'. Default 'bottom'.
     _after: Priority,
 }
+
+#[derive(Debug)]
 enum Priority {
     Top,
     Bottom,
 }
 
+#[derive(Debug)]
 pub struct RewriteRules(Vec<RewriteRule>);
 
 impl mysql_common::prelude::FromRow for RewriteRules {
@@ -22,7 +26,7 @@ impl mysql_common::prelude::FromRow for RewriteRules {
     where
         Self: Sized,
     {
-        let data: String = find_col(&mut row, "rewrite_rules")
+        let data: String = find_col(&mut row, "option_value")
             .ok_or_else(|| mysql_common::FromRowError(row.clone()))?;
 
         data.try_into().map_err(|_| mysql_common::FromRowError(row))

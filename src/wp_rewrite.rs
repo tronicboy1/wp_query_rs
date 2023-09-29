@@ -3,10 +3,18 @@ mod rewrite_code;
 mod rewrite_filters;
 mod rewrite_rule;
 
+use std::cell::{Ref, RefCell};
+
+use mysql::prelude::Queryable;
 pub use rewrite_code::RewriteCode;
 pub use rewrite_filters::RewriteFilters;
 
-use self::{permalink_structure::PermalinkStructure, rewrite_filters::RewriteFilterCache};
+use crate::sql::get_conn;
+
+use self::{
+    permalink_structure::PermalinkStructure, rewrite_filters::RewriteFilterCache,
+    rewrite_rule::RewriteRules,
+};
 
 pub struct WpRewrite {
     /// The permalink structure as in the database. This is what you set on the Permalink Options page, and includes ‘tags’ like %year%, %month% and %post_id%.
@@ -46,7 +54,7 @@ pub struct WpRewrite {
     front: String,
     /// The root of your WordPress install. Prepended to all structures.
     root: String,
-    rules: Vec<String>,
+    rules: RefCell<Option<RewriteRules>>,
 
     /// Filters
     hooks: RewriteFilterCache,
@@ -72,9 +80,34 @@ impl WpRewrite {
             page_structure: String::new(),
             front: String::new(),
             root: String::new(),
-            rules: Vec::new(),
+            rules: RefCell::new(None),
             hooks: RewriteFilterCache::new(),
         }
+    }
+
+    /// Retrieves the rewrite rules from database.
+    /// Results are cached if database result is valid
+    pub fn wp_rewrite_rules(&self) -> Result<Ref<'_, Option<RewriteRules>>, mysql::Error> {
+        let rules = self.rules.borrow();
+        if rules.is_some() {
+            return Ok(rules);
+        }
+        // Get rid of imutable borrow so we can mutate it
+        drop(rules);
+
+        let mut conn = get_conn()?;
+
+        let res: Option<RewriteRules> = conn.exec_first(
+            "SELECT option_value FROM wp_options WHERE option_name = 'rewrite_rules'",
+            mysql::Params::Empty,
+        )?;
+
+        // SAFETY never borrows mut if it is already in the cache
+        let mut rules_cache = self.rules.borrow_mut();
+        *rules_cache = res;
+        drop(rules_cache);
+
+        Ok(self.rules.borrow())
     }
 }
 trait ToRegex {
