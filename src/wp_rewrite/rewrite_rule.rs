@@ -21,6 +21,14 @@ enum Priority {
 #[derive(Debug)]
 pub struct RewriteRules(Vec<RewriteRule>);
 
+impl RewriteRules {
+    pub fn find_match(&self, path: &str) -> Option<&RewriteRule> {
+        self.0
+            .iter()
+            .find(|RewriteRule { regex, .. }| regex.is_match(path))
+    }
+}
+
 impl mysql_common::prelude::FromRow for RewriteRules {
     fn from_row_opt(mut row: mysql_common::Row) -> Result<Self, mysql_common::FromRowError>
     where

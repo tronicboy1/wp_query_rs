@@ -1,3 +1,4 @@
+mod parse_request;
 mod permalink_structure;
 mod rewrite_code;
 mod rewrite_filters;
@@ -8,11 +9,12 @@ use std::{
     ops::Deref,
 };
 
-use mysql::prelude::Queryable;
+use mysql::prelude::*;
 pub use rewrite_code::RewriteCode;
 pub use rewrite_filters::RewriteFilters;
+pub use parse_request::parse_request;
 
-use crate::{sql::get_conn, ParamBuilder, Params, PostQueryable, PostType};
+use crate::sql::get_conn;
 
 use self::{
     permalink_structure::PermalinkStructure, rewrite_filters::RewriteFilterCache,
@@ -119,41 +121,6 @@ impl WpRewrite {
     }
 }
 
-pub fn parse_request(
-    wp_rewrite: &WpRewrite,
-    url: url::Url,
-) -> Result<url::Url, Box<dyn std::error::Error>> {
-    let rules = wp_rewrite.wp_rewrite_rules()?;
-
-    // If no rules, just return the query parameter p for post id
-    if rules.is_none() && url.query().and_then(|q| q.find("p=")).is_some() {
-        return Ok(url);
-    }
-
-    Ok(url)
-}
-
-impl<'a> TryFrom<url::Url> for Params<'a> {
-    type Error = Box<dyn std::error::Error>;
-
-    fn try_from(url_v: url::Url) -> Result<Self, Self::Error> {
-        let mut params = ParamBuilder::new();
-
-        for (key, value) in url_v.query_pairs() {
-            match key.deref() {
-                "p" => {
-                    let p: u64 = value.parse()?;
-                    params = params.p(p);
-                }
-                "post_type" => params = params.post_type(PostType::from(value.deref())),
-                _ => {}
-            }
-        }
-
-        Ok(params.into())
-    }
-}
-
 #[derive(Debug)]
 pub struct WpParseError {}
 
@@ -181,19 +148,5 @@ mod tests {
             rules.push(String::from("New Rule??"));
             rules
         });
-    }
-
-    #[test]
-    fn can_rewrite_default() {
-        let url = url::Url::parse("http://localhost:8080/?p=123").unwrap();
-
-        let mut rewrite = WpRewrite::new();
-        rewrite.rules_init = RefCell::new(true);
-
-        let params: Params = parse_request(&rewrite, url)
-            .and_then(|op| Params::try_from(op))
-            .unwrap();
-
-        assert_eq!(params.p, Some(123));
     }
 }
