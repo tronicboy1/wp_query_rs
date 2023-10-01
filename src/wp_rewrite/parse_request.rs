@@ -29,19 +29,14 @@ pub fn parse_request(
     //     }
     // };
 
-    // If no rules, just return the query parameter p for post id
     if let Some(rules) = rules.deref() {
         let matched_rule = rules.find_match(&pathinfo);
-        dbg!(&matched_rule);
-        if let Some(m) = matched_rule {
-            let cap = m.regex.captures(&pathinfo);
-            dbg!(&cap);
-            if let Some(caps) = cap {
-                let mut parsed = url.clone();
-                parsed.set_path("index.php");
+        if let Some(q_params) = matched_rule.and_then(|r| r.replace(&url)) {
+            let mut parsed = url.clone();
+            parsed.set_path("index.php");
+            parsed.set_query(Some(&q_params));
 
-
-            }
+            return Ok(parsed);
         }
     } else if url.query().and_then(|q| q.find("p=")).is_some() {
         return Ok(url);
@@ -161,14 +156,19 @@ mod tests {
         let mut rewrite = WpRewrite::new();
         rewrite.rules = RefCell::new(Some(rewrite_rules));
 
-        let url = Url::parse("http://localhost:8080/2023/09/my-test-meta-post-1695016100/").unwrap();
+        let url =
+            Url::parse("http://localhost:8080/2023/09/my-test-meta-post-1695016100/").unwrap();
 
         let parsed = parse_request(&rewrite, url).unwrap();
 
         assert!(parsed
             .query_pairs()
-            .find(|(key, v)| key == "p" && v == "164")
+            .find(|(key, v)| key == "name" && v == "my-test-meta-post-1695016100")
             .is_some());
+        assert!(parsed
+            .query_pairs()
+            .find(|(key, v)| key == "page")
+            .is_none());
     }
 
     fn get_rewrite_dummy() -> RewriteRules {
