@@ -36,7 +36,6 @@ use super::{
 /// ```
 pub struct ParamBuilder<'a>(Params<'a>);
 
-
 /// Adds a value to an internal optional vector property for Params
 macro_rules! add_to_vec {
     ($self: ident, $prop: ident, $v_key: ident) => {{
@@ -156,8 +155,8 @@ impl<'a> ParamBuilder<'a> {
     }
 
     /// use post slug
-    pub fn name(mut self, slug: &'a str) -> Self {
-        self.0.name = Some(slug);
+    pub fn name(mut self, slug: &str) -> Self {
+        self.0.name = Some(slug.to_string());
 
         self
     }

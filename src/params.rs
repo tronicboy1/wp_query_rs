@@ -39,7 +39,7 @@ pub struct Params<'a> {
     pub tax_query: Option<HashMap<TaxRelation, Vec<TaxQuery<'a>>>>,
     pub s: Option<&'a str>,
     pub p: Option<u64>,
-    pub name: Option<&'a str>,
+    pub name: Option<String>,
     pub page_id: Option<u64>,
     pub pagename: Option<&'a str>,
     pub post_parent: Option<u64>,

@@ -39,6 +39,7 @@ pub fn parse_request(
             return Ok(parsed);
         }
     } else if url.query().and_then(|q| q.find("p=")).is_some() {
+        // If is a default p=ID url, return it as is
         return Ok(url);
     }
 
@@ -79,7 +80,7 @@ fn path_info(url: &url::Url) -> &str {
     }
 }
 
-fn get_home_path_regex(home_path: Option<&str>) -> Option<regex::Regex> {
+fn _get_home_path_regex(home_path: Option<&str>) -> Option<regex::Regex> {
     home_path.and_then(|path| {
         let regex = String::from("|^%s|i");
         let regex = regex.replace("%s", path);
@@ -88,10 +89,10 @@ fn get_home_path_regex(home_path: Option<&str>) -> Option<regex::Regex> {
     })
 }
 
-impl<'a> TryFrom<url::Url> for Params<'a> {
+impl<'a> TryFrom<&'a url::Url> for Params<'a> {
     type Error = Box<dyn std::error::Error>;
 
-    fn try_from(url_v: url::Url) -> Result<Self, Self::Error> {
+    fn try_from(url_v: &'a url::Url) -> Result<Self, Self::Error> {
         let mut params = ParamBuilder::new();
 
         for (key, value) in url_v.query_pairs() {
@@ -101,6 +102,9 @@ impl<'a> TryFrom<url::Url> for Params<'a> {
                     params = params.p(p);
                 }
                 "post_type" => params = params.post_type(PostType::from(value.deref())),
+                "year" => params = params.year(value.parse()?),
+                "monthnum" => params = params.monthnum(value.parse()?),
+                "name" => params = params.name(value.deref()),
                 _ => {}
             }
         }
@@ -115,8 +119,6 @@ mod tests {
 
     use url::Url;
 
-    use crate::wp_rewrite::rewrite_rule::RewriteRules;
-
     use super::*;
 
     #[test]
@@ -126,9 +128,8 @@ mod tests {
         let mut rewrite = WpRewrite::new();
         rewrite.rules_init = RefCell::new(true);
 
-        let params: Params = parse_request(&rewrite, url)
-            .and_then(|op| Params::try_from(op))
-            .unwrap();
+        let params = parse_request(&rewrite, url).unwrap();
+        let params = Params::try_from(&params).unwrap();
 
         assert_eq!(params.p, Some(123));
     }
@@ -152,9 +153,7 @@ mod tests {
 
     #[test]
     fn can_rewrite_blog_post() {
-        let rewrite_rules = get_rewrite_dummy();
-        let mut rewrite = WpRewrite::new();
-        rewrite.rules = RefCell::new(Some(rewrite_rules));
+        let rewrite = get_rewrite_dummy();
 
         let url =
             Url::parse("http://localhost:8080/2023/09/my-test-meta-post-1695016100/").unwrap();
@@ -171,8 +170,46 @@ mod tests {
             .is_none());
     }
 
-    fn get_rewrite_dummy() -> RewriteRules {
+    fn get_rewrite_dummy() -> WpRewrite {
         let db_res = std::fs::read_to_string("test_data/test_rewrite_rules.txt").unwrap();
-        db_res.try_into().unwrap()
+        let rewrite_rules = db_res.try_into().unwrap();
+
+        let mut rewrite = WpRewrite::new();
+        rewrite.rules = RefCell::new(Some(rewrite_rules));
+
+        rewrite
+    }
+
+    #[test]
+    fn can_parse_request_into_params() {
+        let rewrite = get_rewrite_dummy();
+
+        let url =
+            Url::parse("http://localhost:8080/2023/09/my-test-meta-post-1695016100/").unwrap();
+
+        let parsed = parse_request(&rewrite, url).unwrap();
+
+        let params = Params::try_from(&parsed).unwrap();
+
+        assert_eq!(params.monthnum, Some(9));
+        assert_eq!(params.year, Some(2023));
+        assert_eq!(
+            params.name,
+            Some(String::from("my-test-meta-post-1695016100"))
+        );
+    }
+
+    #[test]
+    fn can_parse_archive_page_into_params() {
+        let rewrite = get_rewrite_dummy();
+
+        let url =
+            Url::parse("http://localhost:8080/category/derbies/").unwrap();
+
+        let parsed = parse_request(&rewrite, url).unwrap();
+
+        let params = Params::try_from(&parsed).unwrap();
+
+        assert_eq!(params.term_slug_in, Some(vec!["derbies"]));
     }
 }
