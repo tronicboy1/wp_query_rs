@@ -7,7 +7,6 @@ use super::WpRewrite;
 pub fn parse_request(
     wp_rewrite: &WpRewrite,
     url: url::Url,
-    home_path: Option<&str>,
 ) -> Result<url::Url, Box<dyn std::error::Error>> {
     let rules = wp_rewrite.wp_rewrite_rules()?;
 
@@ -33,12 +32,34 @@ pub fn parse_request(
     // If no rules, just return the query parameter p for post id
     if let Some(rules) = rules.deref() {
         let matched_rule = rules.find_match(&pathinfo);
+        dbg!(&matched_rule);
+        if let Some(m) = matched_rule {
+            let cap = m.regex.captures(&pathinfo);
+            dbg!(&cap);
+            if let Some(caps) = cap {
+                let mut parsed = url.clone();
+                parsed.set_path("index.php");
+
+
+            }
+        }
     } else if url.query().and_then(|q| q.find("p=")).is_some() {
         return Ok(url);
     }
 
-    Ok(url)
+    Err(Box::new(WpParseError {}))
 }
+
+#[derive(Debug)]
+pub struct WpParseError {}
+
+impl std::fmt::Display for WpParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Could not parse request")
+    }
+}
+
+impl std::error::Error for WpParseError {}
 
 /// Contains any client-provided pathname information trailing the actual script filename but preceding the query string, if available.
 /// # Examples
@@ -99,6 +120,8 @@ mod tests {
 
     use url::Url;
 
+    use crate::wp_rewrite::rewrite_rule::RewriteRules;
+
     use super::*;
 
     #[test]
@@ -108,7 +131,7 @@ mod tests {
         let mut rewrite = WpRewrite::new();
         rewrite.rules_init = RefCell::new(true);
 
-        let params: Params = parse_request(&rewrite, url, None)
+        let params: Params = parse_request(&rewrite, url)
             .and_then(|op| Params::try_from(op))
             .unwrap();
 
@@ -130,5 +153,26 @@ mod tests {
         let path_info = path_info(&url);
 
         assert_eq!(path_info, "/some/stuff")
+    }
+
+    #[test]
+    fn can_rewrite_blog_post() {
+        let rewrite_rules = get_rewrite_dummy();
+        let mut rewrite = WpRewrite::new();
+        rewrite.rules = RefCell::new(Some(rewrite_rules));
+
+        let url = Url::parse("http://localhost:8080/2023/09/my-test-meta-post-1695016100/").unwrap();
+
+        let parsed = parse_request(&rewrite, url).unwrap();
+
+        assert!(parsed
+            .query_pairs()
+            .find(|(key, v)| key == "p" && v == "164")
+            .is_some());
+    }
+
+    fn get_rewrite_dummy() -> RewriteRules {
+        let db_res = std::fs::read_to_string("test_data/test_rewrite_rules.txt").unwrap();
+        db_res.try_into().unwrap()
     }
 }

@@ -5,9 +5,9 @@ use crate::sql::find_col;
 #[derive(Debug)]
 pub struct RewriteRule {
     /// Regular expression to match request against.
-    regex: regex::Regex,
+    pub regex: regex::Regex,
     /// The corresponding query vars for this rewrite rule.
-    query: String,
+    pub query: String,
     /// Priority of the new rule. Accepts 'top' or 'bottom'. Default 'bottom'.
     _after: Priority,
 }
@@ -23,9 +23,13 @@ pub struct RewriteRules(Vec<RewriteRule>);
 
 impl RewriteRules {
     pub fn find_match(&self, path: &str) -> Option<&RewriteRule> {
-        self.0
-            .iter()
-            .find(|RewriteRule { regex, .. }| regex.is_match(path))
+        self.0.iter().find(|RewriteRule { regex, query, .. }| {
+            let param_count = query.matches("$matches").count();
+            regex
+                .captures(path)
+                .map(|caps| caps.len() == param_count + 1 && caps.get(param_count - 2).is_some())
+                .unwrap_or(false)
+        })
     }
 }
 
@@ -71,6 +75,6 @@ mod tests {
 
         let rewrite_rules: RewriteRules = db_res.try_into().unwrap();
 
-        assert_eq!(rewrite_rules.0.len(), 99);
+        assert_eq!(rewrite_rules.0.len(), 95);
     }
 }

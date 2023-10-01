@@ -120,18 +120,6 @@ impl WpRewrite {
         Ok(self.rules.borrow())
     }
 }
-
-#[derive(Debug)]
-pub struct WpParseError {}
-
-impl std::fmt::Display for WpParseError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Could not parse request")
-    }
-}
-
-impl std::error::Error for WpParseError {}
-
 trait ToRegex {
     fn to_regex(self) -> Result<regex::Regex, regex::Error>;
 }
