@@ -96,7 +96,7 @@ impl<'a> TryFrom<&'a url::Url> for Params<'a> {
                 "post_type" => params = params.post_type(PostType::from(str)),
                 "year" => params = params.year(value.parse()?),
                 "monthnum" => params = params.monthnum(value.parse()?),
-                "name" => params = params.name(str),
+                "name" | "pagename" => params = params.name(str),
                 "category_name" => params = params.category_name(str),
                 "author_name" => params = params.author_name(str),
                 _ => {}

@@ -10,9 +10,9 @@ use std::{
 };
 
 use mysql::prelude::*;
+pub use parse_request::parse_request;
 pub use rewrite_code::RewriteCode;
 pub use rewrite_filters::RewriteFilters;
-pub use parse_request::parse_request;
 
 use crate::sql::get_conn;
 
@@ -119,7 +119,13 @@ impl WpRewrite {
 
         Ok(self.rules.borrow())
     }
+
+    /// Sets the category base for the category permalink.
+    pub fn set_category_base(&mut self, base: String) {
+        self.category_base = base;
+    }
 }
+
 trait ToRegex {
     fn to_regex(self) -> Result<regex::Regex, regex::Error>;
 }
