@@ -31,7 +31,7 @@ pub fn parse_request(
 
     if let Some(rules) = rules.deref() {
         let matched_rule = rules.find_match(&pathinfo);
-        if let Some(q_params) = matched_rule.and_then(|r| r.replace(&url)) {
+        if let Some(q_params) = matched_rule.and_then(|r| r.replace(&pathinfo)) {
             let mut parsed = url.clone();
             parsed.set_path("index.php");
             parsed.set_query(Some(&q_params));
@@ -73,11 +73,14 @@ fn path_info(url: &url::Url) -> &str {
         &path[start..]
     });
 
-    if let Some(path_after_php_ext) = php_ext_i {
+    let path = if let Some(path_after_php_ext) = php_ext_i {
         path_after_php_ext
     } else {
         path
-    }
+    };
+
+    // WP versions trims by '/' on front and end to get matches
+    path.trim_matches('/')
 }
 
 fn _get_home_path_regex(home_path: Option<&str>) -> Option<regex::Regex> {
@@ -203,8 +206,7 @@ mod tests {
     fn can_parse_archive_page_into_params() {
         let rewrite = get_rewrite_dummy();
 
-        let url =
-            Url::parse("http://localhost:8080/category/derbies/").unwrap();
+        let url = Url::parse("http://localhost:8080/category/derbies/").unwrap();
 
         let parsed = parse_request(&rewrite, url).unwrap();
 
