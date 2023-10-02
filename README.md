@@ -92,6 +92,31 @@ let user = WpUser::get_user_by_id(1).unwrap().unwrap();
 assert_eq!(user.id, 1);
 ```
 
+# Parsing WordPress Pretty URLs into WP_Query Parameters
+
+**This feature is highly EXPERIMENTAL!**
+
+By enabling the `rewrite` feature of this crate, you can parse WordPress pretty URIs/slugs into WpQuery Parameters for `wp_query_rs`.
+
+```rust
+use wp_query_rs::wp_rewrite::{WpRewrite, parse_request};
+use url::Url;
+
+let rewrite = wp_rewrite::WpRewrite::new();
+
+let parsed = parse_request(
+        &rewrite,
+        Url::parse("http://localhost:8080/a-page-about-tomates/").unwrap(),
+)
+.unwrap();
+
+let params = Params::try_from(&parsed).unwrap();
+
+assert_eq!(params.name, Some("a-page-about-tomates"));
+```
+
+
+
 # Goals
 
 The author of this package would like to add tooling to the rust community for working with WordPress websites and data. In the future, possibly even building extensions for WordPress written in Rust to increase performance.
