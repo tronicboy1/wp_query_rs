@@ -101,6 +101,7 @@ impl<'a> TryFrom<&'a url::Url> for Params<'a> {
         for (key, value) in url_v.query_pairs() {
             let str = match value {
                 Cow::Borrowed(v) => v,
+                // SAFETY we are never modifying the Cow, so we know we can get the &str reference that lives 'a, i.e. the url that is being parsed
                 _ => unreachable!("NeverModified"),
             };
 
@@ -109,11 +110,12 @@ impl<'a> TryFrom<&'a url::Url> for Params<'a> {
                     let p: u64 = value.parse()?;
                     params = params.p(p);
                 }
-                "post_type" => params = params.post_type(PostType::from(value.deref())),
+                "post_type" => params = params.post_type(PostType::from(str)),
                 "year" => params = params.year(value.parse()?),
                 "monthnum" => params = params.monthnum(value.parse()?),
                 "name" => params = params.name(str),
                 "category_name" => params = params.category_name(str),
+                "author_name" => params = params.author_name(str),
                 _ => {}
             }
         }

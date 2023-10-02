@@ -24,7 +24,7 @@ pub trait PostQueryable<'a> {
     fn post_name__in(self, s: &'a str) -> Self;
 
     /// use post types. Retrieves posts by post types, default value is ‘post‘.
-    fn post_type(self, post_type: PostType) -> Self;
+    fn post_type(self, post_type: PostType<'a>) -> Self;
 
     /// Queries all post types. Will be overwritten if there is another call to post_type after this.
     fn post_type_all(self) -> Self;
