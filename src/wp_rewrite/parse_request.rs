@@ -11,23 +11,6 @@ pub fn parse_request(
     let rules = wp_rewrite.wp_rewrite_rules()?;
 
     let pathinfo = path_info(&url).to_string();
-    // let mut req_uri = url.path().to_string();
-
-    // if let Some(home_path_regex) = get_home_path_regex(home_path) {
-    //     pathinfo = home_path_regex.replace(&pathinfo, "").to_string();
-    //     req_uri = home_path_regex.replace(&req_uri, "").to_string();
-    // }
-
-    // let index_regex = regex::Regex::new("|^.*index.php$|").expect("ValidRegex");
-    // let requested_path = if !pathinfo.is_empty() && !index_regex.is_match(&pathinfo) {
-    //     pathinfo
-    // } else {
-    //     if req_uri.as_str() == "index.php" {
-    //         String::new()
-    //     } else {
-    //         req_uri
-    //     }
-    // };
 
     if let Some(rules) = rules.deref() {
         let matched_rule = rules.find_match(&pathinfo, &wp_rewrite);

@@ -17,6 +17,11 @@ pub struct RewriteRule {
 }
 
 impl RewriteRule {
+    /// Creates a query string from this rewrite rule from the original request. These are WP style paths created.
+    ///
+    /// `/author/admin` -> `author_name=admin`
+    ///
+    /// `/2023/11/my-post-name` -> `year=2023&monthnum=11&postname=my-post-name`
     pub fn replace(&self, path: &str) -> Option<String> {
         let keys = self.get_query_keys();
 
