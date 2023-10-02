@@ -11,7 +11,7 @@ use wp_query_rs::{WP_Query, ParamBuilder};
 
 let params = ParamBuilder::new();
 
-let wp_query = WP_Query::new(params.params()).expect("SqlFailed");
+let wp_query = WP_Query::new(params).expect("SqlFailed");
 assert_eq!(wp_query.post_count(), 10);
 ```
 
@@ -22,7 +22,7 @@ let params = ParamBuilder::new();
 
 let mut con: mysql::Conn = pool.get_connection();
 
-let wp_query = WP_Query::with_connection(&mut conn, params.params()).expect("SqlFailed");
+let wp_query = WP_Query::with_connection(&mut conn, params).expect("SqlFailed");
 
 assert_eq!(wp_query.post_count(), 10);
 ```
