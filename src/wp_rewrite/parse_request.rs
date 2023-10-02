@@ -217,4 +217,17 @@ mod tests {
 
         assert_eq!(params.term_slug_and, Some(vec!["derbies"]));
     }
+
+    #[test]
+    fn can_parse_author_page() {
+        let rewrite = get_rewrite_dummy();
+
+        let url = Url::parse("http://localhost:8080/author/admin/").unwrap();
+
+        let parsed = parse_request(&rewrite, url).unwrap();
+
+        let params = Params::try_from(&parsed).unwrap();
+
+        assert_eq!(params.author_name, Some("admin"));
+    }
 }
