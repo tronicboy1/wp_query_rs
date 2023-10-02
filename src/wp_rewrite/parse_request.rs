@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::{borrow::Cow, ops::Deref};
 
 use crate::{ParamBuilder, Params, PostQueryable, PostType};
 
@@ -99,6 +99,11 @@ impl<'a> TryFrom<&'a url::Url> for Params<'a> {
         let mut params = ParamBuilder::new();
 
         for (key, value) in url_v.query_pairs() {
+            let str = match value {
+                Cow::Borrowed(v) => v,
+                _ => unreachable!("NeverModified"),
+            };
+
             match key.deref() {
                 "p" => {
                     let p: u64 = value.parse()?;
@@ -107,7 +112,7 @@ impl<'a> TryFrom<&'a url::Url> for Params<'a> {
                 "post_type" => params = params.post_type(PostType::from(value.deref())),
                 "year" => params = params.year(value.parse()?),
                 "monthnum" => params = params.monthnum(value.parse()?),
-                "name" => params = params.name(value.deref()),
+                "name" => params = params.name(str),
                 _ => {}
             }
         }
@@ -196,10 +201,7 @@ mod tests {
 
         assert_eq!(params.monthnum, Some(9));
         assert_eq!(params.year, Some(2023));
-        assert_eq!(
-            params.name,
-            Some(String::from("my-test-meta-post-1695016100"))
-        );
+        assert_eq!(params.name, Some("my-test-meta-post-1695016100"));
     }
 
     #[test]
