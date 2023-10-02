@@ -142,7 +142,7 @@ mod tests {
         let url = Url::parse("http://www.example.com/php/some/stuff?foo=bar").unwrap();
         let path_info = path_info(&url);
 
-        assert_eq!(path_info, "/php/some/stuff")
+        assert_eq!(path_info, "php/some/stuff")
     }
 
     #[test]
@@ -151,7 +151,7 @@ mod tests {
             Url::parse("http://www.example.com/php/path_info.php/some/stuff?foo=bar").unwrap();
         let path_info = path_info(&url);
 
-        assert_eq!(path_info, "/some/stuff")
+        assert_eq!(path_info, "some/stuff")
     }
 
     #[test]
