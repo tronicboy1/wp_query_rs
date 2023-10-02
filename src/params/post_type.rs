@@ -1,14 +1,14 @@
 #[derive(Debug, PartialEq, Eq)]
-pub enum PostType {
+pub enum PostType<'a> {
     Post,
     Page,
     Revision,
     Attachment,
     NavMenuItem,
-    CustomPostType(String),
+    CustomPostType(&'a str),
 }
 
-impl std::fmt::Display for PostType {
+impl<'a> std::fmt::Display for PostType<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -25,21 +25,21 @@ impl std::fmt::Display for PostType {
     }
 }
 
-impl Into<Vec<u8>> for PostType {
+impl<'a> Into<Vec<u8>> for PostType<'a> {
     fn into(self) -> Vec<u8> {
         self.to_string().into_bytes()
     }
 }
 
-impl From<&str> for PostType {
-    fn from(value: &str) -> Self {
+impl<'a> From<&'a str> for PostType<'a> {
+    fn from(value: &'a str) -> Self {
         match value {
             "post" => Self::Post,
             "page" => Self::Page,
             "revision" => Self::Revision,
             "attachment" => Self::Attachment,
             "nav_menu_item" => Self::NavMenuItem,
-            _ => Self::CustomPostType(value.to_string()),
+            _ => Self::CustomPostType(value),
         }
     }
 }

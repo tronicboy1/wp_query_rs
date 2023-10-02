@@ -52,7 +52,7 @@ pub struct Params<'a> {
     /**
      * Retrieves posts by post types, default value is ‘post‘. If ‘tax_query‘ is set for a query, the default value becomes ‘any‘;
      */
-    pub post_type: Option<Vec<PostType>>,
+    pub post_type: Option<Vec<PostType<'a>>>,
     pub post_status: Option<PostStatus>,
     /**
      * The amount of comments your CPT has to have ( Search operator will do a ‘=’ operation )
