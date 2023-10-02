@@ -30,7 +30,7 @@ pub fn parse_request(
     // };
 
     if let Some(rules) = rules.deref() {
-        let matched_rule = rules.find_match(&pathinfo);
+        let matched_rule = rules.find_match(&pathinfo, &wp_rewrite);
         if let Some(q_params) = matched_rule.and_then(|r| r.replace(&pathinfo)) {
             let mut parsed = url.clone();
             parsed.set_path("index.php");
@@ -113,6 +113,7 @@ impl<'a> TryFrom<&'a url::Url> for Params<'a> {
                 "year" => params = params.year(value.parse()?),
                 "monthnum" => params = params.monthnum(value.parse()?),
                 "name" => params = params.name(str),
+                "category_name" => params = params.category_name(str),
                 _ => {}
             }
         }
@@ -214,6 +215,6 @@ mod tests {
 
         let params = Params::try_from(&parsed).unwrap();
 
-        assert_eq!(params.term_slug_in, Some(vec!["derbies"]));
+        assert_eq!(params.term_slug_and, Some(vec!["derbies"]));
     }
 }

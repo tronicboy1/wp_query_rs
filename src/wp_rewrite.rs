@@ -37,7 +37,7 @@ pub struct WpRewrite {
     /// Supported feeds names (rdf, rss, atom) Use add_feed to override or add.
     _feeds: String,
     /// Anything to be inserted before feed URLs. Defaults to ‘feed/’.
-    _feed_base: String,
+    feed_base: String,
     /// Structure for feed URLs. This is just the $feed_base plus ‘%feed%’.
     _feed_structure: String,
     /// Anything to be inserted before searches. Defaults to ‘search/’.
@@ -71,17 +71,17 @@ impl WpRewrite {
     pub fn new() -> Self {
         Self {
             permalink_structure: PermalinkStructure::new(),
-            category_base: String::new(),
+            category_base: String::from("category/"),
             category_structure: String::new(),
-            author_base: String::new(),
+            author_base: String::from("author/"),
             author_structure: String::new(),
-            pagination_base: String::new(),
+            pagination_base: String::from("page/"),
             _feeds: String::new(),
-            _feed_base: String::new(),
+            feed_base: String::from("feed/"),
             _feed_structure: String::new(),
-            search_base: String::new(),
+            search_base: String::from("search/"),
             search_structure: String::new(),
-            comments_base: String::new(),
+            comments_base: String::from("comments"),
             comments_feed_structure: String::new(),
             date_structure: String::new(),
             page_structure: String::new(),

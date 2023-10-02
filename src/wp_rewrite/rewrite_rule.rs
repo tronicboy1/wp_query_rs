@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use crate::sql::find_col;
 
+use super::WpRewrite;
+
 #[derive(Debug)]
 pub struct RewriteRule {
     /// Regular expression to match request against.
@@ -15,10 +17,10 @@ pub struct RewriteRule {
 }
 
 impl RewriteRule {
-    pub fn replace(&self, url: &url::Url) -> Option<String> {
+    pub fn replace(&self, path: &str) -> Option<String> {
         let keys = self.get_query_keys();
 
-        self.regex.captures(url.as_str()).map(|caps| {
+        self.regex.captures(path).map(|caps| {
             keys.into_iter()
                 .enumerate()
                 .fold(String::new(), |mut acc, (i, key)| {
@@ -45,6 +47,17 @@ impl RewriteRule {
             .filter_map(|c| c.get(1).map(|m| m.as_str()))
             .collect()
     }
+
+    /// Checks if RewriteRule starts with a base, making it higher priority
+    fn is_base(&self, wp_rewrite: &WpRewrite) -> bool {
+        let regex_str = self.regex.as_str();
+        regex_str.starts_with(&wp_rewrite.author_base)
+            || regex_str.starts_with(&wp_rewrite.category_base)
+            || regex_str.starts_with(&wp_rewrite.pagination_base)
+            || regex_str.starts_with(&wp_rewrite.feed_base)
+            || regex_str.starts_with(&wp_rewrite.search_base)
+            || regex_str.starts_with(&wp_rewrite.comments_base)
+    }
 }
 
 #[derive(Debug)]
@@ -58,14 +71,26 @@ pub struct RewriteRules(Vec<RewriteRule>);
 
 impl RewriteRules {
     /// Finds the most specific (having most parameters) RewriteRule that can be applied to a given URL path
-    pub fn find_match(&self, path: &str) -> Option<&RewriteRule> {
+    pub fn find_match(&self, path: &str, wp_rewrite: &WpRewrite) -> Option<&RewriteRule> {
         self.0
             .iter()
             .filter(|RewriteRule { regex, .. }| regex.is_match(path))
-            // Find the most specific match, has the most param count
-            .reduce(|mut acc, r| {
-                if r.param_count > acc.param_count {
-                    acc = r;
+            .reduce(|acc, r| {
+                // If regex starts with a WpRewrite base, prioritize it over
+                let acc_is_base_match = acc.is_base(wp_rewrite);
+                let next_is_base_match = r.is_base(wp_rewrite);
+                // Find the most specific match, has the most param count
+                let next_is_more_specific = r.param_count > acc.param_count;
+
+                // use more specific base match if available
+                if next_is_base_match && !acc_is_base_match
+                    || next_is_base_match && next_is_more_specific
+                {
+                    return r;
+                }
+
+                if next_is_more_specific && !acc_is_base_match {
+                    return r;
                 }
 
                 acc
