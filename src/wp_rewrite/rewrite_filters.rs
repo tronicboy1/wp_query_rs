@@ -82,14 +82,15 @@ mod tests {
             rewrite.category_base = String::from("category/bar/");
         });
 
-        let filters = rewrite
-            .hooks
-            .generate_rewrite_rules
-            .take()
-            .unwrap_or_default();
-        for f in filters {
+        let filters = rewrite.hooks.generate_rewrite_rules.take();
+        let filter_fns = filters.as_ref().unwrap();
+
+        for f in filter_fns {
             f(&mut rewrite);
         }
+
+        // Can put back the called filters for re-use!
+        rewrite.hooks.generate_rewrite_rules = filters;
 
         assert_eq!(rewrite.author_base, String::from("author/custom/"));
         assert_eq!(rewrite.category_base, String::from("category/bar/"));
