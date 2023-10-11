@@ -9,17 +9,19 @@ pub enum RewriteFilters {
 macro_rules! filter_cache_struct {
     ($parent: ident, $parent_prop: ident, $name: ident { $($filter_name: ident: $callback_type: path,)* }) => {
         pub struct $name {
-            $($filter_name: Vec<Box<dyn $callback_type>>,)*
+            // Must have it be Option so we can take it without a mutable ref to self for special cases
+            // like filters on the parent WpRewrite object itself
+            $($filter_name: Option<Vec<Box<dyn $callback_type>>>,)*
         }
 
         impl $name {
             pub fn new() -> Self {
                 Self {
-                    $($filter_name: Vec::new(),)*
+                    $($filter_name: None,)*
                 }
             }
             $(pub fn $filter_name<F>(&mut self, f: F) where F: $callback_type + 'static {
-                self.$filter_name.push(Box::new(f));
+                self.$filter_name.get_or_insert(Vec::new()).push(Box::new(f));
             })*
         }
 
@@ -47,7 +49,7 @@ filter_cache_struct!(
         page_rewrite_rules: Fn(Vec<String>) -> Vec<String>,
         root_rewrite_rules: Fn(Vec<String>) -> Vec<String>,
         rewrite_rules_array: Fn(Vec<String>) -> Vec<String>,
-        generate_rewrite_rules: Fn(WpRewrite) -> WpRewrite,
+        generate_rewrite_rules: Fn(&mut WpRewrite),
     }
 );
 
@@ -60,12 +62,36 @@ mod tests {
         let mut filter_cache = RewriteFilterCache::new();
 
         filter_cache.post_rewrite_rules(|rules| rules);
-        filter_cache.generate_rewrite_rules(|mut rewrite| {
+        filter_cache.generate_rewrite_rules(|rewrite| {
             rewrite.author_base.push_str("Hello World");
-            rewrite
         });
 
-        assert_eq!(filter_cache.post_rewrite_rules.len(), 1);
-        assert_eq!(filter_cache.generate_rewrite_rules.len(), 1);
+        assert_eq!(filter_cache.post_rewrite_rules.unwrap().len(), 1);
+        assert_eq!(filter_cache.generate_rewrite_rules.unwrap().len(), 1);
+    }
+
+    #[test]
+    fn can_call_filters() {
+        let mut rewrite = WpRewrite::new();
+
+        rewrite.add_filter().generate_rewrite_rules(|rewrite| {
+            rewrite.author_base.push_str("custom/");
+        });
+
+        rewrite.add_filter().generate_rewrite_rules(|rewrite| {
+            rewrite.category_base = String::from("category/bar/");
+        });
+
+        let filters = rewrite
+            .hooks
+            .generate_rewrite_rules
+            .take()
+            .unwrap_or_default();
+        for f in filters {
+            f(&mut rewrite);
+        }
+
+        assert_eq!(rewrite.author_base, String::from("author/custom/"));
+        assert_eq!(rewrite.category_base, String::from("category/bar/"));
     }
 }
