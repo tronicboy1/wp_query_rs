@@ -79,7 +79,7 @@ impl Into<mysql::Params> for WpPost {
 #[macro_export]
 macro_rules! ok_or_row_error {
     ($row: ident, $col: expr) => {
-        find_col(&mut $row, $col).ok_or(mysql_common::FromRowError($row.clone()))?
+        find_col(&mut $row, $col).ok_or_else(|| mysql_common::FromRowError($row.clone()))?
     };
 }
 
