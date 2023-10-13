@@ -1,7 +1,9 @@
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
+use crate::sql::get_conn;
 #[cfg(feature = "query_sync")]
 use mysql::prelude::Queryable;
-#[cfg(feature = "query_sync")]
-use crate::sql::get_conn;
+#[cfg(feature = "query_async")]
+use mysql_async::prelude::*;
 
 use mysql_common::time::PrimitiveDateTime;
 use serde::ser::SerializeStruct;
@@ -35,6 +37,18 @@ impl WpUser {
         let value = mysql_common::Value::UInt(id);
 
         conn.exec_first(stmt, mysql::Params::Positional(vec![value]))
+            .map(|row: Option<mysql_common::Row>| row.map(|r| WpUser::from(r)))
+    }
+    #[cfg(feature = "query_async")]
+    pub async fn get_user_by_id(id: u64) -> Result<Option<Self>, mysql_async::Error> {
+        let mut conn = get_conn().await?;
+
+        let stmt = conn.prep("SELECT * FROM wp_users WHERE ID = ?").await?;
+
+        let value = mysql_common::Value::UInt(id);
+
+        conn.exec_first(stmt, mysql_async::Params::Positional(vec![value]))
+            .await
             .map(|row: Option<mysql_common::Row>| row.map(|r| WpUser::from(r)))
     }
 }
