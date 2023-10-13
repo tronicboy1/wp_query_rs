@@ -1,10 +1,6 @@
 //! # WP Query Rust
 //! A rust implementation of the classic WP_Query utility to access WordPress posts outside of a WordPress environment.
 
-use mysql::prelude::Queryable;
-use query_builder::QueryBuilder;
-use sql::get_conn;
-
 pub use params::date_query::DateColumn;
 pub use params::date_query::DateQuery;
 pub use params::date_query::DateQueryAfterBefore;
@@ -18,15 +14,26 @@ pub use params::tax_query::TaxQuery;
 pub use params::tax_query::TaxRelation;
 pub use params::traits::*;
 pub use params::Params;
-pub use sql::env_vars::EnvVars;
-pub use sql::traits::Insertable;
 pub use sql::SqlOrder;
 pub use sql::SqlSearchOperators;
-pub use wp_post::add_post_meta;
-pub use wp_post::get_post_meta;
 pub use wp_post::post_status::PostStatus;
 use wp_post::WpPost;
 pub use wp_user::WpUser;
+
+#[cfg(feature = "query_sync")]
+use mysql::prelude::Queryable;
+#[cfg(feature = "query_sync")]
+use query_builder::QueryBuilder;
+#[cfg(feature = "query_sync")]
+pub use sql::env_vars::EnvVars;
+#[cfg(feature = "query_sync")]
+use sql::get_conn;
+#[cfg(feature = "query_sync")]
+pub use sql::traits::Insertable;
+#[cfg(feature = "query_sync")]
+pub use wp_post::add_post_meta;
+#[cfg(feature = "query_sync")]
+pub use wp_post::get_post_meta;
 
 // TODO remove on next major version
 #[allow(non_camel_case_types)]
@@ -67,6 +74,7 @@ impl WpQuery {
     /// # Errors
     /// Will return an error if there is an error in the mysql query. This may be from innapropriate SQL built in the query builder,
     /// or more likely a connection issue from incorrect environment variables.
+    #[cfg(feature = "query_sync")]
     pub fn new<'a, T>(params: T) -> Result<Self, mysql::Error>
     where
         T: Into<Params<'a>>,
@@ -96,6 +104,7 @@ impl WpQuery {
     ///
     /// # Errors
     /// When an error occurs in the SQL query.
+    #[cfg(feature = "query_sync")]
     pub fn with_connection<'a, T>(
         conn: &mut impl Queryable,
         params: T,
@@ -108,6 +117,7 @@ impl WpQuery {
         Ok(Self { posts })
     }
 
+    #[cfg(feature = "query_sync")]
     fn query<'a, T>(conn: &mut impl Queryable, params: T) -> Result<Vec<WpPost>, mysql::Error>
     where
         T: Into<Params<'a>>,

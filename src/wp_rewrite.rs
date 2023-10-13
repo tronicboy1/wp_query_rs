@@ -4,17 +4,19 @@ mod rewrite_code;
 mod rewrite_filters;
 mod rewrite_rule;
 
-use std::{
-    cell::{Ref, RefCell},
-    ops::Deref,
-};
+use std::cell::RefCell;
 
+#[cfg(feature = "query_sync")]
+use crate::sql::get_conn;
+#[cfg(feature = "query_sync")]
 use mysql::prelude::*;
+#[cfg(feature = "query_sync")]
+use std::{cell::Ref, ops::Deref};
+
+#[cfg(feature = "query_sync")]
 pub use parse_request::parse_request;
 pub use rewrite_code::RewriteCode;
 pub use rewrite_filters::RewriteFilters;
-
-use crate::sql::get_conn;
 
 use self::{
     permalink_structure::PermalinkStructure, rewrite_filters::RewriteFilterCache,
@@ -95,6 +97,7 @@ impl WpRewrite {
 
     /// Retrieves the rewrite rules from database.
     /// Results are cached if database result is valid
+    #[cfg(feature = "query_sync")]
     pub fn wp_rewrite_rules(&self) -> Result<Ref<'_, Option<RewriteRules>>, mysql::Error> {
         let rules = self.rules.borrow();
 

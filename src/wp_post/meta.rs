@@ -1,12 +1,12 @@
+#[cfg(feature = "query_sync")]
+use mysql::prelude::Queryable;
+use mysql_common::prelude::*;
+#[cfg(feature = "query_sync")]
 use std::{fmt::Display, vec};
 
-use mysql::prelude::Queryable;
-use mysql_common::prelude::ToValue;
-
-use crate::{
-    ok_or_row_error,
-    sql::{find_col, get_conn, traits::Insertable},
-};
+#[cfg(feature = "query_sync")]
+use crate::sql::{get_conn, traits::Insertable};
+use crate::{ok_or_row_error, sql::find_col};
 
 #[derive(Debug)]
 pub struct WpMeta {
@@ -36,6 +36,7 @@ impl WpMeta {
         }
     }
 
+    #[cfg(feature = "query_sync")]
     pub fn get_post_meta(
         post_id: u64,
         meta_key: &str,
@@ -62,6 +63,7 @@ impl WpMeta {
         }
     }
 
+    #[cfg(feature = "query_sync")]
     pub fn add_post_meta<T>(
         post_id: u64,
         meta_key: &str,
@@ -73,6 +75,7 @@ impl WpMeta {
         Self::insert(Self::new(post_id, meta_key, meta_value))
     }
 
+    #[cfg(feature = "query_sync")]
     fn prepare_insert_stmt(conn: &mut impl Queryable) -> Result<mysql::Statement, mysql::Error> {
         conn.prep(
             "INSERT INTO wp_postmeta (
@@ -85,6 +88,7 @@ impl WpMeta {
     }
 
     /// Allows multiple meta to be added in the same prepared statement, improving speed
+    #[cfg(feature = "query_sync")]
     pub fn add_post_meta_bulk<T>(
         post_id: u64,
         meta_key_value_pairs: &[(&str, T)],
@@ -100,7 +104,7 @@ impl WpMeta {
     }
 }
 
-impl mysql_common::prelude::FromRow for WpMeta {
+impl FromRow for WpMeta {
     fn from_row_opt(mut row: mysql_common::Row) -> Result<Self, mysql_common::FromRowError>
     where
         Self: Sized,
@@ -116,6 +120,7 @@ impl mysql_common::prelude::FromRow for WpMeta {
     }
 }
 
+#[cfg(feature = "query_sync")]
 impl Into<mysql::Params> for WpMeta {
     fn into(self) -> mysql::Params {
         mysql::Params::Positional(vec![
@@ -127,6 +132,7 @@ impl Into<mysql::Params> for WpMeta {
     }
 }
 
+#[cfg(feature = "query_sync")]
 impl Insertable for WpMeta {
     fn insert(self) -> Result<u64, mysql::Error> {
         let mut conn = get_conn()?;

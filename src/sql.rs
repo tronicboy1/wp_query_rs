@@ -1,16 +1,22 @@
 use std::fmt::Display;
 
-use mysql::{OptsBuilder, PooledConn};
 use mysql_common::prelude::FromValue;
-
-use self::{env_vars::EnvVars, pool::get_pool};
 
 pub mod cast_type;
 pub mod date;
 pub mod env_vars;
-pub mod pool;
 pub mod traits;
 
+#[cfg(feature = "query_sync")]
+pub mod pool;
+#[cfg(feature = "query_sync")]
+use self::pool::get_pool;
+#[cfg(feature = "query_sync")]
+use mysql::{OptsBuilder, PooledConn};
+#[cfg(feature = "query_sync")]
+use self::env_vars::EnvVars;
+
+#[cfg(feature = "query_sync")]
 fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
     OptsBuilder::new()
         .user(env_vars.user)
@@ -21,6 +27,7 @@ fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
         .prefer_socket(true)
 }
 
+#[cfg(feature = "query_sync")]
 pub fn get_conn() -> Result<PooledConn, mysql::Error> {
     get_pool().get_conn()
 }
@@ -128,7 +135,7 @@ impl Into<SqlOrder> for &str {
 /// ```rust,ignore
 /// let id: u64 = find_col(&mut value, "ID").unwrap_or(0);
 /// ```
-pub fn find_col<T>(row: &mut mysql::Row, col_name: &str) -> Option<T>
+pub fn find_col<T>(row: &mut mysql_common::Row, col_name: &str) -> Option<T>
 where
     T: FromValue,
 {

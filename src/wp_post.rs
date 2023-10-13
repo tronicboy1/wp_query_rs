@@ -1,16 +1,20 @@
 use mysql_common::time::PrimitiveDateTime;
 use serde::ser::{Serialize, SerializeStruct};
-use std::fmt::Display;
 
 use crate::sql::date::{get_date_now, get_utc_date_now};
 
 pub use self::meta::WpMetaResults;
-use self::{meta::WpMeta, post_status::PostStatus};
+use self::post_status::PostStatus;
 
 mod builder;
 pub mod meta;
 pub mod post_status;
 mod sql;
+
+#[cfg(feature = "query_sync")]
+use std::fmt::Display;
+#[cfg(feature = "query_sync")]
+use self::meta::WpMeta;
 
 #[cfg(feature = "php")]
 mod zval;
@@ -127,16 +131,18 @@ impl Serialize for WpPost {
 }
 
 /// Retrieves a post meta field for the given post ID.
+#[cfg(feature = "query_sync")]
 pub fn get_post_meta(post_id: u64, meta_key: &str, single: bool) -> WpMetaResults {
     WpMeta::get_post_meta(post_id, meta_key, single).unwrap()
 }
 
 /// Adds a meta field to the given post.
+#[cfg(feature = "query_sync")]
 pub fn add_post_meta(
     post_id: u64,
     meta_key: &str,
     meta_value: impl Display,
-) -> Result<u64, mysql::Error> {
+) -> Result<u64, Box<dyn std::error::Error>> {
     WpMeta::add_post_meta(post_id, meta_key, meta_value)
 }
 

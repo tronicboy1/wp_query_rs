@@ -1,11 +1,18 @@
+#[cfg(feature = "query_sync")]
+use crate::{
+    sql::{find_col, get_conn},
+    Insertable,
+};
+#[cfg(feature = "query_sync")]
 use mysql::{prelude::Queryable, Statement};
-use mysql_common::prelude::ToValue;
 
-use crate::{sql::{get_conn, find_col}, Insertable};
+use crate::sql::find_col;
+use mysql_common::prelude::*;
 
 use super::{get_date_now, get_utc_date_now, WpPost};
 
 impl WpPost {
+    #[cfg(feature = "query_sync")]
     fn get_stmt(conn: &mut impl Queryable) -> Result<Statement, mysql::Error> {
         conn.prep(
             "INSERT INTO `wp_posts` (
@@ -37,15 +44,18 @@ impl WpPost {
         )
     }
 
+    #[cfg(feature = "query_sync")]
     pub fn insert(self) -> Result<u64, mysql::Error> {
         <Self as Insertable>::insert(self)
     }
 
+    #[cfg(feature = "query_sync")]
     pub fn insert_bulk(v: Vec<Self>) -> Result<(), mysql::Error> {
         <Self as Insertable>::batch(v)
     }
 }
 
+#[cfg(feature = "query_sync")]
 impl Into<mysql::Params> for WpPost {
     fn into(self) -> mysql::Params {
         mysql::Params::Positional(vec![
@@ -83,7 +93,7 @@ macro_rules! ok_or_row_error {
     };
 }
 
-impl mysql_common::prelude::FromRow for WpPost {
+impl FromRow for WpPost {
     fn from_row_opt(mut row: mysql_common::Row) -> Result<Self, mysql_common::FromRowError>
     where
         Self: Sized,
@@ -117,6 +127,7 @@ impl mysql_common::prelude::FromRow for WpPost {
     }
 }
 
+#[cfg(feature = "query_sync")]
 impl Insertable for WpPost {
     fn batch(values: impl IntoIterator<Item = Self>) -> Result<(), mysql::Error> {
         let mut conn = get_conn()?;
@@ -151,6 +162,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(feature = "query_sync")]
     fn can_convert_post_to_params() {
         let mut post = WpPost::new(1);
         post.post_title = String::from("My Post");

@@ -13,7 +13,7 @@ keywords = ["wordpress", "wp", "wp_query", "mysql", "wp_post"]
 
 [dependencies]
 ext-php-rs = { version = "0.10.1", optional = true }
-mysql = { version = "24.0.0", default-features = false }
+mysql = { version = "24.0.0", default-features = false, optional = true }
 mysql_common = "0.30.6"
 sql_paginatorr = "0.1.1"
 chrono = "0.4.26"
@@ -23,6 +23,7 @@ regex = { version = "1.9.5", optional = true }
 serde_php = { version = "0.5.0", optional = true }
 
 [features]
+query_sync = ["mysql"]
 native-tls = ["mysql/native-tls"]
 rustls = ["mysql/default-rustls"]
 php = ["ext-php-rs"]

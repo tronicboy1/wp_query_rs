@@ -1,8 +1,12 @@
+#[cfg(feature = "query_sync")]
 use mysql::prelude::Queryable;
+#[cfg(feature = "query_sync")]
+use crate::sql::get_conn;
+
 use mysql_common::time::PrimitiveDateTime;
 use serde::ser::SerializeStruct;
 
-use crate::sql::{date::get_date_now, find_col, get_conn};
+use crate::sql::{date::get_date_now, find_col};
 
 #[derive(Debug)]
 pub struct WpUser {
@@ -22,20 +26,21 @@ impl WpUser {
     /// Retrieves a user from the database by their user ID
     /// Returns a result containing an option as either the database query could fail, or there could be
     /// no user for the ID provided.
+    #[cfg(feature = "query_sync")]
     pub fn get_user_by_id(id: u64) -> Result<Option<Self>, mysql::Error> {
         let mut conn = get_conn()?;
 
         let stmt = conn.prep("SELECT * FROM wp_users WHERE ID = ?")?;
 
-        let value = mysql::Value::UInt(id);
+        let value = mysql_common::Value::UInt(id);
 
         conn.exec_first(stmt, mysql::Params::Positional(vec![value]))
-            .map(|row: Option<mysql::Row>| row.map(|r| WpUser::from(r)))
+            .map(|row: Option<mysql_common::Row>| row.map(|r| WpUser::from(r)))
     }
 }
 
-impl From<mysql::Row> for WpUser {
-    fn from(mut value: mysql::Row) -> Self {
+impl From<mysql_common::Row> for WpUser {
+    fn from(mut value: mysql_common::Row) -> Self {
         WpUser {
             id: find_col(&mut value, "ID").unwrap_or(0),
             user_login: find_col(&mut value, "user_login").unwrap_or(String::new()),

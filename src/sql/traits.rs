@@ -1,3 +1,4 @@
+#[cfg(feature = "query_sync")]
 pub trait Insertable: Into<mysql::Params> {
     /// Consumes the object and inserts into the database.
     /// Returns the ID of the inserted object.

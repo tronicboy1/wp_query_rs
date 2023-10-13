@@ -4,6 +4,7 @@ use crate::{ParamBuilder, Params, PostQueryable, PostType};
 
 use super::WpRewrite;
 
+#[cfg(feature = "query_sync")]
 pub fn parse_request(
     wp_rewrite: &WpRewrite,
     url: url::Url,
@@ -116,6 +117,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(feature = "query_sync")]
     fn can_rewrite_default() {
         let url = url::Url::parse("http://localhost:8080/?p=123").unwrap();
 
@@ -146,6 +148,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "query_sync")]
     fn can_rewrite_blog_post() {
         let rewrite = get_rewrite_dummy();
 
@@ -175,6 +178,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "query_sync")]
     fn can_parse_request_into_params() {
         let rewrite = get_rewrite_dummy();
 
@@ -191,6 +195,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "query_sync")]
     fn can_parse_archive_page_into_params() {
         let rewrite = get_rewrite_dummy();
 
@@ -204,6 +209,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "query_sync")]
     fn can_parse_author_page() {
         let rewrite = get_rewrite_dummy();
 
