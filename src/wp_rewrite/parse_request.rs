@@ -4,30 +4,41 @@ use crate::{ParamBuilder, Params, PostQueryable, PostType};
 
 use super::WpRewrite;
 
+macro_rules! parse_request {
+    ($url: ident, $rewrite: ident, $rules: expr) => {{
+        let pathinfo = path_info(&$url).to_string();
+
+        if let Some(rules) = $rules.deref() {
+            let matched_rule = rules.find_match(&pathinfo, &$rewrite);
+            if let Some(q_params) = matched_rule.and_then(|r| r.replace(&pathinfo)) {
+                let mut parsed = $url.clone();
+                parsed.set_path("index.php");
+                parsed.set_query(Some(&q_params));
+
+                return Ok(parsed);
+            }
+        } else if $url.query().and_then(|q| q.find("p=")).is_some() {
+            // If is a default p=ID url, return it as is
+            return Ok($url);
+        }
+
+        Err(Box::new(WpParseError {}))
+    }};
+}
+
 #[cfg(feature = "query_sync")]
 pub fn parse_request(
     wp_rewrite: &WpRewrite,
     url: url::Url,
 ) -> Result<url::Url, Box<dyn std::error::Error>> {
-    let rules = wp_rewrite.wp_rewrite_rules()?;
-
-    let pathinfo = path_info(&url).to_string();
-
-    if let Some(rules) = rules.deref() {
-        let matched_rule = rules.find_match(&pathinfo, &wp_rewrite);
-        if let Some(q_params) = matched_rule.and_then(|r| r.replace(&pathinfo)) {
-            let mut parsed = url.clone();
-            parsed.set_path("index.php");
-            parsed.set_query(Some(&q_params));
-
-            return Ok(parsed);
-        }
-    } else if url.query().and_then(|q| q.find("p=")).is_some() {
-        // If is a default p=ID url, return it as is
-        return Ok(url);
-    }
-
-    Err(Box::new(WpParseError {}))
+    parse_request!(url, wp_rewrite, { wp_rewrite.wp_rewrite_rules()? })
+}
+#[cfg(feature = "query_async")]
+pub async fn parse_request(
+    wp_rewrite: &WpRewrite,
+    url: url::Url,
+) -> Result<url::Url, Box<dyn std::error::Error>> {
+    parse_request!(url, wp_rewrite, { wp_rewrite.wp_rewrite_rules().await? })
 }
 
 #[derive(Debug)]

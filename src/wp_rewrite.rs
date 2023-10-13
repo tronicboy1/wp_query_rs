@@ -15,7 +15,7 @@ use mysql_async::prelude::*;
 #[cfg(any(feature = "query_sync", feature = "query_async"))]
 use std::{cell::Ref, ops::Deref};
 
-#[cfg(feature = "query_sync")]
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 pub use parse_request::parse_request;
 pub use rewrite_code::RewriteCode;
 pub use rewrite_filters::RewriteFilters;
