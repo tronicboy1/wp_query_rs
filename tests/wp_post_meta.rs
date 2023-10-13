@@ -4,6 +4,7 @@ use wp_query_rs::{
     *,
 };
 
+#[cfg(feature = "query_sync")]
 fn add_post() -> u64 {
     let mut post = WP_Post::new(1);
     let now = SystemTime::now()
@@ -21,6 +22,7 @@ fn add_post() -> u64 {
     query.posts.first().unwrap().ID
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_add_post_meta() {
     let post_id = add_post();
@@ -28,6 +30,7 @@ fn can_add_post_meta() {
     add_post_meta(post_id, "my_custom_rs_meta", 42).expect("MetaInsertFailed");
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_get_post_meta() {
     let post_id = add_post();
@@ -44,6 +47,7 @@ fn can_get_post_meta() {
     }
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_bulk_insert_meta() {
     let post_id = add_post();
@@ -64,6 +68,7 @@ fn can_bulk_insert_meta() {
     }
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_insert_post_meta() {
     let post_id = add_post();

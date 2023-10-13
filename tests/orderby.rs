@@ -1,5 +1,6 @@
 use wp_query_rs::*;
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn orderby_post_date() {
     let params = ParamBuilder::new()
@@ -10,6 +11,7 @@ fn orderby_post_date() {
     assert_eq!(posts.post_count(), 10);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn orderby_author() {
     let params = ParamBuilder::new()
@@ -20,6 +22,7 @@ fn orderby_author() {
     assert_eq!(posts.post_count(), 10);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn orderby_comments() {
     let params = ParamBuilder::new()
@@ -30,6 +33,7 @@ fn orderby_comments() {
     assert_eq!(posts.post_count(), 10);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn orderby_modified() {
     let params = ParamBuilder::new()
@@ -40,6 +44,7 @@ fn orderby_modified() {
     assert_eq!(posts.post_count(), 10);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn orderby_title() {
     let params = ParamBuilder::new()

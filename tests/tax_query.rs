@@ -1,5 +1,6 @@
 use wp_query_rs::*;
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_search_single() {
     let params = ParamBuilder::new()
@@ -13,6 +14,7 @@ fn can_search_single() {
     assert!(posts.post_count() > 0);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_search_multiple() {
     let params = ParamBuilder::new()
@@ -30,6 +32,7 @@ fn can_search_multiple() {
     assert!(posts.post_count() > 0);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_search_by_tax_field() {
     let params = ParamBuilder::new()

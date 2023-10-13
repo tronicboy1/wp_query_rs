@@ -16,6 +16,7 @@ pub fn ensure_no_duplicate(posts: &[WP_Post]) {
     assert!(all_counts_less_than_one, "Duplicates found!")
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn default_selects_posts() {
     let params = ParamBuilder::new();
@@ -24,6 +25,7 @@ fn default_selects_posts() {
     assert_eq!(posts.post_count(), 10);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn no_duplicate_ids() {
     let params = ParamBuilder::new();
@@ -31,6 +33,7 @@ fn no_duplicate_ids() {
     ensure_no_duplicate(&posts.posts);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn no_dups_on_term_join() {
     let params = ParamBuilder::new().tag_id(1);
@@ -39,6 +42,7 @@ fn no_dups_on_term_join() {
     ensure_no_duplicate(&posts.posts);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn meta_data() {
     let params = ParamBuilder::new().meta_value("1");
@@ -47,6 +51,7 @@ fn meta_data() {
     assert!(posts.post_count() > 0);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn meta_join_no_dups() {
     let params = ParamBuilder::new().meta_value("1");
@@ -55,6 +60,7 @@ fn meta_join_no_dups() {
     ensure_no_duplicate(&posts.posts);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn paginate() {
     let params = ParamBuilder::new().page(1);

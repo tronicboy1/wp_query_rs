@@ -1,5 +1,6 @@
 use wp_query_rs::*;
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn meta_key() {
     let params = ParamBuilder::new()
@@ -11,6 +12,7 @@ fn meta_key() {
     assert!(posts.post_count() > 0);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn meta_value() {
     let params = ParamBuilder::new().post_type_all().meta_value("42");
@@ -19,6 +21,7 @@ fn meta_value() {
     assert!(posts.post_count() > 0);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn meta_value_num() {
     let params = ParamBuilder::new().post_type_all().meta_value_num(1);
@@ -27,6 +30,7 @@ fn meta_value_num() {
     assert!(posts.post_count() > 0);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn meta_queries() {
     let params = ParamBuilder::new()
@@ -89,6 +93,7 @@ fn meta_queries() {
     assert!(posts.post_count() > 0);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_query_exists() {
     let params = ParamBuilder::new()
@@ -103,6 +108,7 @@ fn can_query_exists() {
     assert!(posts.post_count() > 0);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_query_not_exists() {
     let params = ParamBuilder::new()

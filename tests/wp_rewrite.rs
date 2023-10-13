@@ -1,6 +1,6 @@
-use wp_query_rs::{wp_rewrite::parse_request, *};
+use wp_query_rs::*;
 
-#[cfg(feature = "rewrite")]
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_retrieve_options() {
     let rewrite = wp_rewrite::WpRewrite::new();
@@ -9,7 +9,7 @@ fn can_retrieve_options() {
     assert!(rewrite_rules.is_some());
 }
 
-#[cfg(feature = "rewrite")]
+#[cfg(all(feature = "query_sync", feature = "rewrite"))]
 #[test]
 fn can_parse_url() {
     let rewrite = wp_rewrite::WpRewrite::new();

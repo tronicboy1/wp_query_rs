@@ -1,5 +1,6 @@
 use wp_query_rs::*;
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn year_month_day() {
     let params = ParamBuilder::new().year(2023).monthnum(1).day(1);
@@ -7,6 +8,7 @@ fn year_month_day() {
     let posts = WP_Query::new(params).expect("SqlFailed");
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn year_month_day_hour() {
     let params = ParamBuilder::new().year(2023).monthnum(1).day(1).hour(4);
@@ -14,6 +16,7 @@ fn year_month_day_hour() {
     let posts = WP_Query::new(params).expect("SqlFailed");
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn year_month_day_hour_minute() {
     let params = ParamBuilder::new()
@@ -26,6 +29,7 @@ fn year_month_day_hour_minute() {
     let posts = WP_Query::new(params).expect("SqlFailed");
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn year_month_day_hour_minute_second() {
     let params = ParamBuilder::new()
@@ -39,6 +43,7 @@ fn year_month_day_hour_minute_second() {
     let posts = WP_Query::new(params).expect("SqlFailed");
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn date_query() {
     let params = ParamBuilder::new().date_query(

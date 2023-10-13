@@ -21,9 +21,12 @@ serde = "1.0.188"
 url = { version = "2.4.1", optional = true }
 regex = { version = "1.9.5", optional = true }
 serde_php = { version = "0.5.0", optional = true }
+mysql_async = { version = "0.32.2", default-features = false, optional = true }
+tokio = { version = "1.33.0", optional = true, features = ["full"] }
 
 [features]
 query_sync = ["mysql"]
+query_async = ["mysql_async", "tokio"]
 native-tls = ["mysql/native-tls"]
 rustls = ["mysql/default-rustls"]
 php = ["ext-php-rs"]

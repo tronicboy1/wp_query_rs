@@ -2,6 +2,7 @@
   "rust-analyzer.cargo.features": [
     //"php",
     "rewrite",
-    "query_sync"
+    // "query_sync",
+    "query_async"
   ]
 }

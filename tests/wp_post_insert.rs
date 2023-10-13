@@ -1,6 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 use wp_query_rs::*;
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_insert_post() {
     let mut post = WP_Post::new(1);
@@ -19,6 +20,7 @@ fn can_insert_post() {
     assert!(query.post_count() > 0);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn post_id_returned() {
     let mut post = WP_Post::new(1);
@@ -33,6 +35,7 @@ fn post_id_returned() {
     assert!(post_id > 0);
 }
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn can_insert_multiple_posts() {
     let dirty_posts: Vec<WP_Post> = (0..10)

@@ -1,5 +1,6 @@
 use wp_query_rs::*;
 
+#[cfg(feature = "query_sync")]
 #[test]
 fn select_by_post_id() {
     let params = ParamBuilder::new().s("a");

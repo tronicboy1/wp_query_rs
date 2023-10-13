@@ -48,6 +48,8 @@ pub use params::tax_query::TaxQuery;
 pub use params::tax_query::TaxRelation;
 pub use params::traits::*;
 pub use params::Params;
+use query_builder::QueryBuilder;
+use sql::get_conn;
 pub use sql::SqlOrder;
 pub use sql::SqlSearchOperators;
 pub use wp_post::post_status::PostStatus;
@@ -57,17 +59,16 @@ pub use wp_user::WpUser;
 #[cfg(feature = "query_sync")]
 use mysql::prelude::Queryable;
 #[cfg(feature = "query_sync")]
-use query_builder::QueryBuilder;
-#[cfg(feature = "query_sync")]
 pub use sql::env_vars::EnvVars;
-#[cfg(feature = "query_sync")]
-use sql::get_conn;
 #[cfg(feature = "query_sync")]
 pub use sql::traits::Insertable;
 #[cfg(feature = "query_sync")]
 pub use wp_post::add_post_meta;
 #[cfg(feature = "query_sync")]
 pub use wp_post::get_post_meta;
+
+#[cfg(feature = "query_async")]
+use mysql_async::prelude::*;
 
 // TODO remove on next major version
 #[allow(non_camel_case_types)]
@@ -119,6 +120,17 @@ impl WpQuery {
 
         Ok(Self { posts })
     }
+    #[cfg(feature = "query_async")]
+    pub async fn new<'a, T>(params: T) -> Result<Self, mysql_async::Error>
+    where
+        T: Into<Params<'a>>,
+    {
+        let mut conn = get_conn().await?;
+
+        let posts: Vec<WpPost> = Self::query(&mut conn, params).await?;
+
+        Ok(Self { posts })
+    }
 
     /// Queries the WordPress database with a mysql connection.
     ///
@@ -150,6 +162,18 @@ impl WpQuery {
 
         Ok(Self { posts })
     }
+    #[cfg(feature = "query_async")]
+    pub async fn with_connection<'a, T>(
+        conn: &mut mysql_async::Conn,
+        params: T,
+    ) -> Result<Self, mysql_async::Error>
+    where
+        T: Into<Params<'a>>,
+    {
+        let posts = Self::query(conn, params).await?;
+
+        Ok(Self { posts })
+    }
 
     #[cfg(feature = "query_sync")]
     fn query<'a, T>(conn: &mut impl Queryable, params: T) -> Result<Vec<WpPost>, mysql::Error>
@@ -161,6 +185,20 @@ impl WpQuery {
         let stmt = conn.prep(q)?;
 
         conn.exec(stmt, values)
+    }
+    #[cfg(feature = "query_async")]
+    async fn query<'a, T>(
+        conn: &mut mysql_async::Conn,
+        params: T,
+    ) -> Result<Vec<WpPost>, mysql_async::Error>
+    where
+        T: Into<Params<'a>>,
+    {
+        let query_builder::QueryAndValues(q, values) = QueryBuilder::new(params.into()).query();
+
+        let stmt = conn.prep(q).await?;
+
+        conn.exec(stmt, values).await
     }
 
     pub fn post_count(&self) -> usize {

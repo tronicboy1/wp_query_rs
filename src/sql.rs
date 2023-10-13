@@ -5,17 +5,15 @@ use mysql_common::prelude::FromValue;
 pub mod cast_type;
 pub mod date;
 pub mod env_vars;
-pub mod traits;
-
-#[cfg(feature = "query_sync")]
 pub mod pool;
-#[cfg(feature = "query_sync")]
+pub mod traits;
+use self::env_vars::EnvVars;
 use self::pool::get_pool;
 #[cfg(feature = "query_sync")]
 use mysql::{OptsBuilder, PooledConn};
-#[cfg(feature = "query_sync")]
-use self::env_vars::EnvVars;
 
+#[cfg(feature = "query_async")]
+use mysql_async::OptsBuilder;
 #[cfg(feature = "query_sync")]
 fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
     OptsBuilder::new()
@@ -26,10 +24,24 @@ fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
         .tcp_port(env_vars.port.unwrap_or(3306))
         .prefer_socket(true)
 }
+#[cfg(feature = "query_async")]
+fn build_opts_from_env(env_vars: EnvVars) -> OptsBuilder {
+    OptsBuilder::default()
+        .user(env_vars.user)
+        .ip_or_hostname(env_vars.host.expect("must define mysql host"))
+        .pass(env_vars.password)
+        .db_name(env_vars.db_name)
+        .tcp_port(env_vars.port.unwrap_or(3306))
+        .prefer_socket(true)
+}
 
 #[cfg(feature = "query_sync")]
 pub fn get_conn() -> Result<PooledConn, mysql::Error> {
     get_pool().get_conn()
+}
+#[cfg(feature = "query_async")]
+pub async fn get_conn() -> Result<mysql_async::Conn, mysql_async::Error> {
+    get_pool().get_conn().await
 }
 
 #[derive(Debug, PartialEq, Eq)]
