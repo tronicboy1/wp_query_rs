@@ -2,6 +2,16 @@
 
 A rust implementation of the classic WP_Query utility to access WordPress posts outside of a WordPress environment.
 
+# Installation
+
+For a typical installation, you can add the following to Cargo.toml to get started:
+
+```toml
+wp_query_rs = {version = "*", features = ["query_sync"] }
+```
+
+This will enable global connection to a mysql database (initiates a connection pool in a OnceBlock, in future release will make it possible to use without forcing this).
+
 # Example
 
 If you have the environment variables setup (described below), you can use the new function to query similar to the WP_Query instance creation.
@@ -114,8 +124,6 @@ let params = Params::try_from(&parsed).unwrap();
 
 assert_eq!(params.name, Some("a-page-about-tomates"));
 ```
-
-
 
 # Goals
 

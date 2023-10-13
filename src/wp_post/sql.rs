@@ -1,8 +1,5 @@
 #[cfg(feature = "query_sync")]
-use crate::{
-    sql::{find_col, get_conn},
-    Insertable,
-};
+use crate::{sql::get_conn, Insertable};
 #[cfg(feature = "query_sync")]
 use mysql::{prelude::Queryable, Statement};
 

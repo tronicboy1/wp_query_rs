@@ -1,6 +1,7 @@
 {
   "rust-analyzer.cargo.features": [
     //"php",
-    "rewrite"
+    "rewrite",
+    "query_sync"
   ]
 }

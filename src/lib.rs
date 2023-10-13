@@ -1,5 +1,39 @@
 //! # WP Query Rust
 //! A rust implementation of the classic WP_Query utility to access WordPress posts outside of a WordPress environment.
+//!
+//! # Features
+//!
+//! ## query_sync
+//!
+//! Adds default functionality to connect to the database using a global connection pool initialized when WpQuery::new
+//! or any other internal synchronous mysql function is called. This uses the synchronous blocking logic.
+//!
+//! This feature can be paired with native-tls or rustls depending on environment needs.
+//!
+//! ## query_async
+//!
+//! **TODO**
+//! Use asynchronous mysql logic to query database.
+//!
+//! ## native-tls
+//!
+//! Sets the mysql crate feature to use native TLS.
+//!
+//! ## rustls
+//!
+//! Sets the mysql crate to use rustls (non-native). This helps when compiling code for say a lambda function where you do not
+//! have access to native TLS.
+//!
+//! ## php
+//!
+//! **WIP**
+//! Adds some serialization for use with ext_php_rs.
+//!
+//! ## rewrite
+//!
+//! **WIP**
+//! Adds ability to parse pretty URLs from wordpress rewrite settings. Currently we can only parse urls into parameters,
+//! not generate PHP serialized rewrite rules to be used in WordPress.
 
 pub use params::date_query::DateColumn;
 pub use params::date_query::DateQuery;
