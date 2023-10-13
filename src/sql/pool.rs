@@ -10,6 +10,17 @@ use super::{build_opts_from_env, EnvVars};
 // and OnceLock implements Sync
 static POOL_INSTANCE: OnceLock<Pool> = OnceLock::new();
 
+#[cfg(feature = "query_sync")]
+pub fn get_pool() -> &'static Pool {
+    POOL_INSTANCE.get_or_init(|| {
+        let env_vars = EnvVars::from_env();
+        let opts = build_opts_from_env(env_vars);
+
+        Pool::new(opts).expect("DatabaseConnectionFailed")
+    })
+}
+
+#[cfg(feature = "query_async")]
 pub fn get_pool() -> &'static Pool {
     POOL_INSTANCE.get_or_init(|| {
         let env_vars = EnvVars::from_env();

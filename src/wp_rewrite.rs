@@ -6,11 +6,13 @@ mod rewrite_rule;
 
 use std::cell::RefCell;
 
-#[cfg(feature = "query_sync")]
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 use crate::sql::get_conn;
 #[cfg(feature = "query_sync")]
 use mysql::prelude::*;
-#[cfg(feature = "query_sync")]
+#[cfg(feature = "query_async")]
+use mysql_async::prelude::*;
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 use std::{cell::Ref, ops::Deref};
 
 #[cfg(feature = "query_sync")]
@@ -69,6 +71,28 @@ pub struct WpRewrite {
     hooks: RewriteFilterCache,
 }
 
+macro_rules! wp_rewrite_rules {
+    ($self: ident, $rules: expr) => {{
+        let rules = $self.rules.borrow();
+
+        if rules.is_some() || *$self.rules_init.borrow().deref() {
+            return Ok(rules);
+        }
+
+        // Get rid of imutable borrow so we can mutate it
+        drop(rules);
+
+        let res: Option<RewriteRules> = $rules;
+
+        // SAFETY never borrows mut if it is already in the cache
+        let mut rules_cache = $self.rules.borrow_mut();
+        *rules_cache = res;
+        drop(rules_cache);
+
+        Ok($self.rules.borrow())
+    }};
+}
+
 impl WpRewrite {
     pub fn new() -> Self {
         Self {
@@ -99,28 +123,33 @@ impl WpRewrite {
     /// Results are cached if database result is valid
     #[cfg(feature = "query_sync")]
     pub fn wp_rewrite_rules(&self) -> Result<Ref<'_, Option<RewriteRules>>, mysql::Error> {
-        let rules = self.rules.borrow();
+        wp_rewrite_rules!(self, {
+            let mut conn = get_conn()?;
 
-        if rules.is_some() || *self.rules_init.borrow().deref() {
-            return Ok(rules);
-        }
+            let res: Option<RewriteRules> = conn.exec_first(
+                "SELECT option_value FROM wp_options WHERE option_name = 'rewrite_rules'",
+                mysql::Params::Empty,
+            )?;
 
-        // Get rid of imutable borrow so we can mutate it
-        drop(rules);
+            res
+        })
+    }
+    #[cfg(feature = "query_async")]
+    pub async fn wp_rewrite_rules(
+        &self,
+    ) -> Result<Ref<'_, Option<RewriteRules>>, mysql_async::Error> {
+        wp_rewrite_rules!(self, {
+            let mut conn = get_conn().await?;
 
-        let mut conn = get_conn()?;
+            let res: Option<RewriteRules> = conn
+                .exec_first(
+                    "SELECT option_value FROM wp_options WHERE option_name = 'rewrite_rules'",
+                    mysql_async::Params::Empty,
+                )
+                .await?;
 
-        let res: Option<RewriteRules> = conn.exec_first(
-            "SELECT option_value FROM wp_options WHERE option_name = 'rewrite_rules'",
-            mysql::Params::Empty,
-        )?;
-
-        // SAFETY never borrows mut if it is already in the cache
-        let mut rules_cache = self.rules.borrow_mut();
-        *rules_cache = res;
-        drop(rules_cache);
-
-        Ok(self.rules.borrow())
+            res
+        })
     }
 
     /// Sets the category base for the category permalink.
