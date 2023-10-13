@@ -49,6 +49,7 @@ pub use params::tax_query::TaxRelation;
 pub use params::traits::*;
 pub use params::Params;
 use query_builder::QueryBuilder;
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 use sql::get_conn;
 pub use sql::SqlOrder;
 pub use sql::SqlSearchOperators;

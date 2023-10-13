@@ -5,9 +5,11 @@ use mysql_common::prelude::FromValue;
 pub mod cast_type;
 pub mod date;
 pub mod env_vars;
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 pub mod pool;
 pub mod traits;
 use self::env_vars::EnvVars;
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 use self::pool::get_pool;
 #[cfg(feature = "query_sync")]
 use mysql::{OptsBuilder, PooledConn};
