@@ -37,6 +37,26 @@ let wp_query = WP_Query::with_connection(&mut conn, params).expect("SqlFailed");
 assert_eq!(wp_query.post_count(), 10);
 ```
 
+# Initialization
+
+By default, this library will produce it's own global connection pool to allow the API to mimick that of the WordPress version.
+The default initialization will use the following environment variables to connect:
+
+- WORDPRESS_DB_HOST
+- WORDPRESS_DB_USER
+- WORDPRESS_DB_PASSWORD
+- WORDPRESS_DB_NAME
+- WORDPRESS_DB_PORT
+
+## Implicitly Initializing Global Pool
+
+The default functionality of initializing a global connection pool can be very inconvenient if you have a pool already created,
+or would like to provide your own custom options to initialize.
+
+In such cases we can use the `PoolInit::with_opts` or `PoolInit::with_pool` to set the global pool reference implicitly.
+
+Ensure that you call either function before calling any of this librarys database calling methods.
+
 # Building Query Parameters
 
 To add parameters to your query, chain the callbacks after `ParamBuilder::new()`:

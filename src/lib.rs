@@ -1,5 +1,25 @@
 //! # WP Query Rust
+//!
 //! A rust implementation of the classic WP_Query utility to access WordPress posts outside of a WordPress environment.
+//!
+//! # Initialization
+//!
+//! By default, this library will produce it's own global connection pool to allow the API to mimick that of the WordPress version.
+//! The default initialization will use the following environment variables to connect:
+//! - WORDPRESS_DB_HOST
+//! - WORDPRESS_DB_USER
+//! - WORDPRESS_DB_PASSWORD
+//! - WORDPRESS_DB_NAME
+//! - WORDPRESS_DB_PORT
+//!
+//! ## Implicitly Initializing Global Pool
+//!
+//! The default functionality of initializing a global connection pool can be very inconvenient if you have a pool already created,
+//! or would like to provide your own custom options to initialize.
+//!
+//! In such cases we can use the `PoolInit::with_opts` or `PoolInit::with_pool` to set the global pool reference implicitly.
+//!
+//! Ensure that you call either function before calling any of this librarys database calling methods.
 //!
 //! # Features
 //!
@@ -53,6 +73,8 @@ use query_builder::QueryBuilder;
 use sql::get_conn;
 pub use sql::SqlOrder;
 pub use sql::SqlSearchOperators;
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
+pub use sql::pool::PoolInit;
 pub use wp_post::post_status::PostStatus;
 use wp_post::WpPost;
 pub use wp_user::WpUser;
@@ -99,7 +121,7 @@ impl WpQuery {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```rust,ignore
     /// use wp_query_rs::{ParamBuilder, WP_Query, PostType, PostQueryable};
     ///
     /// let params = ParamBuilder::new().page(1).post_type(PostType::Post);
