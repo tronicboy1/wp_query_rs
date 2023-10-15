@@ -12,6 +12,14 @@ wp_query_rs = {version = "*", features = ["query_sync"] }
 
 This will enable global connection to a mysql database (initiates a connection pool in a OnceBlock, in future release will make it possible to use without forcing this).
 
+## Async
+
+This library partially supports async mysql operations. We can only guarantee compatibility with the Tokio runtime.
+
+```toml
+wp_query_rs = {version = "*", features = ["query_async"] }
+```
+
 # Example
 
 If you have the environment variables setup (described below), you can use the new function to query similar to the WP_Query instance creation.
