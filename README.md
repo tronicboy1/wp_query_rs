@@ -68,18 +68,8 @@ Ensure that you call either function before calling any of this librarys databas
 ### with_opts
 
 ```rust
-use std::env;
+let opts = mysql_async::OptsBuilder::default();
 
-let host = env::var("WORDPRESS_DB_HOST").unwrap();
-let user = env::var("WORDPRESS_DB_USER").unwrap();
-let password = env::var("WORDPRESS_DB_PASSWORD").unwrap();
-let name = env::var("WORDPRESS_DB_NAME").unwrap();
-
-let opts = mysql_async::OptsBuilder::default()
-        .ip_or_hostname(host)
-        .user(Some(user))
-        .pass(Some(password))
-        .db_name(Some(name));
 PoolInit::with_opts(opts.into()).expect("Pool was set before call");
 ```
 
