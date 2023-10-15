@@ -77,3 +77,28 @@ fn can_insert_multiple_posts() {
 
     assert!(query.post_count() == 10);
 }
+
+// TODO using tokio::test causes the mysql driver to be detached if there are more than one tests in a file
+// #[cfg(feature = "query_async")]
+// #[tokio::test]
+// async fn can_insert_multiple_posts() {
+//     let dirty_posts: Vec<WP_Post> = (0..10)
+//         .map(|_| {
+//             let mut post = WP_Post::new(1);
+//             let now = SystemTime::now()
+//                 .duration_since(UNIX_EPOCH)
+//                 .unwrap()
+//                 .as_secs();
+//             post.post_title = format!("My Bulk Posts {}", now);
+
+//             post
+//         })
+//         .collect();
+
+//     WP_Post::batch(dirty_posts).await.expect("BulkInsertFailed");
+
+//     let q = ParamBuilder::new().s("My Bulk Posts");
+//     let query = WP_Query::new(q).await.unwrap();
+
+//     assert!(query.post_count() == 10);
+// }
