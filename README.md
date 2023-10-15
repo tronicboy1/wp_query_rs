@@ -65,6 +65,34 @@ In such cases we can use the `PoolInit::with_opts` or `PoolInit::with_pool` to s
 
 Ensure that you call either function before calling any of this librarys database calling methods.
 
+### with_opts
+
+```rust
+use std::env;
+
+let host = env::var("WORDPRESS_DB_HOST").unwrap();
+let user = env::var("WORDPRESS_DB_USER").unwrap();
+let password = env::var("WORDPRESS_DB_PASSWORD").unwrap();
+let name = env::var("WORDPRESS_DB_NAME").unwrap();
+
+let opts = mysql_async::OptsBuilder::default()
+        .ip_or_hostname(host)
+        .user(Some(user))
+        .pass(Some(password))
+        .db_name(Some(name));
+PoolInit::with_opts(opts.into()).expect("Pool was set before call");
+```
+
+### with_pool
+
+```rust
+let pool = mysql_async::Pool::new(
+        mysql_async::OptsBuilder::default(),
+);
+
+PoolInit::with_pool(&pool).expect("Pool was set before call");
+```
+
 # Building Query Parameters
 
 To add parameters to your query, chain the callbacks after `ParamBuilder::new()`:
