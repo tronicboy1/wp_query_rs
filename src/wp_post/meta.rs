@@ -178,7 +178,7 @@ impl WpMeta {
     }
 }
 
-impl FromRow for WpMeta {
+impl mysql_common::prelude::FromRow for WpMeta {
     fn from_row_opt(mut row: mysql_common::Row) -> Result<Self, mysql_common::FromRowError>
     where
         Self: Sized,
@@ -206,6 +206,7 @@ impl Into<mysql_common::params::Params> for WpMeta {
     }
 }
 
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 impl Insertable for WpMeta {
     #[cfg(feature = "query_sync")]
     fn insert(self) -> Result<u64, mysql::Error> {

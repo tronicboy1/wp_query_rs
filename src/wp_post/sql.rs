@@ -3,8 +3,9 @@ use mysql::prelude::*;
 #[cfg(feature = "query_async")]
 use mysql_async::prelude::*;
 
+use crate::sql::find_col;
 #[cfg(any(feature = "query_sync", feature = "query_async"))]
-use crate::sql::{find_col, get_conn, traits::Insertable};
+use crate::sql::{get_conn, traits::Insertable};
 
 use super::{get_date_now, get_utc_date_now, WpPost};
 
@@ -102,7 +103,7 @@ macro_rules! ok_or_row_error {
     };
 }
 
-impl FromRow for WpPost {
+impl mysql_common::prelude::FromRow for WpPost {
     fn from_row_opt(mut row: mysql_common::Row) -> Result<Self, mysql_common::FromRowError>
     where
         Self: Sized,
@@ -136,6 +137,7 @@ impl FromRow for WpPost {
     }
 }
 
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 impl Insertable for WpPost {
     #[cfg(feature = "query_sync")]
     fn batch(values: impl IntoIterator<Item = Self>) -> Result<(), mysql::Error> {
