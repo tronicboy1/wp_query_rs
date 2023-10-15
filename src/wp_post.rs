@@ -11,10 +11,10 @@ pub mod meta;
 pub mod post_status;
 mod sql;
 
-#[cfg(feature = "query_sync")]
-use std::fmt::Display;
-#[cfg(feature = "query_sync")]
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 use self::meta::WpMeta;
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
+use std::fmt::Display;
 
 #[cfg(feature = "php")]
 mod zval;
@@ -133,7 +133,13 @@ impl Serialize for WpPost {
 /// Retrieves a post meta field for the given post ID.
 #[cfg(feature = "query_sync")]
 pub fn get_post_meta(post_id: u64, meta_key: &str, single: bool) -> WpMetaResults {
-    WpMeta::get_post_meta(post_id, meta_key, single).unwrap()
+    WpMeta::get_post_meta(post_id, meta_key, single).expect("Wp Meta get failed")
+}
+#[cfg(feature = "query_async")]
+pub async fn get_post_meta(post_id: u64, meta_key: &str, single: bool) -> WpMetaResults {
+    WpMeta::get_post_meta(post_id, meta_key, single)
+        .await
+        .expect("Wp Meta get failed")
 }
 
 /// Adds a meta field to the given post.
@@ -144,6 +150,14 @@ pub fn add_post_meta(
     meta_value: impl Display,
 ) -> Result<u64, mysql::Error> {
     WpMeta::add_post_meta(post_id, meta_key, meta_value)
+}
+#[cfg(feature = "query_async")]
+pub async fn add_post_meta(
+    post_id: u64,
+    meta_key: &str,
+    meta_value: impl Display,
+) -> Result<u64, mysql_async::Error> {
+    WpMeta::add_post_meta(post_id, meta_key, meta_value).await
 }
 
 #[cfg(test)]
