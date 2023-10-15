@@ -81,13 +81,13 @@ pub use wp_user::WpUser;
 
 #[cfg(feature = "query_sync")]
 use mysql::prelude::Queryable;
-#[cfg(feature = "query_sync")]
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 pub use sql::env_vars::EnvVars;
-#[cfg(feature = "query_sync")]
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 pub use sql::traits::Insertable;
-#[cfg(feature = "query_sync")]
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 pub use wp_post::add_post_meta;
-#[cfg(feature = "query_sync")]
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
 pub use wp_post::get_post_meta;
 
 #[cfg(feature = "query_async")]

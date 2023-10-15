@@ -1,17 +1,16 @@
 #[cfg(feature = "query_sync")]
-use crate::{sql::get_conn, Insertable};
-#[cfg(feature = "query_sync")]
-use mysql::{prelude::Queryable, Statement};
+use mysql::prelude::*;
+#[cfg(feature = "query_async")]
+use mysql_async::prelude::*;
 
-use crate::sql::find_col;
-use mysql_common::prelude::*;
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
+use crate::sql::{find_col, get_conn, traits::Insertable};
 
 use super::{get_date_now, get_utc_date_now, WpPost};
 
-impl WpPost {
-    #[cfg(feature = "query_sync")]
-    fn get_stmt(conn: &mut impl Queryable) -> Result<Statement, mysql::Error> {
-        conn.prep(
+macro_rules! get_stmt {
+    ($conn: ident) => {
+        $conn.prep(
             "INSERT INTO `wp_posts` (
             /* For new posts, ID will be 0 so MySQL will create an ID for us */
             `ID`,
@@ -39,6 +38,19 @@ impl WpPost {
             `comment_count`
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
         )
+    };
+}
+
+impl WpPost {
+    #[cfg(feature = "query_sync")]
+    fn get_stmt(conn: &mut impl Queryable) -> Result<mysql::Statement, mysql::Error> {
+        get_stmt!(conn)
+    }
+    #[cfg(feature = "query_async")]
+    async fn get_stmt(
+        conn: &mut mysql_async::Conn,
+    ) -> Result<mysql_async::Statement, mysql_async::Error> {
+        get_stmt!(conn).await
     }
 
     #[cfg(feature = "query_sync")]
@@ -52,10 +64,10 @@ impl WpPost {
     }
 }
 
-#[cfg(feature = "query_sync")]
-impl Into<mysql::Params> for WpPost {
-    fn into(self) -> mysql::Params {
-        mysql::Params::Positional(vec![
+#[cfg(any(feature = "query_sync", feature = "query_async"))]
+impl Into<mysql_common::params::Params> for WpPost {
+    fn into(self) -> mysql_common::params::Params {
+        mysql_common::params::Params::Positional(vec![
             self.ID.to_value(),
             self.post_author.to_value(),
             self.post_date.to_value(),
@@ -124,8 +136,8 @@ impl FromRow for WpPost {
     }
 }
 
-#[cfg(feature = "query_sync")]
 impl Insertable for WpPost {
+    #[cfg(feature = "query_sync")]
     fn batch(values: impl IntoIterator<Item = Self>) -> Result<(), mysql::Error> {
         let mut conn = get_conn()?;
 
@@ -135,12 +147,41 @@ impl Insertable for WpPost {
             stmt,
             values
                 .into_iter()
-                .map(|post| -> mysql::Params { post.into() }),
+                .map(|post| -> mysql_common::params::Params { post.into() }),
         )?;
 
         Ok(())
     }
 
+    #[cfg(feature = "query_async")]
+    fn batch<T>(
+        values: T,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), mysql_async::Error>>>>
+    where
+        T: IntoIterator<Item = Self> + Send + 'static,
+        T::IntoIter: Send,
+        Self: Sized,
+    {
+        let fut = async {
+            let mut conn = get_conn().await?;
+
+            let stmt = Self::get_stmt(&mut conn).await?;
+
+            conn.exec_batch(
+                stmt,
+                values
+                    .into_iter()
+                    .map(|post| -> mysql_common::params::Params { post.into() }),
+            )
+            .await?;
+
+            Ok(())
+        };
+
+        Box::pin(fut)
+    }
+
+    #[cfg(feature = "query_sync")]
     fn insert(self) -> Result<u64, mysql::Error> {
         let mut conn = get_conn()?;
 
@@ -152,6 +193,28 @@ impl Insertable for WpPost {
 
         Ok(post_id)
     }
+
+    #[cfg(feature = "query_async")]
+    fn insert(
+        self,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<u64, mysql_async::Error>>>> {
+        let fut = async {
+            let mut conn = get_conn().await?;
+
+            let stmt = Self::get_stmt(&mut conn).await?;
+
+            conn.exec_drop(stmt, self).await?;
+
+            let post_id: u64 = conn
+                .exec_first("SELECT LAST_INSERT_ID();", ())
+                .await?
+                .unwrap();
+
+            Ok(post_id)
+        };
+
+        Box::pin(fut)
+    }
 }
 
 #[cfg(test)]
@@ -159,20 +222,23 @@ mod tests {
     use super::*;
 
     #[test]
-    #[cfg(feature = "query_sync")]
+    #[cfg(any(feature = "query_sync", feature = "query_async"))]
     fn can_convert_post_to_params() {
         let mut post = WpPost::new(1);
         post.post_title = String::from("My Post");
 
-        let params: mysql::Params = post.into();
+        let params: mysql_common::params::Params = post.into();
         match params {
-            mysql::Params::Positional(data) => {
+            mysql_common::params::Params::Positional(data) => {
                 let id = data.first().unwrap();
-                assert_eq!(id, &mysql::Value::UInt(0));
+                assert_eq!(id, &mysql_common::Value::UInt(0));
                 let author_id = &data[1];
-                assert_eq!(author_id, &mysql::Value::UInt(1));
+                assert_eq!(author_id, &mysql_common::Value::UInt(1));
                 let p_status = &data[7];
-                assert_eq!(p_status, &mysql::Value::Bytes("draft".as_bytes().to_vec()));
+                assert_eq!(
+                    p_status,
+                    &mysql_common::Value::Bytes("draft".as_bytes().to_vec())
+                );
             }
             _ => panic!("Not positional"),
         }

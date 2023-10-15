@@ -12,6 +12,18 @@ fn meta_key() {
     assert!(posts.post_count() > 0);
 }
 
+#[cfg(feature = "query_async")]
+#[tokio::test]
+async fn meta_key() {
+    let params = ParamBuilder::new()
+        .post_type_all()
+        .post_status(PostStatus::Any)
+        .meta_key("my_inserted_meta");
+
+    let posts = WP_Query::new(params).await.expect("SqlFailed");
+    assert!(posts.post_count() > 0);
+}
+
 #[cfg(feature = "query_sync")]
 #[test]
 fn meta_value() {

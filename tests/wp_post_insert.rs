@@ -20,6 +20,25 @@ fn can_insert_post() {
     assert!(query.post_count() > 0);
 }
 
+#[cfg(feature = "query_async")]
+#[tokio::test]
+async fn can_insert_post() {
+    let mut post = WP_Post::new(1);
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let title = format!("My Test Post {}", now);
+    post.post_title = title.clone();
+
+    post.insert().await.expect("InsertFailed");
+
+    let q = ParamBuilder::new().s(&title);
+    let query = WP_Query::new(q).await.unwrap();
+
+    assert!(query.post_count() > 0);
+}
+
 #[cfg(feature = "query_sync")]
 #[test]
 fn post_id_returned() {
